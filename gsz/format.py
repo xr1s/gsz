@@ -1,6 +1,8 @@
 import enum
 import html
 import io
+import os
+import unicodedata
 
 
 class Syntax(enum.Enum):
@@ -257,7 +259,7 @@ class Formatter:
             self.__specifier = ""
             self.__param_num = 0
             return
-        if self.__param_num == 0 or self.__parameter == () or self.__param_num > len(self.__parameter):
+        if self.__param_num == 0 or len(self.__parameter) == 0 or self.__param_num > len(self.__parameter):
             self.__push("#")
             self.__push(str(self.__param_num))
             if state in (State.Specifier, State.ParamEnd) or self.__specifier != "":
@@ -351,8 +353,57 @@ class Formatter:
             case _:  # unreacheable
                 raise ValueError(f"invalid tag {tag}")
 
-    def __flush_tag_terminal(self, tag: str, val: str, text: str):
-        pass
+    @staticmethod
+    def text_width(text: str) -> int:
+        """
+        这个算法是不精确的，只是为了实现简单才这么写的
+        文本宽度计算是老大难问题，和字符类型、终端配置、字体有关
+        """
+        return sum(2 if unicodedata.east_asian_width(char) in ("A", "F", "N", "W") else 1 for char in text)
+
+    def __flush_tag_terminal(self, tag: str, val: str, text: str):  # noqa: PLR0912, PLR0915
+        """简陋的高亮实现，用来调试输出美观"""
+        if text == "":
+            return
+        match tag:
+            case "align":  # 左中右对齐
+                if val == '"left"':
+                    _ = self.__texts[-1].write(text)
+                    _ = self.__texts[-1].write("\n")
+                    return
+                term = os.get_terminal_size()
+                width = Formatter.text_width(text)
+                if width > term.columns:
+                    _ = self.__texts[-1].write(text)
+                    _ = self.__texts[-1].write("\n")
+                    return
+                if val == '"center"':
+                    padding = (term.columns - width) // 2
+                    _ = self.__texts[-1].write(" " * padding)
+                    _ = self.__texts[-1].write(text)
+                if val == '"right"':
+                    padding = term.columns - width
+                    _ = self.__texts[-1].write(" " * padding)
+                    _ = self.__texts[-1].write(text)
+            case "b":  # 粗体
+                _ = self.__texts[-1].write(f"\033[1m{text}\033[22m")
+            case "color":
+                r = int(val[1:3], 16)
+                g = int(val[3:5], 16)
+                b = int(val[5:7], 16)
+                _ = self.__texts[-1].write(f"\033[38;2;{r};{g};{b}m{text}\033[39m")
+            case "i" | "I":  # 斜体
+                _ = self.__texts[-1].write(f"\033[3m{text}\033[23m")
+            case "s":  # 删除线
+                _ = self.__texts[-1].write(f"\033[9m{text}\033[29m")
+            case "size":  # 指定字号
+                _ = self.__texts[-1].write(text)
+            case "u":  # 下划线
+                _ = self.__texts[-1].write(f"\033[4m{text}\033[24m")
+            case "unbreak":
+                _ = self.__texts[-1].write(text)
+            case _:  # unreacheable
+                raise ValueError(f"invalid tag {tag}")
 
     @staticmethod
     def __is_known_tag(tag: str) -> bool:
@@ -379,7 +430,7 @@ class Formatter:
                 self.__flush_tag_terminal(tag, val, text)
 
     def feed(self, char: str) -> None:  # noqa: PLR0912
-        if self.__states == []:
+        if len(self.__states) == 0:
             self.__feed_text(char)
             return
         match self.__states[-1]:
