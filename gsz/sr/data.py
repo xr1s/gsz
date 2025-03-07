@@ -1,5 +1,6 @@
 import collections
 import collections.abc
+import enum
 import itertools
 import pathlib
 import typing
@@ -120,7 +121,7 @@ class excel_output(typing.Generic[V, E]):
         self.__excel_output: dict[int, E] | None = None
 
     def __call__(self, method: typing.Callable[..., None]) -> GameDataFunction[V]:
-        if self.__file_names == ():
+        if len(self.__file_names) == 0:
             self.__file_names = (method.__name__.title().replace("_", ""),)
 
         @typing.overload
@@ -136,11 +137,19 @@ class excel_output(typing.Generic[V, E]):
                 path = game.base / "ExcelOutput"
                 file_names = iter(self.__file_names)
                 file_path = path / (next(file_names) + ".json")
-                while not file_path.exists():
-                    file_path = path / (next(file_names) + ".json")
-                self.__file_names = ()  # 清理一下方便 GC
+                try:
+                    while not file_path.exists():
+                        file_path = path / (next(file_names) + ".json")
+                except StopIteration:
+                    self.__excel_output = {}
+                    if id is None or isinstance(id, collections.abc.Iterable):
+                        return iter(())
+                    return None
+                finally:
+                    self.__file_names = ()  # 清理一下方便 GC
+                # FIXME: 直接 cast 没法表现约束，我需要 __type.ExcelOutput 满足 E 而不是直接转成 E
                 ExcelOutput = typing.cast(E, self.__type.ExcelOutput)
-                # TODO: 支持 2.3 之前数据格式载入, 2.4 从 {"ID": {"ID": 123}} 变成了 [{"ID": 123}]
+                # TODO: 支持 2.3 之前数据格式载入
                 ExcelOutputList = pydantic.TypeAdapter(list[ExcelOutput])
                 json = ExcelOutputList.validate_json(file_path.read_bytes())
                 self.__excel_output = {config.id(): config for config in json}
@@ -148,7 +157,8 @@ class excel_output(typing.Generic[V, E]):
                 return (self.__type(game, excel) for excel in self.__excel_output.values())
             if isinstance(id, collections.abc.Iterable):
                 return (self.__type(game, self.__excel_output[k]) for k in id)
-            return self.__type(game, self.__excel_output.get(id))
+            excel = self.__excel_output.get(id)
+            return None if excel is None else self.__type(game, excel)
 
         return fn
 
@@ -200,7 +210,7 @@ class excel_output_main_sub(typing.Generic[V, MS]):
         self.__excel_output: dict[int, list[MS]] | None = None
 
     def __call__(self, method: typing.Callable[..., None]) -> GameDataMainSubFunction[V]:
-        if self.__file_names == ():
+        if len(self.__file_names) == 0:
             self.__file_names = (method.__name__.title().replace("_", ""),)
 
         @typing.overload
@@ -216,11 +226,19 @@ class excel_output_main_sub(typing.Generic[V, MS]):
                 path = game.base / "ExcelOutput"
                 file_names = iter(self.__file_names)
                 file_path = path / (next(file_names) + ".json")
-                while not file_path.exists():
-                    file_path = path / (next(file_names) + ".json")
-                self.__file_names = ()  # 清理一下方便 GC
+                try:
+                    while not file_path.exists():
+                        file_path = path / (next(file_names) + ".json")
+                except StopIteration:
+                    self.__excel_output = {}
+                    if main_id is None or sub_id is None:
+                        return iter(())
+                    return None
+                finally:
+                    self.__file_names = ()  # 清理一下方便 GC
+                # FIXME: 直接 cast 没法表现约束，我需要 __type.ExcelOutput 满足 MS 而不是直接转成 MS
                 ExcelOutput = typing.cast(MS, self.__type.ExcelOutput)
-                # TODO: 支持 2.3 之前数据格式载入, 2.4 从 {"ID": {"ID": 123}} 变成了 [{"ID": 123}]
+                # TODO: 支持 2.3 之前数据格式载入
                 ExcelOutputList = pydantic.TypeAdapter(list[ExcelOutput])
                 json = ExcelOutputList.validate_json(file_path.read_bytes())
                 self.__excel_output = {}
@@ -251,20 +269,73 @@ class excel_output_main_sub(typing.Generic[V, MS]):
         return fn
 
 
+class Language(enum.Enum):
+    CHS = "CHS"
+    """简体中文"""
+    CHT = "CHT"
+    """繁体中文"""
+    DE = "DE"
+    """德文"""
+    EN = "EN"
+    """英文"""
+    ES = "ES"
+    """西班牙文"""
+    FR = "FR"
+    """法文"""
+    ID = "ID"
+    """印尼文"""
+    JP = "JP"
+    """日文"""
+    KR = "KR"
+    """韩文"""
+    PT = "PT"
+    """葡萄牙文"""
+    RU = "RU"
+    """俄文"""
+    TH = "TH"
+    """泰文"""
+    VI = "VI"
+    """越文"""
+
+    def candidates(self) -> list[str]:
+        if self == self.CHS:
+            return ["CN", "CHS"]
+        return [self.value]
+
+
 class GameData:
-    def __init__(self, base: str | pathlib.Path):
+    def __init__(self, base: str | pathlib.Path, *, language: Language = Language.CHS):
         self.base: pathlib.Path = pathlib.Path(base)
-        with open(self.base / "TextMap" / "TextMapCHS.json", "rb") as text_map_file:
-            text_map = text_map_file.read()
-            self.__text_map = pydantic.TypeAdapter(dict[int, str]).validate_json(text_map)
+        candidates = iter(language.candidates())
+        text_map_path = self.base / "TextMap" / f"TextMap{next(candidates)}.json"
+        while not text_map_path.exists():
+            text_map_path: pathlib.Path = self.base / "TextMap" / f"TextMap{next(candidates)}.json"
+        text_map = text_map_path.read_bytes()
+        self.__text_map = pydantic.TypeAdapter(dict[int, str]).validate_json(text_map)
 
     def text(self, text: "Text") -> str:
         return self.__text_map.get(text.hash, "")
 
-    # 敌人相关数据
     @excel_output(view.EliteGroup)
-    def elite_group(self): ...  # 精英组别
+    def elite_group(self):
+        """精英组别"""
+
     @excel_output_main_sub(view.HardLevelGroup)
-    def hard_level_group(self): ...  # 敌方属性成长详情
+    def hard_level_group(self):
+        """敌方属性成长详情"""
+
     @excel_output(view.MonsterConfig)
-    def monster_config(self): ...  # 敌人详情
+    def monster_config(self):
+        """敌人详情"""
+
+    @excel_output(view.MonsterSkillConfig)
+    def monster_skill_config(self):
+        """敌人技能"""
+
+    @excel_output(view.MonsterTemplateConfig)
+    def monster_template_config(self):
+        """敌人模板详情"""
+
+    @excel_output(view.MonsterTemplateConfig)
+    def monster_template_unique_config(self):
+        """敌人模板（不清楚和不带 unique 的什么区别，不过有时候两个都要查）"""

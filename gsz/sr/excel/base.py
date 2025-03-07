@@ -26,10 +26,11 @@ class Element(enum.Enum):
     """风"""
 
 
+ABBR_WORDS = {"ai", "hp", "id", "npc", "sp"}
+
+
 def alias_generator(field_name: str) -> str:
-    return "".join(
-        word.upper() if word in ("ai", "hp", "id", "npc") else word.capitalize() for word in field_name.split("_")
-    )
+    return "".join(word.upper() if word in ABBR_WORDS else word.capitalize() for word in field_name.split("_"))
 
 
 class Model(pydantic.BaseModel):

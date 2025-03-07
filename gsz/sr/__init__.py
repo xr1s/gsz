@@ -1,3 +1,3 @@
-from .data import GameData
+from .data import GameData, Language
 
-__all__ = ("GameData",)
+__all__ = ("GameData", "Language")
