@@ -71,7 +71,7 @@ class Formatter:
         self.__keys: list[io.StringIO] = []
         self.__vals: list[io.StringIO] = []
         self.__close_tag: io.StringIO = io.StringIO()
-        self.__parameter: list[float | str] = []
+        self.__parameter: tuple[float | str, ...] = ()
 
     def __push(self, s: str):
         match self.__syntax:
@@ -257,7 +257,7 @@ class Formatter:
             self.__specifier = ""
             self.__param_num = 0
             return
-        if self.__param_num == 0 or self.__parameter == [] or self.__param_num > len(self.__parameter):
+        if self.__param_num == 0 or self.__parameter == () or self.__param_num > len(self.__parameter):
             self.__push("#")
             self.__push(str(self.__param_num))
             if state in (State.Specifier, State.ParamEnd) or self.__specifier != "":
@@ -424,7 +424,7 @@ class Formatter:
                     _ = self.__states.pop()
 
     def format(self, format: str, *args: float | str) -> str:
-        self.__parameter = list(args)
+        self.__parameter = args
         for char in format:
             self.feed(char)
         self.flush()
