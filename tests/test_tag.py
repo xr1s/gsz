@@ -24,6 +24,10 @@ def test_nested_tags():
     assert formatter.format("<b>粗体<i>加粗斜体</i>粗体</b>") == "'''粗体''加粗斜体''粗体'''"
     assert formatter.format("<b>粗体<i>加粗斜体</i>粗体</b>#") == "'''粗体''加粗斜体''粗体'''#"
     assert formatter.format("<color=#abcdef>彩色<i>斜体</i></color>") == "{{颜色|abcdef|彩色''斜体''}}"
+    assert (  # 测试连续 tag 第二个 tag 是否缺第一个字符
+        formatter.format("天依<b><color=#66ccff>蓝</color></b>\\n阿绫<b><color=#ee0000>红</color></b>")
+        == """天依'''{{颜色|66ccff|蓝}}'''<br />阿绫'''{{颜色|ee0000|红}}'''"""
+    )
 
 
 def test_invalid_tag():

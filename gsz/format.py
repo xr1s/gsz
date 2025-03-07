@@ -208,7 +208,9 @@ class Formatter:
             return
         self.__states[-1] = State.TagText
         self.__states.append(State.TagLKey)
-        self.__keys.append(io.StringIO(char))
+        key = io.StringIO(char)
+        _ = key.seek(1)
+        self.__keys.append(key)
         self.__vals.append(io.StringIO())
         self.__texts.append(io.StringIO())
 
