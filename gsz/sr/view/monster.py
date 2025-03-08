@@ -34,13 +34,13 @@ def wiki_name(name: str) -> str:
 class EliteGroup(View[excel.EliteGroup]):
     """精英组别，属性加成"""
 
-    ExcelOutput: type = excel.EliteGroup
+    type ExcelOutput = excel.EliteGroup
 
 
 class HardLevelGroup(View[excel.HardLevelGroup]):
     """敌方属性成长详情"""
 
-    ExcelOutput: type = excel.HardLevelGroup
+    type ExcelOutput = excel.HardLevelGroup
 
     @property
     def hp_ratio(self) -> float:
@@ -63,7 +63,7 @@ class MonsterConfig(View[excel.MonsterConfig]):
     比如在深渊里的会适当调高降低属性等
     """
 
-    ExcelOutput: type = excel.MonsterConfig
+    type ExcelOutput = excel.MonsterConfig
 
     @functools.cached_property
     def name(self) -> str:
@@ -140,7 +140,7 @@ class MonsterConfig(View[excel.MonsterConfig]):
 
 
 class MonsterSkillConfig(View[excel.MonsterSkillConfig]):
-    ExcelOutput: type = excel.MonsterSkillConfig
+    type ExcelOutput = excel.MonsterSkillConfig
 
     @staticmethod
     @functools.cache
@@ -172,7 +172,7 @@ class MonsterSkillConfig(View[excel.MonsterSkillConfig]):
 
 
 class MonsterTemplateConfig(View[excel.MonsterTemplateConfig]):
-    ExcelOutput: type = excel.MonsterTemplateConfig
+    type ExcelOutput = excel.MonsterTemplateConfig
 
     @functools.cached_property
     def name(self) -> str:
