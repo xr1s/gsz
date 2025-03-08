@@ -102,7 +102,7 @@ class MonsterConfig(View[excel.MonsterConfig]):
             return 0.0
         if level is None:
             return self.template.hp_base * self._excel.hp_modify_ratio.value
-        hard_level_group = self._game.hard_level_group(self._excel.hard_level_group, level - 1)
+        hard_level_group = self._game.hard_level_group(self._excel.hard_level_group, level)
         if hard_level_group is None:
             return 0.0
         return self.template.hp_base * self._excel.hp_modify_ratio.value * hard_level_group.hp_ratio
@@ -121,7 +121,7 @@ class MonsterConfig(View[excel.MonsterConfig]):
         )
         if level is None:
             return monster_speed_base
-        hard_level_group = self._game.hard_level_group(self._excel.hard_level_group, level - 1)
+        hard_level_group = self._game.hard_level_group(self._excel.hard_level_group, level)
         if hard_level_group is None:
             return 0.0
         return monster_speed_base * hard_level_group.speed_ratio
@@ -180,7 +180,12 @@ class MonsterConfig(View[excel.MonsterConfig]):
         return str(element)
 
     def skill_at_phase(self, phase: int) -> collections.abc.Iterable[MonsterSkillConfig]:
+        """在 phase 阶段的技能列表，phase 从 1 开始计数"""
         return (skill for skill in self.skills if phase in skill.phase_list)
+
+    def threat_count_at_phase(self, phase: int) -> int:
+        """在 phase 阶段的大招数，phase 从 1 开始计数"""
+        return sum(skill.is_threat for skill in self.skill_at_phase(phase))
 
     def wiki(self) -> str:
         damage_type_resistance = {
@@ -193,26 +198,29 @@ class MonsterConfig(View[excel.MonsterConfig]):
             if resistance.value.value > 0.2
         ]
         debuff_resistance = [debuff.key for debuff in self._excel.debuff_resist]
+        tags: list[str] = []
+        if len(self.summons) != 0:
+            tags.append("召唤")
+        if self.name.endswith("（错误）"):
+            tags.append("错误")
+        if self.name.endswith("（完整）"):
+            tags.append("完整")
         return self._game.template_environment.get_template("enemy.jinja2").render(
             monster=self,
             damage_type_resistance=damage_type_resistance,
             element_resistance=element_resistance,
             debuff_resistance=debuff_resistance,
+            tags=tags,
         )
 
 
 class MonsterSkillConfig(View[excel.MonsterSkillConfig]):
     type ExcelOutput = excel.MonsterSkillConfig
 
-    @staticmethod  # 避免重复构造
-    @functools.cache
-    def __formatter():
-        return Formatter()
-
     @functools.cached_property
     def name(self) -> str:
         # 此处格式化是为了去除 <unbreak>
-        return self.__formatter().format(self._game.text(self._excel.skill_name))
+        return self._game.text(self._excel.skill_name).replace("<unbreak>", "").replace("</unbreak>", "")
 
     @property
     def damage_type(self) -> Element | None:

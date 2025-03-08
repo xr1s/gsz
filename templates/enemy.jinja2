@@ -4,6 +4,9 @@
 |系列=<!-- 系列，同系列会被放到顶部同义词中，建议将名称或头像相同设置为相同系列 -->
 |分类=${ monster.template.camp.name | default("", true) }<!-- 选填：反物质军团、裂界造物、雅利洛-Ⅵ、仙舟「罗浮」、虫群、星际和平公司、惊梦剧团、忆域迷因、泰坦眷属、晨昏奇兽、银河、模拟宇宙、星核猎手 -->
 |类型=${ monster.template.wiki_rank | default("", true) }<!-- 选填：普通、强敌、剧情BOSS、周本BOSS、模拟宇宙精英、模拟宇宙首领、末日幻影周本、末日幻影首领、召唤物 -->
+|TAG=${ tags | join("、") }
+|速度=<% set speed = monster.speed(1) | round | int %><% if speed != 0 %>${speed}~${ monster.speed(95) | int }<% endif %>
+|韧性=<% set stance = monster.stance() %><% if stance != 0 %>${stance}<% endif %>
 |历战余响=<!-- 周本 Boss 需要填写，根据周本掉落的光锥和遗器分类 -->
 |介绍=${ monster.introduction | gszformat }
 |相关任务=<!-- 相关任务 -->
@@ -19,25 +22,18 @@
 |${damage_type}抗=${damage_type_resistance[damage_type]}
 <% endfor -%>
 |抗性备注=
-|属性抗性=${element_resistance | join("、")}
-|状态抵抗=${debuff_resistance | join("、")}
+|属性抗性=${ element_resistance | join("、") }
+|状态抵抗=${ debuff_resistance | join("、") }
 |阶段数=${monster.phase}
 <% for phase in range(1, monster.phase + 1) -%>
+|<% if phase != 1 %>阶段${phase}<% endif %>大招=${monster.threat_count_at_phase(phase)}
 <% for skill in monster.skill_at_phase(phase) -%>
-<% if phase == 1 -%>
-|技能${loop.index}名称=${skill.name}
-|技能${loop.index}TAG=${skill.tag}
-|技能${loop.index}能量=${ skill.sp_hit_base | default(0, true) }<!-- 受击回复能量 -->
-|技能${loop.index}GIF=<!-- 无技能动画填0 -->
-|技能${loop.index}描述=${ skill.desc | gszformat(*skill.param_list) }
-<% else -%>
-|阶段${phase}技能${loop.index}名称=${skill.name}
-|阶段${phase}技能${loop.index}TAG=${skill.tag}
-|阶段${phase}技能${loop.index}能量=${ skill.sp_hit_base | default("", true) }
-|阶段${phase}技能${loop.index}GIF=<!-- 无技能动画填0 -->
-|阶段${phase}技能${loop.index}描述=${ skill.desc | gszformat(*skill.param_list) }
-<% endif -%>
+|<% if phase != 1 %>阶段${phase}<% endif %>技能${loop.index}名称=${skill.name}
+|<% if phase != 1 %>阶段${phase}<% endif %>技能${loop.index}TAG=${skill.tag}
+|<% if phase != 1 %>阶段${phase}<% endif %>技能${loop.index}能量=${ skill.sp_hit_base | default(0, true) }<!-- 受击回复能量 -->
+|<% if phase != 1 %>阶段${phase}<% endif %>技能${loop.index}GIF=<!-- 无技能动画填0 -->
+|<% if phase != 1 %>阶段${phase}<% endif %>技能${loop.index}描述=${ skill.desc | gszformat(*skill.param_list) }
 <% endfor -%>
 <% endfor -%>
-}}
+}}{{WIKI底部导航|角色图鉴=展开}}
 
