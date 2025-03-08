@@ -25,6 +25,24 @@ class Element(enum.Enum):
     Wind = "Wind"
     """风"""
 
+    @typing.override
+    def __str__(self) -> str:  # noqa: PLR0911
+        match self:
+            case self.Fire:
+                return "火"
+            case self.Ice:
+                return "冰"
+            case self.Imaginary:
+                return "虚数"
+            case self.Physical:
+                return "物理"
+            case self.Quantum:
+                return "量子"
+            case self.Thunder:
+                return "雷"
+            case self.Wind:
+                return "风"
+
 
 ABBR_WORDS = {"ai", "hp", "id", "npc", "sp"}
 

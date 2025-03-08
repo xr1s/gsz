@@ -8,7 +8,8 @@ from ...format import Formatter
 from .base import View
 
 if TYPE_CHECKING:
-    from ..excel import Element
+    import collections.abc
+    from ..excel import Element, Rank
 
 
 def wiki_name(name: str) -> str:
@@ -22,11 +23,11 @@ def wiki_name(name: str) -> str:
         suffix = name[end + 1 :]  # 可能是「（完整）」、「（错误）」等后缀
         name = f"自动机兵•{name[5:end]}{suffix}"
     # 仅出现在「入魔机巧」系列魔物中
-    if name.find("\xa0") != -1:
+    if "\xa0" in name:
         name = name.replace("\xa0", "")
     # WIKI 中大量使用「、」作为分隔符，因此当敌人名称中出现「、」时需要额外转义
     # 仅出现在「昔在、今在、永在的剧目」系列敌人中
-    if name.find("、") != -1:
+    if "、" in name:
         name = name.replace("、", "&#x3001;")
     return name
 
@@ -49,6 +50,16 @@ class HardLevelGroup(View[excel.HardLevelGroup]):
     @property
     def speed_ratio(self) -> float:
         return self._excel.speed_ratio.value
+
+
+class MonsterCamp(View[excel.MonsterCamp]):
+    """敌人阵营"""
+
+    type ExcelOutput = excel.MonsterCamp
+
+    @functools.cached_property
+    def name(self) -> str:
+        return self._game.text(self._excel.name)
 
 
 NPC_COLLIDE_NAMES = {"可可利亚", "杰帕德", "布洛妮娅", "史瓦罗", "银枝"}
@@ -125,6 +136,10 @@ class MonsterConfig(View[excel.MonsterConfig]):
         ) // 3
 
     @functools.cached_property
+    def introduction(self) -> str:
+        return self._game.text(self._excel.monster_introduction) if self._excel.monster_introduction is not None else ""
+
+    @functools.cached_property
     def skills(self) -> list[MonsterSkillConfig]:
         return list(self._game.monster_skill_config(self._excel.skill_list))
 
@@ -138,11 +153,58 @@ class MonsterConfig(View[excel.MonsterConfig]):
         """敌人总共有多少阶段，只能从技能里找最大的那个 phase"""
         return max(itertools.chain.from_iterable(skill.phase_list for skill in self.skills), default=1)
 
+    @functools.cached_property
+    def summons(self) -> list[MonsterConfig]:
+        """召唤物，不过这大概不完整，目前没找到能完整列出召唤物的手段"""
+        summons: set[str] = set()
+        return [
+            summons.add(summon.name) or summon
+            for summon in (self._game.monster_config(custom_value.val) for custom_value in self._excel.custom_values)
+            if summon is not None and summon.name not in summons
+        ]
+
+    @property
+    def weakness(self) -> list[Element]:
+        return self._excel.stance_weak_list
+
+    @property
+    def rank(self) -> Rank | None:
+        if self.template is None:
+            return None
+        return self.template.rank
+
+    @staticmethod
+    def __element_resistance_name(element: Element) -> str:
+        if element == element.Physical:
+            return "物"
+        return str(element)
+
+    def skill_at_phase(self, phase: int) -> collections.abc.Iterable[MonsterSkillConfig]:
+        return (skill for skill in self.skills if phase in skill.phase_list)
+
+    def wiki(self) -> str:
+        damage_type_resistance = {
+            MonsterConfig.__element_resistance_name(resistance.damage_type): f"{round(resistance.value.value * 100)}%"
+            for resistance in self._excel.damage_type_resistance
+        }
+        element_resistance = [
+            f"{resistance.damage_type}属性抗性"
+            for resistance in self._excel.damage_type_resistance
+            if resistance.value.value > 0.2
+        ]
+        debuff_resistance = [debuff.key for debuff in self._excel.debuff_resist]
+        return self._game.template_environment.get_template("enemy.jinja2").render(
+            monster=self,
+            damage_type_resistance=damage_type_resistance,
+            element_resistance=element_resistance,
+            debuff_resistance=debuff_resistance,
+        )
+
 
 class MonsterSkillConfig(View[excel.MonsterSkillConfig]):
     type ExcelOutput = excel.MonsterSkillConfig
 
-    @staticmethod
+    @staticmethod  # 避免重复构造
     @functools.cache
     def __formatter():
         return Formatter()
@@ -162,9 +224,23 @@ class MonsterSkillConfig(View[excel.MonsterSkillConfig]):
         """敌人的哪几个阶段会有本技能"""
         return self._excel.phase_list
 
+    @property
+    def is_threat(self) -> bool:
+        return self._excel.is_threat
+
+    @property
+    def sp_hit_base(self) -> int | None:
+        if self._excel.sp_hit_base is None:
+            return None
+        return self._excel.sp_hit_base.value
+
     @functools.cached_property
-    def param_list(self) -> list[float]:
-        return [param.value for param in self._excel.param_list]
+    def tag(self) -> str:
+        return self._game.text(self._excel.skill_tag)
+
+    @functools.cached_property
+    def param_list(self) -> tuple[float, ...]:
+        return tuple(param.value for param in self._excel.param_list)
 
     @functools.cached_property
     def desc(self) -> str:
@@ -193,3 +269,68 @@ class MonsterTemplateConfig(View[excel.MonsterTemplateConfig]):
     @property
     def stance_base(self) -> int:
         return 0 if self._excel.stance_base is None else self._excel.stance_base.value
+
+    @property
+    def group_id(self) -> int | None:
+        return self._excel.template_group_id
+
+    @property
+    def group(self) -> list[MonsterTemplateConfig]:
+        if self.group_id is None:
+            return [self]
+        return list(self._game.monster_template_config(self._game.monster_template_group[self.group_id]))
+
+    @property
+    def rank(self) -> Rank:
+        return self._excel.rank
+
+    @functools.cached_property
+    def wiki_rank(self) -> str:  # noqa: PLR0911
+        """无法判断是否为末日幻影首领，需要填写的时候注意"""
+        match self._excel.rank:
+            case self._excel.rank.BigBoss:
+                return "周本Boss"
+            case self._excel.rank.Elite:
+                if self.name.endswith("（错误）"):
+                    return "模拟宇宙精英"
+                return "强敌"
+            case self._excel.rank.LittleBoss:
+                if self.name.endswith("（完整）"):
+                    return "模拟宇宙首领"
+                return "剧情Boss"
+            case self._excel.rank.Minion | self._excel.rank.MinionLv2:
+                if self._excel.template_group_id is None:
+                    return "召唤物"
+                return "普通"
+
+    @functools.cached_property
+    def camp(self) -> MonsterCamp | None:
+        if self._excel.monster_camp_id is None:
+            return None
+        return self._game.monster_camp(self._excel.monster_camp_id)
+
+    # fmt: off
+    MISSING_NPC_MONSTER: set[int] = {
+        1005010, 1012010, 3024012, 8022020,
+        2013011, # 1.2 缺漏数据
+        4012050, # 3.0 缺漏数据
+    }
+    # fmt: on
+
+    @functools.cached_property
+    def npc_monster(self) -> list[NPCMonsterData]:
+        return list(
+            self._game.npc_monster_data(
+                filter(lambda id: id not in self.MISSING_NPC_MONSTER, self._excel.npc_monster_list)
+            )
+        )
+
+
+class NPCMonsterData(View[excel.NPCMonsterData]):
+    type ExcelOutput = excel.NPCMonsterData
+
+    @functools.cached_property
+    def name(self) -> str:
+        if self._excel.npc_name is None:
+            return ""
+        return self._game.text(self._excel.npc_name)

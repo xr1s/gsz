@@ -1,0 +1,43 @@
+{{敌人
+|名称=${monster.wiki_name}
+|实装版本=<!-- 实装版本 -->
+|系列=<!-- 系列，同系列会被放到顶部同义词中，建议将名称或头像相同设置为相同系列 -->
+|分类=${ monster.template.camp.name | default("", true) }<!-- 选填：反物质军团、裂界造物、雅利洛-Ⅵ、仙舟「罗浮」、虫群、星际和平公司、惊梦剧团、忆域迷因、泰坦眷属、晨昏奇兽、银河、模拟宇宙、星核猎手 -->
+|类型=${ monster.template.wiki_rank | default("", true) }<!-- 选填：普通、强敌、剧情BOSS、周本BOSS、模拟宇宙精英、模拟宇宙首领、末日幻影周本、末日幻影首领、召唤物 -->
+|历战余响=<!-- 周本 Boss 需要填写，根据周本掉落的光锥和遗器分类 -->
+|介绍=${ monster.introduction | gszformat }
+|相关任务=<!-- 相关任务 -->
+|相关角色=<!-- 相关角色 -->
+|别称=<!-- 别称 -->
+|弱点=${ monster.weakness | join("、") }
+|攻击属性=${ monster.damage_types | join("、") }
+|出现地点=<!-- 出现地点 -->
+|掉落系列素材=<!-- 选填：原核、虚卒、铁卫、古代、永寿、工造、梦境、忆域、眷属、黑潮 -->
+|掉落素材=<!-- 选填：信用点、具体合成素材、具体周本素材等 -->
+|召唤物=${ monster.summons | map(attribute="wiki_name") | join("、") }
+<% for damage_type in ["物", "火", "冰", "雷", "风", "量子", "虚数"] -%>
+|${damage_type}抗=${damage_type_resistance[damage_type]}
+<% endfor -%>
+|抗性备注=
+|属性抗性=${element_resistance | join("、")}
+|状态抵抗=${debuff_resistance | join("、")}
+|阶段数=${monster.phase}
+<% for phase in range(1, monster.phase + 1) -%>
+<% for skill in monster.skill_at_phase(phase) -%>
+<% if phase == 1 -%>
+|技能${loop.index}名称=${skill.name}
+|技能${loop.index}TAG=${skill.tag}
+|技能${loop.index}能量=${ skill.sp_hit_base | default(0, true) }<!-- 受击回复能量 -->
+|技能${loop.index}GIF=<!-- 无技能动画填0 -->
+|技能${loop.index}描述=${ skill.desc | gszformat(*skill.param_list) }
+<% else -%>
+|阶段${phase}技能${loop.index}名称=${skill.name}
+|阶段${phase}技能${loop.index}TAG=${skill.tag}
+|阶段${phase}技能${loop.index}能量=${ skill.sp_hit_base | default("", true) }
+|阶段${phase}技能${loop.index}GIF=<!-- 无技能动画填0 -->
+|阶段${phase}技能${loop.index}描述=${ skill.desc | gszformat(*skill.param_list) }
+<% endif -%>
+<% endfor -%>
+<% endfor -%>
+}}
+

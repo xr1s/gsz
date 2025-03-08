@@ -1,8 +1,13 @@
+from __future__ import annotations
 import enum
 import html
 import io
 import os
+import typing
 import unicodedata
+
+if typing.TYPE_CHECKING:
+    from . import sr
 
 
 class Syntax(enum.Enum):
@@ -64,7 +69,8 @@ class State(enum.Enum):
 
 
 class Formatter:
-    def __init__(self, *, syntax: Syntax | None = None):
+    def __init__(self, *, syntax: Syntax | None = None, game: sr.GameData | None = None):
+        self.__game = game
         self.__syntax: Syntax = syntax if syntax is not None else Syntax.Plain
         self.__states: list[State] = []
         self.__texts: list[io.StringIO] = [io.StringIO()]
@@ -346,10 +352,17 @@ class Formatter:
                 _ = self.__texts[-1].write(text)
                 _ = self.__texts[-1].write("</size>")
             case "u":  # 下划线
-                # TODO: 效果说明
-                _ = self.__texts[-1].write("<u>")
-                _ = self.__texts[-1].write(text)
-                _ = self.__texts[-1].write("</u>")
+                if (
+                    self.__game is not None
+                    and text.removeprefix("【").removesuffix("】") in self.__game.extra_effect_config_names
+                ):
+                    _ = self.__texts[-1].write("{{效果说明|")
+                    _ = self.__texts[-1].write(text)
+                    _ = self.__texts[-1].write("}}")
+                else:
+                    _ = self.__texts[-1].write("<u>")
+                    _ = self.__texts[-1].write(text)
+                    _ = self.__texts[-1].write("</u>")
             case "unbreak":
                 _ = self.__texts[-1].write(text)
             case _:  # unreacheable

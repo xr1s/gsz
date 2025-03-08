@@ -1,13 +1,16 @@
 import collections
 import collections.abc
 import enum
+import functools
 import itertools
 import pathlib
 import typing
 
+import jinja2
 import pydantic
 
 from . import view
+from ..format import Formatter, Syntax
 
 if typing.TYPE_CHECKING:
     from .excel import Text
@@ -53,6 +56,13 @@ class View(typing.Generic[E_co], typing.Protocol):
 V = typing.TypeVar("V", bound=View[ID])
 
 
+ABBR_WORDS = {"npc"}
+
+
+def file_name_generator(method_name: str) -> str:
+    return "".join(word.upper() if word in ABBR_WORDS else word.capitalize() for word in method_name.split("_"))
+
+
 class excel_output(typing.Generic[V, E_co]):
     """
     装饰器，接受参数为 View 类型
@@ -94,7 +104,7 @@ class excel_output(typing.Generic[V, E_co]):
 
     def __call__(self, method: typing.Callable[..., None]) -> GameDataFunction[V]:
         if len(self.__file_names) == 0:
-            self.__file_names = (method.__name__.title().replace("_", ""),)
+            self.__file_names = (file_name_generator(method.__name__),)
 
         @typing.overload
         def fn(game: "GameData") -> collections.abc.Iterable[V]: ...
@@ -223,7 +233,7 @@ class excel_output_main_sub(typing.Generic[MSV, MSE_co]):
 
     def __call__(self, method: typing.Callable[..., None]) -> GameDataMainSubFunction[MSV]:
         if len(self.__file_names) == 0:
-            self.__file_names = (method.__name__.title().replace("_", ""),)
+            self.__file_names = (file_name_generator(method.__name__),)
 
         @typing.overload
         def fn(game: "GameData") -> collections.abc.Iterable[MSV]: ...
@@ -327,6 +337,31 @@ class GameData:
     def text(self, text: "Text") -> str:
         return self.__text_map.get(text.hash, "")
 
+    @functools.cached_property
+    def template_environment(self):
+        formatter = Formatter(syntax=Syntax.MediaWiki, game=self)
+        env = jinja2.Environment(
+            block_start_string="<%",
+            block_end_string="%>",
+            variable_start_string="${",
+            variable_end_string="}",
+            comment_start_string="%",
+            loader=jinja2.FileSystemLoader("./templates"),
+        )
+        env.filters.update(gszformat=formatter.format)
+        return env
+
+    ######## misc ########
+    @excel_output(view.ExtraEffectConfig)
+    def extra_effect_config(self):
+        """效果说明"""
+
+    @functools.cached_property
+    def extra_effect_config_names(self) -> set[str]:
+        return {effect.name for effect in self.extra_effect_config()}
+
+    ######## monster ########
+
     @excel_output(view.EliteGroup)
     def elite_group(self):
         """精英组别"""
@@ -334,6 +369,10 @@ class GameData:
     @excel_output_main_sub(view.HardLevelGroup)
     def hard_level_group(self):
         """敌人属性成长详情"""
+
+    @excel_output(view.MonsterCamp)
+    def monster_camp(self):
+        """敌人阵营"""
 
     @excel_output(view.MonsterConfig)
     def monster_config(self):
@@ -350,3 +389,20 @@ class GameData:
     @excel_output(view.MonsterTemplateConfig)
     def monster_template_unique_config(self):
         """敌人模板（不清楚和不带 unique 的什么区别，不过有时候两个都要查）"""
+
+    @functools.cached_property
+    def monster_template_group(self):
+        template_groups: dict[int, list[int]] = {}
+        for template in self.monster_template_config():
+            group_id = template.group_id
+            if group_id is None:
+                continue
+            if template_groups.get(group_id) is None:
+                template_groups[group_id] = [group_id]
+            else:
+                template_groups[group_id].append(group_id)
+        return template_groups
+
+    @excel_output(view.NPCMonsterData)
+    def npc_monster_data(self):
+        """敌人详情"""

@@ -3,7 +3,6 @@ import pathlib
 import typing
 
 import pydantic
-import pydantic
 
 from .base import Element, ID_ALIASES, KEY_ALIASES, Model, Text, VAL_ALIASES, Value
 
@@ -43,6 +42,19 @@ class HardLevelGroup(Model):
         return self.level
 
 
+class MonsterCamp(Model):
+    """敌人阵营"""
+
+    id_: int
+    sort_id: int
+    name: Text
+    icon_path: str
+    camp_type: typing.Literal["Monster"] = "Monster"  # 1.5 版本之后
+
+    def id(self) -> int:
+        return self.id_
+
+
 class CustomValue(Model):
     key: typing.Annotated[str, pydantic.Field(validation_alias=KEY_ALIASES)]
     val: typing.Annotated[int, pydantic.Field(validation_alias=VAL_ALIASES)] = 0
@@ -63,6 +75,24 @@ class Debuff(enum.Enum):
     """风化"""
     Entangle = "STAT_Entangle"
     """纠缠"""
+
+    @typing.override
+    def __str__(self) -> str:  # noqa: PLR0911
+        match self:
+            case self.Confine:
+                return "禁锢"
+            case self.Control:
+                return "控制"
+            case self.Frozen:
+                return "冻结"
+            case self.Burn:
+                return "灼烧"
+            case self.Electric:
+                return "触电"
+            case self.Poison:
+                return "风化"
+            case self.Entangle:
+                return "纠缠"
 
 
 class DebuffResist(Model):
@@ -158,6 +188,17 @@ class Rank(enum.Enum):
     MinionLv2 = "MinionLv2"
     """普通敌人，大多是这种，不清楚和 Minion 的区别"""
 
+    def wiki(self) -> str:
+        match self:
+            case self.BigBoss:
+                return "周本Boss"
+            case self.Elite:
+                return "强敌"
+            case self.LittleBoss:
+                return "剧情Boss"
+            case self.Minion | self.MinionLv2:
+                return "普通"
+
 
 class MonsterTemplateConfig(Model):
     """
@@ -203,3 +244,29 @@ class MonsterTemplateConfig(Model):
 
     def id(self) -> int:
         return self.monster_template_id
+
+
+class NPCMonsterData(Model):
+    """
+    站在大世界的敌人信息（`MonsterConfig` 等都是入战后的敌人信息）
+    """
+
+    id_: int
+    npc_name: Text | None = None
+    prefab_path: str | None = None  # 仅出现在 1.1 及之前
+    config_entity_path: pathlib.Path
+    npc_icon_path: str
+    npc_title: None = None
+    board_show_list: list[typing.Literal[2]]
+    json_path: pathlib.Path
+    default_ai_path: pathlib.Path
+    character_type: typing.Literal["NPCMonster"]
+    sub_type: typing.Literal["Monster"]
+    mini_map_icon_type: typing.Literal[5] | None = None
+    rank: Rank
+    is_maze_link: bool = False
+    prototype_id: int
+    mapping_info_id: int | None = None
+
+    def id(self) -> int:
+        return self.id_
