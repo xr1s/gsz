@@ -15,8 +15,9 @@ class SRGameData(typing.Protocol):
 
 class Syntax(enum.Enum):
     Plain = 1
-    MediaWiki = 2
-    Terminal = 3
+    Terminal = 2
+    MediaWiki = 3
+    MediaWikiPretty = 4
 
 
 class State(enum.Enum):
@@ -71,6 +72,11 @@ class State(enum.Enum):
     """VarKey 记录比如 {F#女性开拓者分支} {RUBY_B#注音内容} 中的 女性开拓者分支 注音内容"""
 
 
+class InlineBlock(enum.Enum):
+    Inline = False
+    Block = True
+
+
 class Formatter:
     def __init__(self, *, syntax: Syntax | None = None, game: SRGameData | None = None):
         self.__game = game
@@ -83,12 +89,13 @@ class Formatter:
         self.__vals: list[io.StringIO] = []
         self.__close_tag: io.StringIO = io.StringIO()
         self.__parameter: tuple[float | str, ...] = ()
+        self.__is_inline_block: InlineBlock = InlineBlock.Inline
 
     def __push(self, s: str):
         match self.__syntax:
             case Syntax.Plain | Syntax.Terminal:
                 _ = self.__texts[-1].write(s)
-            case Syntax.MediaWiki:
+            case Syntax.MediaWiki | Syntax.MediaWikiPretty:
                 for char in s:
                     if char in (" ", "\xa0"):
                         _ = self.__texts[-1].write("&nbsp;")
@@ -97,25 +104,32 @@ class Formatter:
                     else:
                         _ = self.__texts[-1].write(html.escape(char))
 
+    def __display_block_afterward(self):
+        if self.__is_inline_block == InlineBlock.Block and self.__syntax == Syntax.MediaWikiPretty:
+            _ = self.__texts[-1].write("\n")
+        self.__is_inline_block = InlineBlock.Inline
+
     def __feed_text(self, char: str):
         match char:
             case "#":
+                self.__display_block_afterward()
                 self.__states.append(State.HashSign)
             case "<":
+                self.__display_block_afterward()
                 self.__states.append(State.TagLKey)
                 self.__keys.append(io.StringIO())
                 self.__vals.append(io.StringIO())
                 self.__texts.append(io.StringIO())
-            case "{":
-                self.__states.append(State.VarKey)
-                self.__keys.append(io.StringIO())
-                self.__vals.append(io.StringIO())
-                self.__texts.append(io.StringIO())
+            case "{":  # TODO:
+                self.__display_block_afterward()
+                self.__push("{")
             case "\\":
                 self.__states.append(State.Escaping)
             case "\xa0":
+                self.__display_block_afterward()
                 self.__push(" ")
             case _:
+                self.__display_block_afterward()
                 self.__push(char)
 
     def __feed_hash_sign(self, char: str) -> None:
@@ -155,7 +169,12 @@ class Formatter:
     def __feed_escaping(self, char: str) -> None:
         _ = self.__states.pop()
         if char == "n":
+            if self.__is_inline_block == InlineBlock.Block:
+                return  # 前一个是 block 标签，需要手动无视一次回车
             self.__push("\n")
+            if self.__syntax == Syntax.MediaWikiPretty:
+                _ = self.__texts[-1].write("\n")
+            self.__is_inline_block = InlineBlock.Inline
             return
         self.__push("\\")
         self.__push(char)
@@ -196,7 +215,6 @@ class Formatter:
 
     def __feed_tag_l_val(self, char: str) -> None:
         if char == ">":
-            # TODO: 验证 Tag 合法性，不合法转回 Text
             self.__states[-1] = State.TagText
             return
         _ = self.__vals[-1].write(char)
@@ -211,6 +229,7 @@ class Formatter:
         if char == "/":
             self.__states[-1] = State.TagSlash
             return
+        self.__display_block_afterward()
         if char == ">":
             self.__push("<>")
             self.__states[-1] = State.TagText
@@ -321,10 +340,18 @@ class Formatter:
                 _ = self.__texts[-1].write('">')
                 _ = self.__texts[-1].write(text)
                 _ = self.__texts[-1].write("</p>")
+                self.__is_inline_block = InlineBlock.Block
             case "b":  # 粗体
+                if "<br />" in text:
+                    _ = self.__texts[-1].write("<b>")
+                    _ = self.__texts[-1].write(text)
+                    _ = self.__texts[-1].write("</b>")
+                    self.__display_block_afterward()
+                    return
                 _ = self.__texts[-1].write("'''")
                 _ = self.__texts[-1].write(text)
                 _ = self.__texts[-1].write("'''")
+                self.__display_block_afterward()
             case "color":
                 _ = self.__texts[-1].write("{{颜色|")
                 color = ""
@@ -337,14 +364,23 @@ class Formatter:
                 _ = self.__texts[-1].write("|")
                 _ = self.__texts[-1].write(text)
                 _ = self.__texts[-1].write("}}")
+                self.__display_block_afterward()
             case "i" | "I":  # 斜体
+                if "<br />" in text:
+                    _ = self.__texts[-1].write("<i>")
+                    _ = self.__texts[-1].write(text)
+                    _ = self.__texts[-1].write("</i>")
+                    self.__display_block_afterward()
+                    return
                 _ = self.__texts[-1].write("''")
                 _ = self.__texts[-1].write(text)
                 _ = self.__texts[-1].write("''")
+                self.__display_block_afterward()
             case "s":  # 删除线
                 _ = self.__texts[-1].write("<s>")
                 _ = self.__texts[-1].write(text)
                 _ = self.__texts[-1].write("</s>")
+                self.__display_block_afterward()
             case "size":  # 指定字号
                 val = val.removesuffix("px")
                 px = int(val) + (20 if val.startswith(("+", "-")) else 0)
@@ -354,6 +390,7 @@ class Formatter:
                 _ = self.__texts[-1].write('em">')
                 _ = self.__texts[-1].write(text)
                 _ = self.__texts[-1].write("</size>")
+                self.__display_block_afterward()
             case "u":  # 下划线
                 if (
                     isinstance(self.__game, SRGameData)
@@ -366,8 +403,10 @@ class Formatter:
                     _ = self.__texts[-1].write("<u>")
                     _ = self.__texts[-1].write(text)
                     _ = self.__texts[-1].write("</u>")
+                self.__display_block_afterward()
             case "unbreak":
                 _ = self.__texts[-1].write(text)
+                self.__display_block_afterward()
             case _:  # unreacheable
                 raise ValueError(f"invalid tag {tag}")
 
@@ -377,7 +416,19 @@ class Formatter:
         这个算法是不精确的，只是为了实现简单才这么写的
         文本宽度计算是老大难问题，和字符类型、终端配置、字体有关
         """
-        return sum(2 if unicodedata.east_asian_width(char) in ("A", "F", "N", "W") else 1 for char in text)
+        width = 0
+        ignore = False
+        for char in text:
+            if not ignore and char == "\033":
+                ignore = True
+            if not ignore:
+                if unicodedata.east_asian_width(char) in ("A", "F", "N", "W"):
+                    width += 2
+                else:
+                    width += 1
+            if ignore and char == "m":
+                ignore = False
+        return width
 
     def __flush_tag_terminal(self, tag: str, val: str, text: str):  # noqa: PLR0912, PLR0915
         """简陋的高亮实现，用来调试输出美观"""
@@ -385,47 +436,57 @@ class Formatter:
             return
         match tag:
             case "align":  # 左中右对齐
+                self.__is_inline_block = InlineBlock.Block
                 if val == '"left"':
                     _ = self.__texts[-1].write(text)
                     _ = self.__texts[-1].write("\n")
                     return
                 term = os.get_terminal_size()
-                width = Formatter.text_width(text)
-                if width > term.columns:
-                    _ = self.__texts[-1].write(text)
+                for line in text.splitlines():
+                    width = Formatter.text_width(line)
+                    if width > term.columns:
+                        _ = self.__texts[-1].write(line)
+                        _ = self.__texts[-1].write("\n")
+                        continue
+                    if val == '"center"':
+                        padding = (term.columns - width) // 2
+                        _ = self.__texts[-1].write(" " * padding)
+                        _ = self.__texts[-1].write(line)
+                    if val == '"right"':
+                        padding = term.columns - width
+                        _ = self.__texts[-1].write(" " * padding)
+                        _ = self.__texts[-1].write(line)
                     _ = self.__texts[-1].write("\n")
-                    return
-                if val == '"center"':
-                    padding = (term.columns - width) // 2
-                    _ = self.__texts[-1].write(" " * padding)
-                    _ = self.__texts[-1].write(text)
-                if val == '"right"':
-                    padding = term.columns - width
-                    _ = self.__texts[-1].write(" " * padding)
-                    _ = self.__texts[-1].write(text)
             case "b":  # 粗体
                 _ = self.__texts[-1].write(f"\033[1m{text}\033[22m")
+                self.__is_inline_block = InlineBlock.Inline
             case "color":
                 r = int(val[1:3], 16)
                 g = int(val[3:5], 16)
                 b = int(val[5:7], 16)
                 _ = self.__texts[-1].write(f"\033[38;2;{r};{g};{b}m{text}\033[39m")
+                self.__is_inline_block = InlineBlock.Inline
             case "i" | "I":  # 斜体
                 _ = self.__texts[-1].write(f"\033[3m{text}\033[23m")
+                self.__is_inline_block = InlineBlock.Inline
             case "s":  # 删除线
                 _ = self.__texts[-1].write(f"\033[9m{text}\033[29m")
+                self.__is_inline_block = InlineBlock.Inline
             case "size":  # 指定字号
                 _ = self.__texts[-1].write(text)
+                self.__is_inline_block = InlineBlock.Inline
             case "u":  # 下划线
                 _ = self.__texts[-1].write(f"\033[4m{text}\033[24m")
+                self.__is_inline_block = InlineBlock.Inline
             case "unbreak":
                 _ = self.__texts[-1].write(text)
+                self.__is_inline_block = InlineBlock.Inline
             case _:  # unreacheable
                 raise ValueError(f"invalid tag {tag}")
 
     @staticmethod
     def __is_known_tag(tag: str) -> bool:
-        return tag in ("align", "b", "color", "i", "I", "s", "size", "u", "unbreak")
+        return tag in {"align", "b", "color", "i", "I", "s", "size", "u", "unbreak"}
 
     def __flush_tag(self):
         state = self.__states.pop()
@@ -442,7 +503,7 @@ class Formatter:
         match self.__syntax:
             case Syntax.Plain:
                 self.__push(text)
-            case Syntax.MediaWiki:
+            case Syntax.MediaWiki | Syntax.MediaWikiPretty:
                 self.__flush_tag_media_wiki(tag, val, text)
             case Syntax.Terminal:
                 self.__flush_tag_terminal(tag, val, text)
@@ -477,8 +538,8 @@ class Formatter:
             case State.VarVal:
                 self.__feed_var_val(char)
 
-    def flush(self) -> None:
-        while self.__states != []:
+    def __flush(self) -> None:
+        while len(self.__states) != 0:
             match self.__states[-1]:
                 case State.HashSign | State.ParamNum | State.Specifier | State.ParamEnd:
                     self.__flush_format()
@@ -496,8 +557,9 @@ class Formatter:
         self.__parameter = args
         for char in format:
             self.feed(char)
-        self.flush()
-        value = self.__texts[0].getvalue()
+        self.__flush()
+        # strip 去除 block 状态带来的最后一个回车
+        value = self.__texts[0].getvalue().strip()
         _ = self.__texts[0].truncate(0)
         _ = self.__texts[0].seek(0)
         return value
