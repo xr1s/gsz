@@ -17,6 +17,7 @@ class EliteGroup(Model):
     speed_ratio: Value[float]
     stance_ratio: Value[float]
 
+    @property
     def id(self) -> int:
         return self.elite_group
 
@@ -35,9 +36,11 @@ class HardLevelGroup(Model):
     status_probability: Value[float] | None = None
     status_resistance: Value[float] | None = None
 
+    @property
     def main_id(self) -> int:
         return self.hard_level_group
 
+    @property
     def sub_id(self) -> int:
         return self.level
 
@@ -51,6 +54,7 @@ class MonsterCamp(Model):
     icon_path: str
     camp_type: typing.Literal["Monster"] = "Monster"  # 1.5 版本之后
 
+    @property
     def id(self) -> int:
         return self.id_
 
@@ -143,6 +147,7 @@ class MonsterConfig(Model):
     override_ai_skill_sequence: list[AISkillSequence]
     override_skill_params: list[None] | None = None
 
+    @property
     def id(self) -> int:
         return self.monster_id
 
@@ -172,6 +177,7 @@ class MonsterSkillConfig(Model):
     ai_icd: typing.Annotated[typing.Literal[1], pydantic.Field(alias="AI_ICD")]
     modifier_list: list[str] = []  # 2.0 无此字段
 
+    @property
     def id(self) -> int:
         return self.skill_id
 
@@ -242,6 +248,7 @@ class MonsterTemplateConfig(Model):
     ai_skill_sequence: list[AISkillSequence]
     npc_monster_list: list[int]
 
+    @property
     def id(self) -> int:
         return self.monster_template_id
 
@@ -268,5 +275,6 @@ class NPCMonsterData(Model):
     prototype_id: int
     mapping_info_id: int | None = None
 
+    @property
     def id(self) -> int:
         return self.id_

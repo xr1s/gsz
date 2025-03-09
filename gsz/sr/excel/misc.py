@@ -13,5 +13,6 @@ class ExtraEffectConfig(Model):
     extra_effect_icon_path: str
     extra_effect_type: typing.Literal[1, 2, 3]  # 目前只有 1, 2, 3，从对应的描述上看 1 3 都是开发用数据，不露出
 
+    @property
     def id(self) -> int:
         return self.extra_effect_id

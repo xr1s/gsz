@@ -41,6 +41,7 @@ class GameDataFunction[T](typing.Protocol):
 
 
 class ID(typing.Protocol):
+    @property
     def id(self) -> int: ...
 
 
@@ -133,7 +134,7 @@ class excel_output(typing.Generic[V, E_co]):
                 # TODO: 支持 2.3 之前数据格式载入
                 ExcelOutputList = pydantic.TypeAdapter(list[ExcelOutput])
                 json = ExcelOutputList.validate_json(file_path.read_bytes())
-                self.__excel_output = {config.id(): config for config in json}
+                self.__excel_output = {config.id: config for config in json}
             if id is None:
                 return (self.__type(game, excel) for excel in self.__excel_output.values())
             if isinstance(id, collections.abc.Iterable):
@@ -169,7 +170,9 @@ class GameDataMainSubFunction[T](typing.Protocol):
 
 
 class MainSubID(typing.Protocol):
+    @property
     def main_id(self) -> int: ...
+    @property
     def sub_id(self) -> int: ...
 
 
@@ -264,11 +267,10 @@ class excel_output_main_sub(typing.Generic[MSV, MSE_co]):
                 json = ExcelOutputList.validate_json(file_path.read_bytes())
                 self.__excel_output = {}
                 for excel in json:
-                    id = excel.main_id()
-                    if self.__excel_output.get(id, None) is None:
-                        self.__excel_output[id] = [excel]
+                    if excel.main_id in self.__excel_output:
+                        self.__excel_output[excel.main_id].append(excel)
                     else:
-                        self.__excel_output[id].append(excel)
+                        self.__excel_output[excel.main_id] = [excel]
             match main_id, sub_id:
                 case None, None:
                     excels = self.__excel_output.values()
@@ -282,7 +284,7 @@ class excel_output_main_sub(typing.Generic[MSV, MSE_co]):
                         (
                             self.__type(game, excel)
                             for excel in self.__excel_output.get(main_id, [])
-                            if excel.sub_id() == sub_id
+                            if excel.sub_id == sub_id
                         ),
                         None,
                     )
