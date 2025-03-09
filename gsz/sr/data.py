@@ -338,7 +338,7 @@ class GameData:
         return self.__text_map.get(text.hash, "")
 
     @functools.cached_property
-    def template_environment(self):
+    def _template_environment(self) -> jinja2.Environment:
         formatter = Formatter(syntax=Syntax.MediaWiki, game=self)
         env = jinja2.Environment(
             block_start_string="<%",
@@ -352,12 +352,13 @@ class GameData:
         return env
 
     ######## misc ########
+
     @excel_output(view.ExtraEffectConfig)
     def extra_effect_config(self):
         """效果说明"""
 
     @functools.cached_property
-    def extra_effect_config_names(self) -> set[str]:
+    def _extra_effect_config_names(self) -> set[str]:
         return {effect.name for effect in self.extra_effect_config()}
 
     ######## monster ########
@@ -391,7 +392,7 @@ class GameData:
         """敌人模板（不清楚和不带 unique 的什么区别，不过有时候两个都要查）"""
 
     @functools.cached_property
-    def monster_template_group(self):
+    def _monster_template_group(self) -> dict[int, list[int]]:
         template_groups: dict[int, list[int]] = {}
         for template in self.monster_template_config():
             group_id = template.group_id

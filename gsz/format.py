@@ -10,7 +10,7 @@ import unicodedata
 @typing.runtime_checkable
 class SRGameData(typing.Protocol):
     @functools.cached_property
-    def extra_effect_config_names(self) -> set[str]: ...
+    def _extra_effect_config_names(self) -> set[str]: ...
 
 
 class Syntax(enum.Enum):
@@ -394,7 +394,7 @@ class Formatter:
             case "u":  # 下划线
                 if (
                     isinstance(self.__game, SRGameData)
-                    and text.removeprefix("【").removesuffix("】") in self.__game.extra_effect_config_names
+                    and text.removeprefix("【").removesuffix("】") in self.__game._extra_effect_config_names  # pyright: ignore[reportPrivateUsage]
                 ):
                     _ = self.__texts[-1].write("{{效果说明|")
                     _ = self.__texts[-1].write(text)

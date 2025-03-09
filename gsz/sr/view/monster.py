@@ -205,7 +205,7 @@ class MonsterConfig(View[excel.MonsterConfig]):
             tags.append("错误")
         if self.name.endswith("（完整）"):
             tags.append("完整")
-        return self._game.template_environment.get_template("enemy.jinja2").render(
+        return self._game._template_environment.get_template("enemy.jinja2").render(  # pyright: ignore[reportPrivateUsage]
             monster=self,
             damage_type_resistance=damage_type_resistance,
             element_resistance=element_resistance,
@@ -286,7 +286,7 @@ class MonsterTemplateConfig(View[excel.MonsterTemplateConfig]):
     def group(self) -> list[MonsterTemplateConfig]:
         if self.group_id is None:
             return [self]
-        return list(self._game.monster_template_config(self._game.monster_template_group[self.group_id]))
+        return list(self._game.monster_template_config(self._game._monster_template_group[self.group_id]))  # pyright: ignore[reportPrivateUsage]
 
     @property
     def rank(self) -> Rank:
