@@ -20,6 +20,12 @@ class Syntax(enum.Enum):
     MediaWikiPretty = 4
 
 
+class GenderOrder(enum.Enum):
+    Preserve = 0
+    Male = 1
+    Female = 2
+
+
 class State(enum.Enum):
     """
     除了无格式的纯文本外，主要有三类
@@ -78,7 +84,13 @@ class InlineBlock(enum.Enum):
 
 
 class Formatter:
-    def __init__(self, *, syntax: Syntax | None = None, game: SRGameData | None = None):
+    def __init__(
+        self,
+        *,
+        syntax: Syntax | None = None,
+        game: SRGameData | None = None,
+        gender_order: GenderOrder = GenderOrder.Preserve,
+    ):
         self.__game = game
         self.__syntax: Syntax = syntax if syntax is not None else Syntax.Plain
         self.__states: list[State] = []
@@ -90,6 +102,11 @@ class Formatter:
         self.__close_tag: io.StringIO = io.StringIO()
         self.__parameter: tuple[float | str, ...] = ()
         self.__is_inline_block: InlineBlock = InlineBlock.Inline
+        # var 相关状态
+        self.__gender_order = gender_order
+        self.__f_text = ""
+        self.__m_text = ""
+        self.__ruby = ""
 
     def __push(self, s: str):
         match self.__syntax:
@@ -120,9 +137,11 @@ class Formatter:
                 self.__keys.append(io.StringIO())
                 self.__vals.append(io.StringIO())
                 self.__texts.append(io.StringIO())
-            case "{":  # TODO:
+            case "{":
                 self.__display_block_afterward()
-                self.__push("{")
+                self.__states.append(State.VarKey)
+                self.__keys.append(io.StringIO())
+                self.__vals.append(io.StringIO())
             case "\\":
                 self.__states.append(State.Escaping)
             case "\xa0":
@@ -245,8 +264,7 @@ class Formatter:
     def __feed_tag_slash(self, char: str) -> None:
         if char == ">":
             tag = self.__close_tag.getvalue()
-            _ = self.__close_tag.truncate(0)
-            _ = self.__close_tag.seek(0)
+            self.__close_tag = io.StringIO()
             if tag == self.__keys[-1].getvalue():
                 self.__flush_tag()
                 return
@@ -258,10 +276,40 @@ class Formatter:
         _ = self.__close_tag.write(char)
 
     def __feed_var_key(self, char: str) -> None:
-        pass
+        if char == "}":
+            var = self.__keys[-1].getvalue()
+            if not self.__is_known_var(var):
+                _ = self.__states.pop()
+                _ = self.__keys.pop()
+                _ = self.__vals.pop()
+                _ = self.__texts.pop()
+                self.__push("{")
+                self.__push(var)
+                self.__push("}")
+                return
+            self.__flush_var()
+            return
+        if char == "#":
+            var = self.__keys[-1].getvalue()
+            if not self.__is_known_var(var):
+                _ = self.__states.pop()
+                _ = self.__keys.pop()
+                _ = self.__vals.pop()
+                _ = self.__texts.pop()
+                self.__push("{")
+                self.__push(var)
+                self.__push("#")
+                return
+            self.__states[-1] = State.VarVal
+            self.__push("")
+            return
+        _ = self.__keys[-1].write(char)
 
     def __feed_var_val(self, char: str) -> None:
-        pass
+        if char == "}":
+            self.__flush_var()
+            return
+        _ = self.__vals[-1].write(char)
 
     @staticmethod
     def __do_format(specifier: str, param: float | str, percent: bool = False) -> str:
@@ -508,6 +556,62 @@ class Formatter:
             case Syntax.Terminal:
                 self.__flush_tag_terminal(tag, val, text)
 
+    @staticmethod
+    def __is_known_var(var: str) -> bool:
+        return var in {"BIRTH", "F", "M", "NICKNAME", "RUBY_B", "RUBY_E", "TEXTJOIN"}
+
+    def __flush_var(self):  # noqa: PLR0912, PLR0915
+        _state = self.__states.pop()
+        var = self.__keys.pop().getvalue()
+        val = self.__vals.pop().getvalue()
+        match var:
+            case "BIRTH":
+                self.__push("生日")
+            case "F":  # 一般很短，暂时不考虑堆栈
+                if len(self.__m_text) == 0:
+                    self.__f_text = val
+                    return
+                match self.__gender_order:
+                    case GenderOrder.Preserve | GenderOrder.Male:
+                        self.__push(self.__m_text)
+                        self.__push("/")
+                        self.__push(val)
+                    case GenderOrder.Female:
+                        self.__push(val)
+                        self.__push("/")
+                        self.__push(self.__m_text)
+                _ = self.__m_text = ""
+            case "M":  # 一般很短，暂时不考虑堆栈
+                if len(self.__f_text) == 0:
+                    self.__m_text = val
+                    return
+                match self.__gender_order:
+                    case GenderOrder.Preserve | GenderOrder.Female:
+                        self.__push(self.__f_text)
+                        self.__push("/")
+                        self.__push(val)
+                    case GenderOrder.Male:
+                        self.__push(val)
+                        self.__push("/")
+                        self.__push(self.__f_text)
+                _ = self.__f_text = ""
+            case "NICKNAME":
+                self.__push("开拓者")  # TODO: 根据游戏区分
+            case "RUBY_B":
+                if self.__syntax in (Syntax.MediaWiki, Syntax.MediaWikiPretty):
+                    self.__push("{{注音|")
+                    self.__ruby = val
+            case "RUBY_E":
+                if self.__syntax in (Syntax.MediaWiki, Syntax.MediaWikiPretty):
+                    self.__push("|")
+                    self.__push(self.__ruby)
+                    _ = self.__ruby = ""
+                    self.__push("}}")
+            case "TEXTJOIN":
+                raise NotImplementedError
+            case _:
+                raise ValueError(f"invalid var {var}")
+
     def feed(self, char: str) -> None:  # noqa: PLR0912
         if len(self.__states) == 0:
             self.__feed_text(char)
@@ -548,10 +652,8 @@ class Formatter:
                     _ = self.__states.pop()
                 case State.TagLKey | State.TagLVal | State.TagText | State.TagRBra | State.TagSlash:
                     self.__flush_tag()
-                case _:
-                    text = self.__texts.pop().read()
-                    _ = self.__texts[-1].write(text)
-                    _ = self.__states.pop()
+                case State.VarKey | State.VarVal:
+                    self.__flush_var()
 
     def format(self, format: str, *args: float | str) -> str:
         self.__parameter = args
@@ -560,6 +662,5 @@ class Formatter:
         self.__flush()
         # strip 去除 block 状态带来的最后一个回车
         value = self.__texts[0].getvalue().strip()
-        _ = self.__texts[0].truncate(0)
-        _ = self.__texts[0].seek(0)
+        _ = self.__texts[0] = io.StringIO()
         return value

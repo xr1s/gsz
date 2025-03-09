@@ -1,4 +1,4 @@
-from gsz.format import Formatter, Syntax
+from gsz.format import Formatter, GenderOrder, Syntax
 
 
 def test_format_simple():
@@ -97,3 +97,22 @@ def test_pretty_print_mediawiki():
         formatter.format('<align="center">第一段</align><align="center">第二段</align>')
         == """<p style="text-align: center">第一段</p>\n<p style="text-align: center">第二段</p>"""
     )
+
+
+def test_simple_var():
+    formatter = Formatter()
+    assert formatter.format("{NICKNAME}") == "开拓者"
+    formatter = Formatter(syntax=Syntax.MediaWiki)
+    assert formatter.format("{RUBY_B#丰饶星神}「药师」{RUBY_E}") == "{{注音|「药师」|丰饶星神}}"
+
+
+def test_var_male_female_order():
+    formatter = Formatter()
+    assert formatter.format("{F#她}{M#他}") == "她/他"
+    assert formatter.format("{M#他}{F#她}") == "他/她"
+    formatter = Formatter(gender_order=GenderOrder.Male)
+    assert formatter.format("{F#她}{M#他}") == "他/她"
+    assert formatter.format("{M#他}{F#她}") == "他/她"
+    formatter = Formatter(gender_order=GenderOrder.Female)
+    assert formatter.format("{F#她}{M#他}") == "她/他"
+    assert formatter.format("{M#他}{F#她}") == "她/他"
