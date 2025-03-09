@@ -9,6 +9,11 @@ dependencies = [
     "pydantic>=2.10.6",
 ]
 
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["*"]
+namespaces = false
+
 [tool.pyright]
 reportAny = false
 reportImportCycles = false
