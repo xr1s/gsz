@@ -8,7 +8,6 @@ from .monster import (
     MonsterSkillConfig,
     MonsterTemplateConfig,
     NPCMonsterData,
-    Rank,
 )
 
 __all__ = (
@@ -21,6 +20,5 @@ __all__ = (
     "MonsterSkillConfig",
     "MonsterTemplateConfig",
     "NPCMonsterData",
-    "Rank",
     "Text",
 )

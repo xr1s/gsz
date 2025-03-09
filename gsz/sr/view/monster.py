@@ -9,7 +9,9 @@ from .base import View
 
 if TYPE_CHECKING:
     import collections.abc
-    from ..excel import Element, Rank
+    from ..excel import Element, monster
+
+NPC_COLLIDE_NAMES = {"可可利亚", "杰帕德", "布洛妮娅", "史瓦罗", "银枝"}
 
 
 def wiki_name(name: str) -> str:
@@ -60,9 +62,6 @@ class MonsterCamp(View[excel.MonsterCamp]):
     @functools.cached_property
     def name(self) -> str:
         return self._game.text(self._excel.name)
-
-
-NPC_COLLIDE_NAMES = {"可可利亚", "杰帕德", "布洛妮娅", "史瓦罗", "银枝"}
 
 
 class MonsterConfig(View[excel.MonsterConfig]):
@@ -168,7 +167,7 @@ class MonsterConfig(View[excel.MonsterConfig]):
         return self._excel.stance_weak_list
 
     @property
-    def rank(self) -> Rank | None:
+    def rank(self) -> monster.Rank | None:
         if self.template is None:
             return None
         return self.template.rank
@@ -293,7 +292,7 @@ class MonsterTemplateConfig(View[excel.MonsterTemplateConfig]):
         return [MonsterTemplateConfig(self._game, excel) for excel in group]
 
     @property
-    def rank(self) -> Rank:
+    def rank(self) -> monster.Rank:
         return self._excel.rank
 
     @functools.cached_property
