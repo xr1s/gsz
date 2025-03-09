@@ -286,7 +286,10 @@ class MonsterTemplateConfig(View[excel.MonsterTemplateConfig]):
     def group(self) -> list[MonsterTemplateConfig]:
         if self.group_id is None:
             return [self]
-        return list(self._game.monster_template_config(self._game._monster_template_group[self.group_id]))  # pyright: ignore[reportPrivateUsage]
+        group = self._game._monster_template_group.get(self.group_id)  # pyright: ignore[reportPrivateUsage]
+        if group is None:
+            return [self]
+        return [MonsterTemplateConfig(self._game, excel) for excel in group]
 
     @property
     def rank(self) -> Rank:

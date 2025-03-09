@@ -13,6 +13,7 @@ from . import view
 from ..format import Formatter, Syntax
 
 if typing.TYPE_CHECKING:
+    from . import excel
     from .excel import Text
 
 
@@ -394,16 +395,16 @@ class GameData:
         """敌人模板（不清楚和不带 unique 的什么区别，不过有时候两个都要查）"""
 
     @functools.cached_property
-    def _monster_template_group(self) -> dict[int, list[int]]:
-        template_groups: dict[int, list[int]] = {}
+    def _monster_template_group(self) -> dict[int, list["excel.MonsterTemplateConfig"]]:
+        template_groups: dict[int, list[excel.MonsterTemplateConfig]] = {}
         for template in self.monster_template_config():
             group_id = template.group_id
             if group_id is None:
                 continue
             if template_groups.get(group_id) is None:
-                template_groups[group_id] = [group_id]
+                template_groups[group_id] = [template._excel]  # pyright: ignore[reportPrivateUsage]
             else:
-                template_groups[group_id].append(group_id)
+                template_groups[group_id].append(template._excel)  # pyright: ignore[reportPrivateUsage]
         return template_groups
 
     @excel_output(view.NPCMonsterData)
