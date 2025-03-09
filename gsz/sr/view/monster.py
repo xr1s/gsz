@@ -1,10 +1,10 @@
 from __future__ import annotations
 import functools
 import itertools
+import re
 from typing import TYPE_CHECKING
 
 from .. import excel
-from ...format import Formatter
 from .base import View
 
 if TYPE_CHECKING:
@@ -217,10 +217,11 @@ class MonsterConfig(View[excel.MonsterConfig]):
 class MonsterSkillConfig(View[excel.MonsterSkillConfig]):
     type ExcelOutput = excel.MonsterSkillConfig
 
+    __UNBREAK_TAG: re.Pattern[str] = re.compile("</?unbreak>")
+
     @functools.cached_property
     def name(self) -> str:
-        # 此处格式化是为了去除 <unbreak>
-        return self._game.text(self._excel.skill_name).replace("<unbreak>", "").replace("</unbreak>", "")
+        return self.__UNBREAK_TAG.sub("", self._game.text(self._excel.skill_name))
 
     @property
     def damage_type(self) -> Element | None:
