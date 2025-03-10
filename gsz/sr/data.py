@@ -354,13 +354,15 @@ class GameData:
 
     @functools.cached_property
     def _template_environment(self) -> jinja2.Environment:
+        self_path = pathlib.Path(__file__)
+        templates_path = self_path.parent.parent / "templates"
         env = jinja2.Environment(
             block_start_string="<%",
             block_end_string="%>",
             variable_start_string="${",
             variable_end_string="}",
             comment_start_string="%",
-            loader=jinja2.FileSystemLoader("./templates"),
+            loader=jinja2.FileSystemLoader(templates_path),
         )
         env.filters.update(gszformat=self._mw_formatter.format, gszformat_pretty=self._mw_pretty_formatter.format)
         return env
