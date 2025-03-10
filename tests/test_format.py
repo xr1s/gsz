@@ -150,13 +150,16 @@ def test_extra_effect():
 
 def test_text_join():
     game = MockSRGameData(
+        extra_effect_config_names={"特殊效果"},
         text_join_config_item={
             1: (1, ["abc", "def", "ghi"]),
             2: (1, ["你好", "{NICKNAME}", "谢谢", "<color=#abcdef>再见</color>"]),
             3: (0, ["aaa", "bbb", "ccc", "ddd"]),
             4: (3, ["aaa", "bbb", "ccc", "ddd"]),
             5: (0, ["你" * 20, "好" * 20, "世" * 20, "界" * 20]),
-        }
+            6: (1, ["<s>删除线</s>", "<u>下划线</u>"]),
+            7: (0, ["<i>斜体</i>", "<u>特殊效果</u>"]),
+        },
     )
     formatter = Formatter(game=game)
     assert formatter.format("{TEXTJOIN#1}") == "abc/def/ghi"
@@ -177,3 +180,5 @@ def test_text_join():
         {{切换板|折叠内容}}世世世世世世世世世世世世世世世世世世世世{{切换板|内容结束}}
         {{切换板|折叠内容}}界界界界界界界界界界界界界界界界界界界界{{切换板|内容结束}}
       {{切换板|结束}}""")
+    assert formatter.format("{TEXTJOIN#6}") == "{{黑幕|<s>删除线</s>/}}<u>下划线</u>"
+    assert formatter.format("{TEXTJOIN#7}") == "''斜体''{{黑幕|/{{效果说明|特殊效果}}}}"

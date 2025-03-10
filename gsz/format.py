@@ -108,6 +108,7 @@ class Formatter:
         self.__f_text = ""
         self.__m_text = ""
         self.__ruby = ""
+        self.__localbook_img: list[str] | None = None
 
     def __push(self, s: str):
         match self.__syntax:
@@ -296,7 +297,6 @@ class Formatter:
                 _ = self.__states.pop()
                 _ = self.__keys.pop()
                 _ = self.__vals.pop()
-                _ = self.__texts.pop()
                 self.__push("{")
                 self.__push(var)
                 self.__push("#")
@@ -553,13 +553,13 @@ class Formatter:
 
     @staticmethod
     def __is_known_var(var: str) -> bool:
-        return var in {"BIRTH", "F", "M", "NICKNAME", "RUBY_B", "RUBY_E", "TEXTJOIN"}
+        return var in {"BIRTH", "F", "Img", "M", "NICKNAME", "RUBY_B", "RUBY_E", "TEXTJOIN"}
 
     @functools.cached_property
     def __text_join_item_formatter(self):
         return Formatter(syntax=self.__syntax, game=self.__game, gender_order=self.__gender_order)
 
-    def __flush_var(self):  # noqa: PLR0912, PLR0915
+    def __flush_var(self):  # noqa: PLR0911, PLR0912, PLR0915
         _state = self.__states.pop()
         var = self.__keys.pop().getvalue()
         val = self.__vals.pop().getvalue()
@@ -580,6 +580,15 @@ class Formatter:
                         self.__push("/")
                         self.__push(self.__m_text)
                 _ = self.__m_text = ""
+            case "Img":
+                if self.__localbook_img is None:
+                    self.__push(f"{{Img#{val}}}")
+                    return
+                index = int(val)
+                if index > len(self.__localbook_img):
+                    self.__push(f"{{Img#{val}}}")
+                    return
+                _ = self.__texts[-1].write(f"<!-- {self.__localbook_img[index - 1]} -->")
             case "M":  # 一般很短，暂时不考虑堆栈
                 if len(self.__f_text) == 0:
                     self.__m_text = val
@@ -616,7 +625,7 @@ class Formatter:
                 if len(items) <= default:
                     default = 0
                 if self.__syntax in (Syntax.Plain, Syntax.Terminal):
-                    self.__push("/".join(self.__text_join_item_formatter.format(item) for item in items))
+                    _ = self.__texts[-1].write("/".join(self.__text_join_item_formatter.format(item) for item in items))
                     return
                 if self.__syntax == Syntax.MediaWiki or (
                     self.__syntax == Syntax.MediaWikiPretty
@@ -625,18 +634,20 @@ class Formatter:
                 ):
                     if default != 0:
                         self.__push("{{黑幕|")
-                        self.__push("/".join(self.__text_join_item_formatter.format(item) for item in items[:default]))
+                        _ = self.__texts[-1].write(
+                            "/".join(self.__text_join_item_formatter.format(item) for item in items[:default])
+                        )
                         self.__push("/}}")
-                    self.__push(self.__text_join_item_formatter.format(items[default]))
+                    _ = self.__texts[-1].write(self.__text_join_item_formatter.format(items[default]))
                     if default != len(items) - 1:
                         self.__push("{{黑幕|/")
-                        self.__push(
+                        _ = self.__texts[-1].write(
                             "/".join(self.__text_join_item_formatter.format(item) for item in items[default + 1 :])
                         )
                         self.__push("}}")
                     return
                 if self.__syntax == Syntax.MediaWikiPretty:
-                    _ = self.__texts[-1].write("\n")
+                    self.__display_block_afterward()
                     self.__push("{{切换板|开始}}")
                     for index in range(len(items)):
                         _ = self.__texts[-1].write(
@@ -645,10 +656,9 @@ class Formatter:
                     for index, item in enumerate(items):
                         _ = self.__texts[-1].write("\n  ")
                         self.__push("{{切换板|" + ("显示" if index == default else "折叠") + "内容}}")
-                        self.__push(self.__text_join_item_formatter.format(item))
+                        _ = self.__texts[-1].write(self.__text_join_item_formatter.format(item))
                         self.__push("{{切换板|内容结束}}")
-                    _ = self.__texts[-1].write("\n")
-                    self.__push("{{切换板|结束}}")
+                    _ = self.__texts[-1].write("\n{{切换板|结束}}")
             case _:
                 raise ValueError(f"invalid var {var}")
 
@@ -695,8 +705,17 @@ class Formatter:
                 case State.VarKey | State.VarVal:
                     self.__flush_var()
 
-    def format(self, format: str, *args: float | str) -> str:
+    def format(
+        self,
+        format: str,
+        *args: float | str,
+        image_path: list[str] | None = None,
+    ) -> str:
         self.__parameter = args
+        if image_path is not None:
+            self.__localbook_img = image_path
+        else:
+            self.__localbook_img = None
         for char in format:
             self.feed(char)
         self.__flush()

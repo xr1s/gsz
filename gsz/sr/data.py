@@ -419,6 +419,34 @@ class GameData:
     def item_purpose(self):
         """道具目的"""
 
+    ######## book ########
+
+    @excel_output(view.BookDisplayType)
+    def book_display_type(self):
+        """"""
+
+    @excel_output(view.BookSeriesConfig)
+    def book_series_config(self):
+        """阅读物系列"""
+
+    @excel_output(view.BookSeriesWorld)
+    def book_series_world(self):
+        """阅读物所属的世界"""
+
+    @excel_output(view.LocalbookConfig)
+    def localbook_config(self):
+        """每一卷阅读物"""
+
+    @functools.cached_property
+    def _book_series_localbook(self) -> dict[int, list["excel.LocalbookConfig"]]:
+        book_series: dict[int, list[excel.LocalbookConfig]] = {}
+        for book in self.localbook_config():
+            if book.series.id in book_series:
+                book_series[book.series.id].append(book._excel)  # pyright: ignore[reportPrivateUsage]
+            else:
+                book_series[book.series.id] = [book._excel]  # pyright: ignore[reportPrivateUsage]
+        return book_series
+
     ######## misc ########
 
     @excel_output(view.ExtraEffectConfig)

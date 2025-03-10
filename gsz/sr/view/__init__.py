@@ -1,3 +1,4 @@
+from .book import BookDisplayType, BookSeriesConfig, BookSeriesWorld, LocalbookConfig
 from .item import ItemConfig, ItemPurpose
 from .misc import ExtraEffectConfig, TextJoinConfig, TextJoinItem
 from .monster import (
@@ -11,11 +12,15 @@ from .monster import (
 )
 
 __all__ = (
+    "BookDisplayType",
+    "BookSeriesConfig",
+    "BookSeriesWorld",
     "EliteGroup",
     "ExtraEffectConfig",
     "HardLevelGroup",
     "ItemConfig",
     "ItemPurpose",
+    "LocalbookConfig",
     "MonsterCamp",
     "MonsterConfig",
     "MonsterSkillConfig",
