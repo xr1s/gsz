@@ -341,6 +341,10 @@ class GameData:
         return self.__text_map.get(text.hash, "")
 
     @functools.cached_property
+    def _plain_formatter(self) -> Formatter:
+        return Formatter(game=self)
+
+    @functools.cached_property
     def _mw_formatter(self) -> Formatter:
         return Formatter(syntax=Syntax.MediaWiki, game=self)
 
@@ -360,6 +364,60 @@ class GameData:
         )
         env.filters.update(gszformat=self._mw_formatter.format, gszformat_pretty=self._mw_pretty_formatter.format)
         return env
+
+    ######## item ########
+
+    @excel_output(view.ItemConfig)
+    def activity_item_config_avatar(self):
+        """不清楚，看起来是活动试用角色？但是只有开拓者和三月七"""
+
+    @excel_output(view.ItemConfig)
+    def item_config(self):
+        """道具"""
+
+    @excel_output(view.ItemConfig)
+    def item_config_avatar(self):
+        """角色"""
+
+    @excel_output(view.ItemConfig)
+    def item_config_avatar_player_icon(self):
+        """用户头像（角色自带）"""
+
+    @excel_output(view.ItemConfig)
+    def item_config_avatar_rank(self):
+        """星魂"""
+
+    @excel_output(view.ItemConfig)
+    def item_config_avatar_skin(self):
+        """时装"""
+
+    @excel_output(view.ItemConfig)
+    def item_config_book(self):
+        """书籍"""
+
+    @excel_output(view.ItemConfig)
+    def item_config_disk(self):
+        """碟片（音乐专辑）"""
+
+    @excel_output(view.ItemConfig)
+    def item_config_equipment(self):
+        """光锥"""
+
+    @excel_output(view.ItemConfig)
+    def item_config_relic(self):
+        """遗器"""
+
+    @excel_output(view.ItemConfig)
+    def item_config_train_dynamic(self):
+        """"""
+
+    @excel_output(view.ItemConfig)
+    def item_player_card(self):
+        """用户头像（时装、大月卡、活动、成就等头像）"""
+
+    @excel_output(view.ItemPurpose)
+    def item_purpose(self):
+        """道具目的"""
 
     ######## misc ########
 
