@@ -66,7 +66,7 @@ def test_simple_tag():
     assert formatter.format("<u>下划线</u>") == "<u>下划线</u>"
     assert formatter.format("<unbreak>不折行</unbreak>") == "不折行"
     assert formatter.format("<color=#abcdef>文本颜色</color>") == "{{颜色|abcdef|文本颜色}}"
-    assert formatter.format("<size=+4px>字号</size>") == '<span style="font-size: 1.2em">字号</size>'
+    assert formatter.format("<size=+4px>字号</size>") == '<span style="font-size: 1.2em">字号</span>'
     assert formatter.format('<align="right">右对齐</align>') == '<p style="text-align: right">右对齐</p>'
 
     assert formatter.format("<color=#f29e3800>特殊颜色</color>") == "{{颜色|描述2|特殊颜色}}"
@@ -112,7 +112,11 @@ def test_pretty_print_mediawiki():
     )
     assert (
         formatter.format('<align="center">这是内容</align>\\n\\n.')
-        == """<p style="text-align: center">这是内容</p><br />\n."""
+        == """<p style="text-align: center">这是内容</p>\n<br />\n."""
+    )
+    assert (
+        formatter.format('<s><align="center">这是内容</align></s>\\n\\n')
+        == """<s><p style="text-align: center">这是内容</p></s>\n<br />"""
     )
     assert (
         formatter.format('<i><align="center">这是内容</align></i>#')

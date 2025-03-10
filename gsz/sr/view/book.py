@@ -1,6 +1,5 @@
 from __future__ import annotations
 import functools
-import re
 
 from .. import excel
 from .base import View
@@ -15,7 +14,7 @@ class BookSeriesConfig(View[excel.BookSeriesConfig]):
 
     @functools.cached_property
     def name(self) -> str:
-        return self._game.text(self._excel.book_series).replace("<unbreak>", "").replace("</unbreak>", "")
+        return self._game.text(self._excel.book_series)
 
     @property
     def id(self) -> int:
@@ -47,7 +46,7 @@ class BookSeriesConfig(View[excel.BookSeriesConfig]):
         return self._excel.book_series_num
 
     @functools.cached_property
-    def __book_type(self) -> str:  # noqa: PLR0911, PLR0912
+    def __series_type(self) -> str:  # noqa: PLR0911, PLR0912
         item = self._game.item_config_book(self.books[0].id)
         if item is None:
             item = self._game.item_config(self.books[0].id)
@@ -83,7 +82,7 @@ class BookSeriesConfig(View[excel.BookSeriesConfig]):
 
     def wiki(self) -> str:
         return self._game._template_environment.get_template("book-series.jinja2").render(  # pyright: ignore[reportPrivateUsage]
-            series=self, book_type=self.__book_type
+            series=self, series_type=self.__series_type
         )
 
 
@@ -98,11 +97,9 @@ class BookSeriesWorld(View[excel.BookSeriesWorld]):
 class LocalbookConfig(View[excel.LocalbookConfig]):
     type ExcelOutput = excel.LocalbookConfig
 
-    __UNBREAK_TAG: re.Pattern[str] = re.compile("</?unbreak>")
-
     @functools.cached_property
     def name(self) -> str:
-        return self._game._plain_formatter.format(self._game.text(self._excel.book_inside_name))  # pyright: ignore[reportPrivateUsage]
+        return self._game.text(self._excel.book_inside_name)
 
     @property
     def id(self) -> int:

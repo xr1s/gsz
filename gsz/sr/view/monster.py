@@ -178,13 +178,13 @@ class MonsterConfig(View[excel.MonsterConfig]):
             return "物"
         return str(element)
 
-    def skill_at_phase(self, phase: int) -> collections.abc.Iterable[MonsterSkillConfig]:
+    def skills_at_phase(self, phase: int) -> collections.abc.Iterable[MonsterSkillConfig]:
         """在 phase 阶段的技能列表，phase 从 1 开始计数"""
         return (skill for skill in self.skills if phase in skill.phase_list)
 
     def threat_count_at_phase(self, phase: int) -> int:
         """在 phase 阶段的大招数，phase 从 1 开始计数"""
-        return sum(skill.is_threat for skill in self.skill_at_phase(phase))
+        return sum(skill.is_threat for skill in self.skills_at_phase(phase))
 
     def wiki(self) -> str:
         damage_type_resistance = {
@@ -216,11 +216,9 @@ class MonsterConfig(View[excel.MonsterConfig]):
 class MonsterSkillConfig(View[excel.MonsterSkillConfig]):
     type ExcelOutput = excel.MonsterSkillConfig
 
-    __UNBREAK_TAG: re.Pattern[str] = re.compile("</?unbreak>")
-
     @functools.cached_property
     def name(self) -> str:
-        return self.__UNBREAK_TAG.sub("", self._game.text(self._excel.skill_name))
+        return self._game.text(self._excel.skill_name)
 
     @property
     def damage_type(self) -> Element | None:

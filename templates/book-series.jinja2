@@ -1,12 +1,12 @@
 <%- if not series.is_show_in_bookshelf %><!-- 剧情 -->
 <% endif -%>
 {{书籍
-|书籍名=${series.name}
+|书籍名=${ series.name | gszformat }
 |卷数=${series.num}<!-- 仅填写数字 -->
 |编号=<!-- 按照游戏内显示顺序编号，第一位为所属编号，共四位 -->
-|描述=${series.comments}
+|描述=${ series.comments | default("", true) | gszformat }
 |所属=${series.world.id}
-|类型=${book_type}
+|类型=${series_type}
 |实装版本=
 |相关角色=
 |相关任务=
@@ -14,7 +14,7 @@
 <%- for book in series.books %>
 
 {{书籍/分卷
-|名称=${book.name}
+|名称=${ book.name | gszformat }
 |卷数=${ ("%d" if loop.length < 10 else "%02d") | format(loop.index) }
 |实装版本=
 |获取方式=
