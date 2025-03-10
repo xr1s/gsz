@@ -3,6 +3,7 @@ import collections.abc
 import enum
 import functools
 import itertools
+import json
 import pathlib
 import typing
 
@@ -132,10 +133,14 @@ class excel_output(typing.Generic[V, E_co]):
                 finally:
                     self.__file_names = ()  # 清理一下方便 GC
                 ExcelOutput = typing.cast(E_co, typing.cast(typing.Any, self.__type.ExcelOutput))
-                # TODO: 支持 2.3 之前数据格式载入
                 ExcelOutputList = pydantic.TypeAdapter(list[ExcelOutput])
-                json = ExcelOutputList.validate_json(file_path.read_bytes())
-                self.__excel_output = {config.id: config for config in json}
+                excels = json.loads(file_path.read_bytes())
+                try:
+                    excel_list = ExcelOutputList.validate_python(excels)
+                    self.__excel_output = {config.id: config for config in excel_list}
+                except pydantic.ValidationError:
+                    ExcelOutputDict = pydantic.TypeAdapter(dict[int, ExcelOutput])
+                    self.__excel_output = ExcelOutputDict.validate_python(excels)
             if id is None:
                 return (self.__type(game, excel) for excel in self.__excel_output.values())
             if isinstance(id, collections.abc.Iterable):
@@ -265,30 +270,31 @@ class excel_output_main_sub(typing.Generic[MSV, MSE_co]):
                 ExcelOutput = typing.cast(MSE_co, typing.cast(typing.Any, self.__type.ExcelOutput))
                 # TODO: 支持 2.3 之前数据格式载入
                 ExcelOutputList = pydantic.TypeAdapter(list[ExcelOutput])
-                json = ExcelOutputList.validate_json(file_path.read_bytes())
-                self.__excel_output = {}
-                for excel in json:
-                    if excel.main_id in self.__excel_output:
+                excels = json.loads(file_path.read_bytes())
+                try:
+                    excel_list = ExcelOutputList.validate_python(excels)
+                    self.__excel_output = collections.defaultdict(list)
+                    for excel in excel_list:
                         self.__excel_output[excel.main_id].append(excel)
-                    else:
-                        self.__excel_output[excel.main_id] = [excel]
+                except pydantic.ValidationError:
+                    ExcelOutputDict = pydantic.TypeAdapter(dict[int, dict[int, ExcelOutput]])
+                    excel_dict = ExcelOutputDict.validate_python(excels)
+                    self.__excel_output = {main_id: list(excel.values()) for main_id, excel in excel_dict.items()}
             match main_id, sub_id:
                 case None, None:
                     excels = self.__excel_output.values()
                     return (self.__type(game, excel) for excel in itertools.chain.from_iterable(excels))
                 case main_id, None:
-                    return (self.__type(game, excel) for excel in self.__excel_output.get(main_id, []))
+                    return (self.__type(game, excel) for excel in self.__excel_output.get(main_id, ()))
                 case None, sub_id:
                     raise ValueError("main_id cannot be none when sub_id is not None")
                 case main_id, sub_id:
-                    return next(
-                        (
-                            self.__type(game, excel)
-                            for excel in self.__excel_output.get(main_id, [])
-                            if excel.sub_id == sub_id
-                        ),
-                        None,
+                    gen = (
+                        self.__type(game, excel)
+                        for excel in self.__excel_output.get(main_id, ())
+                        if excel.sub_id == sub_id
                     )
+                    return next(gen, None)
 
         return fn
 

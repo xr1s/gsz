@@ -290,13 +290,15 @@ class ItemList(Model):
 
 class ItemConfig(Model):
     id_: int
-    item_main_type: MainType | None = None
+    item_main_type: MainType
     item_sub_type: SubType
     inventory_display_tag: typing.Literal[1, 2, 3]
     rarity: Rarity
     purpose_type: int | None = None
     is_visible: typing.Annotated[bool, pydantic.Field(alias="isVisible")] = False
     item_name: Text | None = None
+    # 3.1 及之后，一些曾经名字为空的道具的名字字段被删除
+    # 比如任务过场道具、黄金与机械骰子、梦境护照贴纸等
     item_desc: Text | None = None
     item_bg_desc: Text | None = None
     item_icon_path: str
@@ -307,6 +309,8 @@ class ItemConfig(Model):
     pile_limit: int
     """堆叠上限"""
     use_method: UseMethod | None = None
+    use_type: UseType | None = None  # 1.3 及之前，后面大概合并为 UseMethod 了
+    use_data_id: int | None = None  # 2.5 及之前，可能因为值全部和 id 一样，所以后面删掉了
     custom_data_list: list[int]
     return_item_id_list: list[ItemList]
     """道具拆分效果，比如光锥、遗器"""

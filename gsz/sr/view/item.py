@@ -40,6 +40,14 @@ class ItemConfig(View[excel.ItemConfig]):
     def rarity(self) -> item.Rarity:
         return self._excel.rarity
 
+    @property
+    def main_type(self) -> item.MainType:
+        return self._excel.item_main_type
+
+    @property
+    def sub_type(self) -> item.SubType:
+        return self._excel.item_sub_type
+
 
 class ItemPurpose(View[excel.ItemPurpose]):
     type ExcelOutput = excel.ItemPurpose
