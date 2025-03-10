@@ -127,9 +127,7 @@ class excel_output(typing.Generic[V, E_co]):
                         file_path = path / (next(file_names) + ".json")
                 except StopIteration:
                     self.__excel_output = {}
-                    if id is None or isinstance(id, collections.abc.Iterable):
-                        return iter(())
-                    return None
+                    return iter(()) if id is None or isinstance(id, collections.abc.Iterable) else None
                 finally:
                     self.__file_names = ()  # 清理一下方便 GC
                 ExcelOutput = typing.cast(E_co, typing.cast(typing.Any, self.__type.ExcelOutput))
@@ -138,9 +136,12 @@ class excel_output(typing.Generic[V, E_co]):
                 try:
                     excel_list = ExcelOutputList.validate_python(excels)
                     self.__excel_output = {config.id: config for config in excel_list}
-                except pydantic.ValidationError:
+                except pydantic.ValidationError as exc:
                     ExcelOutputDict = pydantic.TypeAdapter(dict[int, ExcelOutput])
-                    self.__excel_output = ExcelOutputDict.validate_python(excels)
+                    try:
+                        self.__excel_output = ExcelOutputDict.validate_python(excels)
+                    except pydantic.ValidationError:
+                        raise exc from None
             if id is None:
                 return (self.__type(game, excel) for excel in self.__excel_output.values())
             if isinstance(id, collections.abc.Iterable):
@@ -262,13 +263,10 @@ class excel_output_main_sub(typing.Generic[MSV, MSE_co]):
                         file_path = path / (next(file_names) + ".json")
                 except StopIteration:
                     self.__excel_output = {}
-                    if main_id is None or sub_id is None:
-                        return iter(())
-                    return None
+                    return iter(()) if main_id is None or sub_id is None else None
                 finally:
                     self.__file_names = ()  # 清理一下方便 GC
                 ExcelOutput = typing.cast(MSE_co, typing.cast(typing.Any, self.__type.ExcelOutput))
-                # TODO: 支持 2.3 之前数据格式载入
                 ExcelOutputList = pydantic.TypeAdapter(list[ExcelOutput])
                 excels = json.loads(file_path.read_bytes())
                 try:
@@ -276,9 +274,12 @@ class excel_output_main_sub(typing.Generic[MSV, MSE_co]):
                     self.__excel_output = collections.defaultdict(list)
                     for excel in excel_list:
                         self.__excel_output[excel.main_id].append(excel)
-                except pydantic.ValidationError:
+                except pydantic.ValidationError as exc:
                     ExcelOutputDict = pydantic.TypeAdapter(dict[int, dict[int, ExcelOutput]])
-                    excel_dict = ExcelOutputDict.validate_python(excels)
+                    try:
+                        excel_dict = ExcelOutputDict.validate_python(excels)
+                    except pydantic.ValidationError:
+                        raise exc from None
                     self.__excel_output = {main_id: list(excel.values()) for main_id, excel in excel_dict.items()}
             match main_id, sub_id:
                 case None, None:
