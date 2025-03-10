@@ -1,3 +1,4 @@
+import enum
 import typing
 
 from .base import Model, Text, Value
@@ -16,3 +17,29 @@ class ExtraEffectConfig(Model):
     @property
     def id(self) -> int:
         return self.extra_effect_id
+
+
+class TextJoinType(enum.Enum):
+    AvatarID = "AvatarID"
+    CustomText = "CustomText"
+
+
+class TextJoinConfig(Model):
+    text_join_id: int
+    default_item: int
+    text_join_item_list: list[int]
+    is_override: bool = False
+    type: TextJoinType | None = None
+
+    @property
+    def id(self) -> int:
+        return self.text_join_id
+
+
+class TextJoinItem(Model):
+    text_join_item_id: int
+    text_join_text: Text | None = None
+
+    @property
+    def id(self) -> int:
+        return self.text_join_item_id

@@ -1,4 +1,25 @@
+import functools
+import textwrap
+
 from gsz.format import Formatter, GenderOrder, Syntax
+
+
+class MockSRGameData:
+    def __init__(
+        self,
+        *,
+        extra_effect_config_names: set[str] | None = None,
+        text_join_config_item: dict[int, tuple[int, list[str]]] | None = None,
+    ):
+        self.__extra_effect_config_names = extra_effect_config_names
+        self.__text_join_config_item = text_join_config_item or {}
+
+    @functools.cached_property
+    def _extra_effect_config_names(self) -> set[str]:
+        return set() if self.__extra_effect_config_names is None else self.__extra_effect_config_names
+
+    def _text_join_config_item(self, id: int) -> tuple[int, list[str]]:
+        return self.__text_join_config_item.get(id, (0, []))
 
 
 def test_format_simple():
@@ -116,3 +137,43 @@ def test_var_male_female_order():
     formatter = Formatter(gender_order=GenderOrder.Female)
     assert formatter.format("{F#她}{M#他}") == "她/他"
     assert formatter.format("{M#他}{F#她}") == "她/他"
+
+
+def test_extra_effect():
+    game = MockSRGameData(extra_effect_config_names={"abc"})
+    formatter = Formatter(game=game, syntax=Syntax.MediaWiki)
+    assert formatter.format("<u>abc</u>") == "{{效果说明|abc}}"
+    assert formatter.format("<u>abb</u>") == "<u>abb</u>"
+    assert formatter.format("【<u>abc</u>】") == "【{{效果说明|abc}}】"
+    assert formatter.format("<u>【abc】</u>") == "{{效果说明|【abc】}}"
+
+
+def test_text_join():
+    game = MockSRGameData(
+        text_join_config_item={
+            1: (1, ["abc", "def", "ghi"]),
+            2: (1, ["你好", "{NICKNAME}", "谢谢", "<color=#abcdef>再见</color>"]),
+            3: (0, ["aaa", "bbb", "ccc", "ddd"]),
+            4: (3, ["aaa", "bbb", "ccc", "ddd"]),
+            5: (0, ["你" * 20, "好" * 20, "世" * 20, "界" * 20]),
+        }
+    )
+    formatter = Formatter(game=game)
+    assert formatter.format("{TEXTJOIN#1}") == "abc/def/ghi"
+    assert formatter.format("{TEXTJOIN#2}") == "你好/开拓者/谢谢/再见"
+    formatter = Formatter(game=game, syntax=Syntax.MediaWikiPretty)
+    assert formatter.format("{TEXTJOIN#2}") == "{{黑幕|你好/}}开拓者{{黑幕|/谢谢/{{颜色|abcdef|再见}}}}"
+    assert formatter.format("{TEXTJOIN#3}") == "aaa{{黑幕|/bbb/ccc/ddd}}"
+    assert formatter.format("{TEXTJOIN#4}") == "{{黑幕|aaa/bbb/ccc/}}ddd"
+    assert formatter.format("{TEXTJOIN#4}") == "{{黑幕|aaa/bbb/ccc/}}ddd"
+    assert formatter.format("{TEXTJOIN#5}") == textwrap.dedent("""\
+      {{切换板|开始}}
+        {{切换板|默认显示|<!-- 补充标题 -->}}
+        {{切换板|默认折叠|<!-- 补充标题 -->}}
+        {{切换板|默认折叠|<!-- 补充标题 -->}}
+        {{切换板|默认折叠|<!-- 补充标题 -->}}
+        {{切换板|显示内容}}你你你你你你你你你你你你你你你你你你你你{{切换板|内容结束}}
+        {{切换板|折叠内容}}好好好好好好好好好好好好好好好好好好好好{{切换板|内容结束}}
+        {{切换板|折叠内容}}世世世世世世世世世世世世世世世世世世世世{{切换板|内容结束}}
+        {{切换板|折叠内容}}界界界界界界界界界界界界界界界界界界界界{{切换板|内容结束}}
+      {{切换板|结束}}""")

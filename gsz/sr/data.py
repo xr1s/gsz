@@ -341,8 +341,15 @@ class GameData:
         return self.__text_map.get(text.hash, "")
 
     @functools.cached_property
+    def _mw_formatter(self) -> Formatter:
+        return Formatter(syntax=Syntax.MediaWiki, game=self)
+
+    @functools.cached_property
+    def _mw_pretty_formatter(self) -> Formatter:
+        return Formatter(syntax=Syntax.MediaWikiPretty, game=self)
+
+    @functools.cached_property
     def _template_environment(self) -> jinja2.Environment:
-        formatter = Formatter(syntax=Syntax.MediaWiki, game=self)
         env = jinja2.Environment(
             block_start_string="<%",
             block_end_string="%>",
@@ -351,7 +358,7 @@ class GameData:
             comment_start_string="%",
             loader=jinja2.FileSystemLoader("./templates"),
         )
-        env.filters.update(gszformat=formatter.format)
+        env.filters.update(gszformat=self._mw_formatter.format, gszformat_pretty=self._mw_pretty_formatter.format)
         return env
 
     ######## misc ########
@@ -363,6 +370,23 @@ class GameData:
     @functools.cached_property
     def _extra_effect_config_names(self) -> set[str]:
         return {effect.name for effect in self.extra_effect_config()}
+
+    @excel_output(view.TextJoinConfig)
+    def text_join_config(self):
+        """"""
+
+    @excel_output(view.TextJoinItem)
+    def text_join_item(self):
+        """"""
+
+    def _text_join_config_item(self, id: int) -> tuple[int, list[str]]:
+        config = self.text_join_config(id)
+        if config is None:
+            return 0, []
+        default_item_index = [item.id for item in config.item_list].index(config.default_item.id)
+        if default_item_index == -1:
+            default_item_index = 1
+        return default_item_index, [item.text for item in config.item_list]
 
     ######## monster ########
 

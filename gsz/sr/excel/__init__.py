@@ -1,5 +1,5 @@
 from .base import Element, Text
-from .misc import ExtraEffectConfig
+from .misc import ExtraEffectConfig, TextJoinConfig, TextJoinItem
 from .monster import (
     EliteGroup,
     HardLevelGroup,
@@ -21,4 +21,6 @@ __all__ = (
     "MonsterTemplateConfig",
     "NPCMonsterData",
     "Text",
+    "TextJoinConfig",
+    "TextJoinItem",
 )

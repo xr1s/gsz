@@ -11,6 +11,7 @@ import unicodedata
 class SRGameData(typing.Protocol):
     @functools.cached_property
     def _extra_effect_config_names(self) -> set[str]: ...
+    def _text_join_config_item(self, id: int) -> tuple[int, list[str]]: ...
 
 
 class Syntax(enum.Enum):
@@ -447,10 +448,10 @@ class Formatter:
                     _ = self.__texts[-1].write("{{效果说明|")
                     _ = self.__texts[-1].write(text)
                     _ = self.__texts[-1].write("}}")
-                else:
-                    _ = self.__texts[-1].write("<u>")
-                    _ = self.__texts[-1].write(text)
-                    _ = self.__texts[-1].write("</u>")
+                    return
+                _ = self.__texts[-1].write("<u>")
+                _ = self.__texts[-1].write(text)
+                _ = self.__texts[-1].write("</u>")
                 self.__display_block_afterward()
             case "unbreak":
                 _ = self.__texts[-1].write(text)
@@ -458,25 +459,19 @@ class Formatter:
             case _:  # unreacheable
                 raise ValueError(f"invalid tag {tag}")
 
+    @functools.cache
+    @staticmethod
+    def __plain_formatter():
+        return Formatter()
+
     @staticmethod
     def text_width(text: str) -> int:
         """
-        这个算法是不精确的，只是为了实现简单才这么写的
+        这个算法是不完全精确的，只是为了实现简单才这么写的
         文本宽度计算是老大难问题，和字符类型、终端配置、字体有关
         """
-        width = 0
-        ignore = False
-        for char in text:
-            if not ignore and char == "\033":
-                ignore = True
-            if not ignore:
-                if unicodedata.east_asian_width(char) in ("A", "F", "N", "W"):
-                    width += 2
-                else:
-                    width += 1
-            if ignore and char == "m":
-                ignore = False
-        return width
+        text = Formatter.__plain_formatter().format(text)
+        return sum(2 if unicodedata.east_asian_width(char) in ("A", "F", "N", "W") else 1 for char in text)
 
     def __flush_tag_terminal(self, tag: str, val: str, text: str):  # noqa: PLR0912, PLR0915
         """简陋的高亮实现，用来调试输出美观"""
@@ -560,6 +555,10 @@ class Formatter:
     def __is_known_var(var: str) -> bool:
         return var in {"BIRTH", "F", "M", "NICKNAME", "RUBY_B", "RUBY_E", "TEXTJOIN"}
 
+    @functools.cached_property
+    def __text_join_item_formatter(self):
+        return Formatter(syntax=self.__syntax, game=self.__game, gender_order=self.__gender_order)
+
     def __flush_var(self):  # noqa: PLR0912, PLR0915
         _state = self.__states.pop()
         var = self.__keys.pop().getvalue()
@@ -608,7 +607,48 @@ class Formatter:
                     _ = self.__ruby = ""
                     self.__push("}}")
             case "TEXTJOIN":
-                raise NotImplementedError
+                if isinstance(self.__game, SRGameData):
+                    (default, items) = self.__game._text_join_config_item(int(val))  # pyright: ignore[reportPrivateUsage]
+                    if len(items) == 0:
+                        return
+                    if self.__syntax in (Syntax.Plain, Syntax.Terminal):
+                        self.__push("/".join(self.__text_join_item_formatter.format(item) for item in items))
+                        return
+                    if self.__syntax == Syntax.MediaWiki or (
+                        self.__syntax == Syntax.MediaWikiPretty
+                        and all(self.text_width(item) < 20 for item in items)
+                        and sum(len(item) for item in items) < 100
+                    ):
+                        if default != 0:
+                            self.__push("{{黑幕|")
+                            self.__push(
+                                "/".join(self.__text_join_item_formatter.format(item) for item in items[:default])
+                            )
+                            self.__push("/}}")
+                        self.__push(self.__text_join_item_formatter.format(items[default]))
+                        if default != len(items) - 1:
+                            self.__push("{{黑幕|/")
+                            self.__push(
+                                "/".join(self.__text_join_item_formatter.format(item) for item in items[default + 1 :])
+                            )
+                            self.__push("}}")
+                        return
+                    if self.__syntax == Syntax.MediaWikiPretty:
+                        _ = self.__texts[-1].write("\n")
+                        self.__push("{{切换板|开始}}")
+                        for index in range(len(items)):
+                            _ = self.__texts[-1].write(
+                                "\n  {{切换板|默认" + ("显示" if index == default else "折叠") + "|<!-- 补充标题 -->}}"
+                            )
+                        for index, item in enumerate(items):
+                            _ = self.__texts[-1].write("\n  ")
+                            self.__push("{{切换板|" + ("显示" if index == default else "折叠") + "内容}}")
+                            self.__push(self.__text_join_item_formatter.format(item))
+                            self.__push("{{切换板|内容结束}}")
+                        _ = self.__texts[-1].write("\n")
+                        self.__push("{{切换板|结束}}")
+                        return
+                self.__push(f"{{TEXTJOIN#{val}}}")
             case _:
                 raise ValueError(f"invalid var {var}")
 

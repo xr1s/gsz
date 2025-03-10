@@ -1,4 +1,4 @@
-from .misc import ExtraEffectConfig
+from .misc import ExtraEffectConfig, TextJoinConfig, TextJoinItem
 from .monster import (
     EliteGroup,
     HardLevelGroup,
@@ -18,4 +18,6 @@ __all__ = (
     "MonsterSkillConfig",
     "MonsterTemplateConfig",
     "NPCMonsterData",
+    "TextJoinConfig",
+    "TextJoinItem",
 )
