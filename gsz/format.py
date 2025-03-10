@@ -607,48 +607,48 @@ class Formatter:
                     _ = self.__ruby = ""
                     self.__push("}}")
             case "TEXTJOIN":
-                if isinstance(self.__game, SRGameData):
-                    (default, items) = self.__game._text_join_config_item(int(val))  # pyright: ignore[reportPrivateUsage]
-                    if len(items) == 0:
-                        return
-                    if self.__syntax in (Syntax.Plain, Syntax.Terminal):
-                        self.__push("/".join(self.__text_join_item_formatter.format(item) for item in items))
-                        return
-                    if self.__syntax == Syntax.MediaWiki or (
-                        self.__syntax == Syntax.MediaWikiPretty
-                        and all(self.text_width(item) < 20 for item in items)
-                        and sum(len(item) for item in items) < 100
-                    ):
-                        if default != 0:
-                            self.__push("{{黑幕|")
-                            self.__push(
-                                "/".join(self.__text_join_item_formatter.format(item) for item in items[:default])
-                            )
-                            self.__push("/}}")
-                        self.__push(self.__text_join_item_formatter.format(items[default]))
-                        if default != len(items) - 1:
-                            self.__push("{{黑幕|/")
-                            self.__push(
-                                "/".join(self.__text_join_item_formatter.format(item) for item in items[default + 1 :])
-                            )
-                            self.__push("}}")
-                        return
-                    if self.__syntax == Syntax.MediaWikiPretty:
-                        _ = self.__texts[-1].write("\n")
-                        self.__push("{{切换板|开始}}")
-                        for index in range(len(items)):
-                            _ = self.__texts[-1].write(
-                                "\n  {{切换板|默认" + ("显示" if index == default else "折叠") + "|<!-- 补充标题 -->}}"
-                            )
-                        for index, item in enumerate(items):
-                            _ = self.__texts[-1].write("\n  ")
-                            self.__push("{{切换板|" + ("显示" if index == default else "折叠") + "内容}}")
-                            self.__push(self.__text_join_item_formatter.format(item))
-                            self.__push("{{切换板|内容结束}}")
-                        _ = self.__texts[-1].write("\n")
-                        self.__push("{{切换板|结束}}")
-                        return
-                self.__push(f"{{TEXTJOIN#{val}}}")
+                if not isinstance(self.__game, SRGameData):
+                    self.__push(f"{{TEXTJOIN#{val}}}")
+                    return
+                (default, items) = self.__game._text_join_config_item(int(val))  # pyright: ignore[reportPrivateUsage]
+                if len(items) == 0:
+                    return
+                if len(items) <= default:
+                    default = 0
+                if self.__syntax in (Syntax.Plain, Syntax.Terminal):
+                    self.__push("/".join(self.__text_join_item_formatter.format(item) for item in items))
+                    return
+                if self.__syntax == Syntax.MediaWiki or (
+                    self.__syntax == Syntax.MediaWikiPretty
+                    and all(self.text_width(item) < 20 for item in items)
+                    and sum(len(item) for item in items) < 100
+                ):
+                    if default != 0:
+                        self.__push("{{黑幕|")
+                        self.__push("/".join(self.__text_join_item_formatter.format(item) for item in items[:default]))
+                        self.__push("/}}")
+                    self.__push(self.__text_join_item_formatter.format(items[default]))
+                    if default != len(items) - 1:
+                        self.__push("{{黑幕|/")
+                        self.__push(
+                            "/".join(self.__text_join_item_formatter.format(item) for item in items[default + 1 :])
+                        )
+                        self.__push("}}")
+                    return
+                if self.__syntax == Syntax.MediaWikiPretty:
+                    _ = self.__texts[-1].write("\n")
+                    self.__push("{{切换板|开始}}")
+                    for index in range(len(items)):
+                        _ = self.__texts[-1].write(
+                            "\n  {{切换板|默认" + ("显示" if index == default else "折叠") + "|<!-- 补充标题 -->}}"
+                        )
+                    for index, item in enumerate(items):
+                        _ = self.__texts[-1].write("\n  ")
+                        self.__push("{{切换板|" + ("显示" if index == default else "折叠") + "内容}}")
+                        self.__push(self.__text_join_item_formatter.format(item))
+                        self.__push("{{切换板|内容结束}}")
+                    _ = self.__texts[-1].write("\n")
+                    self.__push("{{切换板|结束}}")
             case _:
                 raise ValueError(f"invalid var {var}")
 
