@@ -32,7 +32,7 @@
 |<% if phase != 1 %>阶段${phase}<% endif %>技能${loop.index}TAG=${skill.tag}
 |<% if phase != 1 %>阶段${phase}<% endif %>技能${loop.index}能量=${ skill.sp_hit_base | default(0, true) }<!-- 受击回复能量 -->
 |<% if phase != 1 %>阶段${phase}<% endif %>技能${loop.index}GIF=<!-- 无技能动画填0 -->
-|<% if phase != 1 %>阶段${phase}<% endif %>技能${loop.index}描述=${ skill.desc | gszformat(*skill.param_list) }
+|<% if phase != 1 %>阶段${phase}<% endif %>技能${loop.index}描述=${ skill.desc | gszformat(skill.param_list) }
 <% endfor -%>
 <% endfor -%>
 }}{{WIKI底部导航|角色图鉴=展开}}

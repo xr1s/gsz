@@ -708,10 +708,15 @@ class Formatter:
     def format(
         self,
         format: str,
+        argument: float | str | tuple[float | str, ...] = (),
+        /,
         *args: float | str,
         image_path: list[str] | None = None,
     ) -> str:
-        self.__parameter = args
+        if isinstance(argument, tuple):
+            self.__parameter = argument
+        else:
+            self.__parameter = (argument,) + args
         if image_path is not None:
             self.__localbook_img = image_path
         else:
