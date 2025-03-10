@@ -111,6 +111,10 @@ def test_pretty_print_mediawiki():
         == """''<p style="text-align: center">这是内容</p>''"""
     )
     assert (
+        formatter.format('<align="center">这是内容</align>\\n\\n.')
+        == """<p style="text-align: center">这是内容</p><br />\n."""
+    )
+    assert (
         formatter.format('<i><align="center">这是内容</align></i>#')
         == """''<p style="text-align: center">这是内容</p>''\n#"""
     )
