@@ -1,17 +1,35 @@
 # GSZ
 
+Choose one listed below as your package manager:
+
+```bash
+pip install 'git+https://github.com/xr1s/gsz'
+```
+
+```bash
+uv add 'git+https://github.com/xr1s/gsz'
+```
+
+```bash
+pdm add 'git+https://github.com/xr1s/gsz'
+```
+
+```bash
+poetry add 'git+https://github.com/xr1s/gsz'
+```
+
 Example Usage
+
 
 ```python
 import argparse
+import dataclasses
 import pathlib
 
-import pydantic
-
-from gsz.sr import GameData
+from gsz import SRGameData
 
 
-@pydantic.dataclasses.dataclass
+@dataclasses.dataclass
 class Arguments:
     base: pathlib.Path
 
@@ -27,7 +45,7 @@ def main():
     arguments = parse_arguments()
     game = GameData(arguments.base)
     for monster in game.monster_config():
-        print(monster.wiki_name)
+        print(monster.wiki())
 
 
 if __name__ == "__main__":
