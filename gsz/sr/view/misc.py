@@ -26,6 +26,22 @@ class RewardData(View[excel.RewardData]):
         return list(self._game.item_config_all(filter(None, self._excel.item_id)))
 
 
+class MazeBuff(View[excel.MazeBuff]):
+    ExcelOutput: typing.Final = excel.MazeBuff
+
+    @functools.cached_property
+    def name(self) -> str:
+        return self._game.text(self._excel.buff_name)
+
+    @functools.cached_property
+    def desc(self) -> str:
+        return self._game.text(self._excel.buff_desc)
+
+    @functools.cached_property
+    def param_list(self) -> tuple[float, ...]:
+        return tuple(param.value for param in self._excel.param_list)
+
+
 class TextJoinConfig(View[excel.TextJoinConfig]):
     ExcelOutput: typing.Final = excel.TextJoinConfig
 

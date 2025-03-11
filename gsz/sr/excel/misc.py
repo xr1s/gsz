@@ -4,7 +4,7 @@ import typing
 
 import pydantic
 
-from .base import ModelID, Text, Value
+from .base import ModelID, ModelMainSubID, Text, Value
 
 
 class ExtraEffectConfig(ModelID):
@@ -106,6 +106,73 @@ class RewardData(ModelID):
             for index, val in enumerate(fields):
                 field(reward_data, f"{name}_{index + 1}", val)
         return reward_data
+
+
+class MazeBuffType(enum.Enum):
+    Assistant = "Assistant"
+    Character = "Character"
+    CharacterKeepScene = "CharacterKeepScene"
+    Level = "Level"
+    LevelKeepScene = "LevelKeepScene"
+    Team = "Team"
+    TeamKeepScene = "TeamKeepScene"
+
+
+class InBattleBindingType(enum.Enum):
+    CharacterAbility = "CharacterAbility"
+    CharacterSkill = "CharacterSkill"
+    StageAbilityAfterCharacterBorn = "StageAbilityAfterCharacterBorn"
+    StageAbilityBeforeCharacterBorn = "StageAbilityBeforeCharacterBorn"
+
+
+class MazeBuffUseType(enum.Enum):
+    AddBattleBuff = "AddBattleBuff"
+    Special = "Special"
+    SummonUnit = "SummonUnit"
+    TriggerBattle = "TriggerBattle"
+
+
+class MazeBuffIcon(enum.Enum):
+    Buff = "Buff"
+    Debuff = "Debuff"
+    Other = "Other"
+
+
+class MazeBuff(ModelMainSubID):
+    """战斗增益（或减益）。各种模拟宇宙祝福、逐光捡金效果都会链接到这里"""
+
+    id_: int
+    buff_series: typing.Literal[1]
+    buff_rarity: typing.Literal[1]
+    lv: int
+    lv_max: int
+    modifier_name: str
+    in_battle_binding_type: InBattleBindingType | None = None
+    in_battle_binding_key: str
+    param_list: list[Value[float]]
+    buff_desc_param_by_avatar_skill_id: int | None = None
+    buff_icon: str
+    buff_name: Text
+    buff_desc: Text
+    buff_simple_desc: Text | None = None
+    buff_desc_battle: Text | None = None
+    buff_effect: str
+    maze_buff_type: MazeBuffType
+    use_type: MazeBuffUseType | None = None  # 仅出现在 1.6 及之前
+    maze_buff_icon_type: MazeBuffIcon | None = None
+    maze_buff_pool: int | None = None
+    is_display: bool = False
+    is_display_env_in_level: bool = False
+
+    @property
+    @typing.override
+    def main_id(self) -> int:
+        return self.id_
+
+    @property
+    @typing.override
+    def sub_id(self) -> int:
+        return self.lv
 
 
 class TextJoinType(enum.Enum):

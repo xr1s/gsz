@@ -82,61 +82,81 @@ class Value[T](Model):
 
 
 FIELD_ALIASES_ID = pydantic.AliasChoices(
-    "KIFGIAMDGPI",  # 1.0
-    "JEKCKJBHBKN",  # 1.1
-    "MNMACAIHJCE",  # 1.2
-    "CKFOCMJDLGG",  # 1.3
-    "HMBDFGFHFAI",  # 1.4
-    "OBBNCDOAKEF",  # 1.5
-    "CMFIFDAHNOG",  # 1.6
-    "DOHIPPHAGLG",  # 2.0
-    "DGBJNJFOGHN",  # 2.1
-    "ILOCKGFGCIF",  # 2.2
-    "IPIGPCKIEMA",  # 2.3
-    "IDNGFMLCGHB",  # 2.4
-    "GKBBPHMLLNG",  # 2.5
-    "PGKKLADJKGK",  # 2.6
-    "CAMGCAFNKPK",  # 2.7
-    "LDKCGGLDKCK",  # 3.0
     "BMEJEMLFEIO",  # 3.1
+    "LDKCGGLDKCK",  # 3.0
+    "CAMGCAFNKPK",  # 2.7
+    "PGKKLADJKGK",  # 2.6
+    "GKBBPHMLLNG",  # 2.5
+    "IDNGFMLCGHB",  # 2.4
+    "IPIGPCKIEMA",  # 2.3
+    "ILOCKGFGCIF",  # 2.2
+    "DGBJNJFOGHN",  # 2.1
+    "DOHIPPHAGLG",  # 2.0
+    "CMFIFDAHNOG",  # 1.6
+    "OBBNCDOAKEF",  # 1.5
+    "HMBDFGFHFAI",  # 1.4
+    "CKFOCMJDLGG",  # 1.3
+    "MNMACAIHJCE",  # 1.2
+    "JEKCKJBHBKN",  # 1.1
+    "KIFGIAMDGPI",  # 1.0
 )
 
 FIELD_ALIASES_KEY = pydantic.AliasChoices(
-    "JOAHDHLLMDK",  # 1.0
-    "OEOPENFDEML",  # 1.1
-    "LFCIILHABDO",  # 1.2
-    "COJNNIIOEAK",  # 1.3
-    "JDKAMOANICM",  # 1.4
-    "CFNMGGCLFHN",  # 1.5
-    "JJNBOIODCCF",  # 1.6
-    "DJBGPLLGOEF",  # 2.0
-    "CEDKLKIHFEK",  # 2.1
-    "MLMLDHKBPLM",  # 2.2
-    "LFKFFCJNFKN",  # 2.3
-    "MBBNDDLBEPE",  # 2.4
-    "PFMLCKGCKOB",  # 2.5
-    "MFKLINKCPPA",  # 2.6
-    "BNCHHJCHKON",  # 2.7
-    "EGIHHBKIHAK",  # 3.0
     "HEIKKHLKMOA",  # 3.1
+    "EGIHHBKIHAK",  # 3.0
+    "BNCHHJCHKON",  # 2.7
+    "MFKLINKCPPA",  # 2.6
+    "PFMLCKGCKOB",  # 2.5
+    "MBBNDDLBEPE",  # 2.4
+    "LFKFFCJNFKN",  # 2.3
+    "MLMLDHKBPLM",  # 2.2
+    "CEDKLKIHFEK",  # 2.1
+    "DJBGPLLGOEF",  # 2.0
+    "JJNBOIODCCF",  # 1.6
+    "CFNMGGCLFHN",  # 1.5
+    "JDKAMOANICM",  # 1.4
+    "COJNNIIOEAK",  # 1.3
+    "LFCIILHABDO",  # 1.2
+    "OEOPENFDEML",  # 1.1
+    "JOAHDHLLMDK",  # 1.0
+)
+
+FIELD_ALIASES_ROGUE_WEEKLY_TYP = pydantic.AliasChoices(
+    "PICHIHHCOCB",  # 3.1
+    "PGCFPBGPDGG",  # 3.0
+    "MPNJPFDCBDG",  # 2.7
+    "EOMLKKGEAEF",  # 2.6
+    "FGMDOEKGPEE",  # 2.5
+    "EEOLCCFMJFF",  # 2.4
+    "IAGLGKPDLOE",  # 2.3
+)
+
+FIELD_ALIASES_ROGUE_WEEKLY_VAL = pydantic.AliasChoices(
+    "HMCDHMFHABF",  # 3.1
+    "CPPHDJHHGGN",  # 3.0
+    "ODPKJEJKOIH",  # 2.7
+    "HPPEILAONGE",  # 2.6
+    "NLABNDMDIKM",  # 2.5
+    "DIBKEHHCPAP",  # 2.4
+    "EPBOOFFCKPJ",  # 2.3
 )
 
 FIELD_ALIASES_VAL = pydantic.AliasChoices(
-    "LKJLPJMIGNJ",  # 1.0
-    "BHLILFMLNEE",  # 1.1
-    "LGKGOMNMBAH",  # 1.2
-    "MBOHKHKHFPD",  # 1.3
-    "MOJJBFBKBNC",  # 1.4
-    "JCFBPDLNMLH",  # 1.5
-    "AMMAAKPAKAA",  # 1.6
-    "BOANKOCFAIM",  # 2.0
-    "IEDALJJJBCE",  # 2.1
-    "PKPGBCJMDEK",  # 2.2
-    "EPBOOFFCKPJ",  # 2.3
-    "DIBKEHHCPAP",  # 2.4
-    "NLABNDMDIKM",  # 2.5
-    "HPPEILAONGE",  # 2.6
-    "ODPKJEJKOIH",  # 2.7
-    "CPPHDJHHGGN",  # 3.0
     "MBMDOCJIMEJ",  # 3.1
+    "CPPHDJHHGGN",  # 3.0
+    "ODPKJEJKOIH",  # 2.7
+    "HPPEILAONGE",  # 2.6
+    "NLABNDMDIKM",  # 2.5
+    "DIBKEHHCPAP",  # 2.4
+    "EPBOOFFCKPJ",  # 2.3
+    "PKPGBCJMDEK",  # 2.2
+    "IEDALJJJBCE",  # 2.1
+    "BOANKOCFAIM",  # 2.0
+    "AMMAAKPAKAA",  # 1.6
+    "JCFBPDLNMLH",  # 1.5
+    "MOJJBFBKBNC",  # 1.4
+    "MBOHKHKHFPD",  # 1.3
+    "LGKGOMNMBAH",  # 1.2
+    "BHLILFMLNEE",  # 1.1
+    "LKJLPJMIGNJ",  # 1.0
 )

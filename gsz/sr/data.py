@@ -466,6 +466,10 @@ class GameData:
     def reward_data(self):
         """奖励"""
 
+    @excel_output_main_sub(view.MazeBuff)
+    def maze_buff(self):
+        """战斗助益（或增益），模拟宇宙祝福和逐光捡金效果都引用此"""
+
     @excel_output(view.TextJoinConfig)
     def text_join_config(self):
         """"""
@@ -529,3 +533,85 @@ class GameData:
     @excel_output(view.NPCMonsterData)
     def npc_monster_data(self):
         """敌人详情"""
+
+    ######## rogue ########
+
+    @excel_output(view.RogueBonus)
+    def rogue_bonus(self):
+        """模拟宇宙祝福"""
+
+    @excel_output_main_sub(view.RogueBuff)
+    def rogue_buff(self):
+        """模拟宇宙祝福"""
+
+    @excel_output(view.RogueBuffType)
+    def rogue_buff_type(self):
+        """模拟宇宙祝福命途（因为是模拟宇宙所以不包含同谐）"""
+
+    @excel_output(view.RogueHandbookMiracle)
+    def rogue_handbook_miracle(self):
+        """模拟宇宙奇物图鉴信息（解锁奖励、在哪些 DLC 中出现等）"""
+
+    @excel_output(view.RogueHandbookMiracleType)
+    def rogue_handbook_miracle_type(self):
+        """模拟宇宙奇物图鉴所属 DLC"""
+
+    @excel_output_main_sub(view.MazeBuff)
+    def rogue_maze_buff(self):
+        """模拟、差分宇宙增益（可能来自祝福、奇物、方程、金血）"""
+
+    @excel_output(view.RogueMiracle)
+    def rogue_miracle(self):
+        """模拟宇宙奇物"""
+
+    @excel_output(view.RogueMiracleDisplay)
+    def rogue_miracle_display(self):
+        """模拟宇宙奇物效果"""
+
+    @excel_output(view.RogueMiracleEffectDisplay)
+    def rogue_miracle_effect_display(self):
+        """模拟宇宙奇物效果"""
+
+    @excel_output(view.RogueMonster)
+    def rogue_monster(self):
+        """模拟宇宙敌人"""
+
+    @excel_output(view.RogueMonsterGroup)
+    def rogue_monster_group(self):
+        """为每个位面首领区域中可能出现的敌人"""
+
+    @excel_output_main_sub(view.RogueTournBuff)
+    def rogue_tourn_buff(self):
+        """差分宇宙祝福"""
+
+    @excel_output(view.RogueTournBuffType)
+    def rogue_tourn_buff_type(self):
+        """差分宇宙祝福"""
+
+    @excel_output(view.RogueTournFormula)
+    def rogue_tourn_formula(self):
+        """差分宇宙方程"""
+
+    @excel_output(view.RogueTournFormulaDisplay)
+    def rogue_tourn_formula_display(self):
+        """差分宇宙方程效果"""
+
+    @excel_output(view.RogueTournHandbookMiracle)
+    def rogue_tourn_handbook_miracle(self):
+        """差分宇宙图鉴奇物（如「绝对失败处方」、「塔奥牌」等有不同效果的奇物故事等会出现于此）"""
+
+    @excel_output(view.RogueTournMiracle)
+    def rogue_tourn_miracle(self):
+        """差分宇宙奇物（如「天慧合金Ⅰ型」、「绝对失败处方」、「塔奥牌」等的具体奇物会各自分列于此）"""
+
+    @excel_output(view.RogueTournTitanBless)
+    def rogue_tourn_titan_bless(self):
+        """差分宇宙金血祝颂"""
+
+    @excel_output(view.RogueTournWeeklyChallenge)
+    def rogue_tourn_weekly_challenge(self):
+        """差分宇宙周期演算"""
+
+    @excel_output(view.RogueTournWeeklyDisplay)
+    def rogue_tourn_weekly_display(self):
+        """差分宇宙周期预设"""
