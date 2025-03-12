@@ -3,7 +3,7 @@ import typing
 
 import pydantic
 
-from .base import Model, Text
+from .base import Model, ModelID, Text
 
 
 class MainType(enum.Enum):
@@ -288,7 +288,7 @@ class ItemList(Model):
     item_num: int
 
 
-class ItemConfig(Model):
+class ItemConfig(ModelID):
     id_: int
     item_main_type: MainType
     item_sub_type: SubType
@@ -319,14 +319,16 @@ class ItemConfig(Model):
     is_show_red_dot: bool = False
 
     @property
+    @typing.override
     def id(self) -> int:
         return self.id_
 
 
-class ItemPurpose(Model):
+class ItemPurpose(ModelID):
     id_: int
     purpose_text: Text
 
     @property
+    @typing.override
     def id(self) -> int:
         return self.id_

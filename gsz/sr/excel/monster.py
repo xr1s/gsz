@@ -4,10 +4,20 @@ import typing
 
 import pydantic
 
-from .base import Element, ID_ALIASES, KEY_ALIASES, Model, Text, VAL_ALIASES, Value
+from .base import (
+    Element,
+    FIELD_ALIASES_ID,
+    FIELD_ALIASES_KEY,
+    FIELD_ALIASES_VAL,
+    Model,
+    ModelID,
+    ModelMainSubID,
+    Text,
+    Value,
+)
 
 
-class EliteGroup(Model):
+class EliteGroup(ModelID):
     """精英组别，属性加成"""
 
     elite_group: int
@@ -18,11 +28,12 @@ class EliteGroup(Model):
     stance_ratio: Value[float]
 
     @property
+    @typing.override
     def id(self) -> int:
         return self.elite_group
 
 
-class HardLevelGroup(Model):
+class HardLevelGroup(ModelMainSubID):
     """敌方属性成长详情"""
 
     hard_level_group: int
@@ -37,15 +48,17 @@ class HardLevelGroup(Model):
     status_resistance: Value[float] | None = None
 
     @property
+    @typing.override
     def main_id(self) -> int:
         return self.hard_level_group
 
     @property
+    @typing.override
     def sub_id(self) -> int:
         return self.level
 
 
-class MonsterCamp(Model):
+class MonsterCamp(ModelID):
     """敌人阵营"""
 
     id_: int
@@ -55,13 +68,14 @@ class MonsterCamp(Model):
     camp_type: typing.Literal["Monster"] = "Monster"  # 1.5 版本之后
 
     @property
+    @typing.override
     def id(self) -> int:
         return self.id_
 
 
 class CustomValue(Model):
-    key: typing.Annotated[str, pydantic.Field(validation_alias=KEY_ALIASES)]
-    val: typing.Annotated[int, pydantic.Field(validation_alias=VAL_ALIASES)] = 0
+    key: typing.Annotated[str, pydantic.Field(validation_alias=FIELD_ALIASES_KEY)]
+    val: typing.Annotated[int, pydantic.Field(validation_alias=FIELD_ALIASES_VAL)] = 0
 
 
 class Debuff(enum.Enum):
@@ -114,10 +128,10 @@ class DamageTypeResistance(Model):
 
 
 class AISkillSequence(Model):
-    id: typing.Annotated[int, pydantic.Field(validation_alias=ID_ALIASES)]
+    id: typing.Annotated[int, pydantic.Field(validation_alias=FIELD_ALIASES_ID)]
 
 
-class MonsterConfig(Model):
+class MonsterConfig(ModelID):
     """敌人详情"""
 
     monster_id: int
@@ -148,11 +162,12 @@ class MonsterConfig(Model):
     override_skill_params: list[None] | None = None
 
     @property
+    @typing.override
     def id(self) -> int:
         return self.monster_id
 
 
-class MonsterSkillConfig(Model):
+class MonsterSkillConfig(ModelID):
     """敌人技能"""
 
     skill_id: int
@@ -178,6 +193,7 @@ class MonsterSkillConfig(Model):
     modifier_list: list[str] = []  # 2.0 无此字段
 
     @property
+    @typing.override
     def id(self) -> int:
         return self.skill_id
 
@@ -194,19 +210,8 @@ class Rank(enum.Enum):
     MinionLv2 = "MinionLv2"
     """普通敌人，大多是这种，不清楚和 Minion 的区别"""
 
-    def wiki(self) -> str:
-        match self:
-            case self.BigBoss:
-                return "周本Boss"
-            case self.Elite:
-                return "强敌"
-            case self.LittleBoss:
-                return "剧情Boss"
-            case self.Minion | self.MinionLv2:
-                return "普通"
 
-
-class MonsterTemplateConfig(Model):
+class MonsterTemplateConfig(ModelID):
     """
     敌人模板
     对应一种敌人类型
@@ -249,11 +254,12 @@ class MonsterTemplateConfig(Model):
     npc_monster_list: list[int]
 
     @property
+    @typing.override
     def id(self) -> int:
         return self.monster_template_id
 
 
-class NPCMonsterData(Model):
+class NPCMonsterData(ModelID):
     """
     站在大世界的敌人信息（`MonsterConfig` 等都是入战后的敌人信息）
     """
@@ -276,5 +282,6 @@ class NPCMonsterData(Model):
     mapping_info_id: int | None = None
 
     @property
+    @typing.override
     def id(self) -> int:
         return self.id_

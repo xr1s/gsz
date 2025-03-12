@@ -1,12 +1,9 @@
+import abc
 import enum
 import typing
 
 import pydantic
 import pydantic.alias_generators
-
-
-class ID(typing.Protocol):
-    def id(self) -> int: ...
 
 
 class Element(enum.Enum):
@@ -60,6 +57,22 @@ class Model(pydantic.BaseModel):
     )
 
 
+class ModelID(Model, metaclass=abc.ABCMeta):
+    @property
+    @abc.abstractmethod
+    def id(self) -> int: ...
+
+
+class ModelMainSubID(Model, metaclass=abc.ABCMeta):
+    @property
+    @abc.abstractmethod
+    def main_id(self) -> int: ...
+
+    @property
+    @abc.abstractmethod
+    def sub_id(self) -> int: ...
+
+
 class Text(Model):
     hash: int
 
@@ -68,7 +81,7 @@ class Value[T](Model):
     value: T
 
 
-ID_ALIASES = pydantic.AliasChoices(
+FIELD_ALIASES_ID = pydantic.AliasChoices(
     "KIFGIAMDGPI",  # 1.0
     "JEKCKJBHBKN",  # 1.1
     "MNMACAIHJCE",  # 1.2
@@ -88,7 +101,7 @@ ID_ALIASES = pydantic.AliasChoices(
     "BMEJEMLFEIO",  # 3.1
 )
 
-KEY_ALIASES = pydantic.AliasChoices(
+FIELD_ALIASES_KEY = pydantic.AliasChoices(
     "JOAHDHLLMDK",  # 1.0
     "OEOPENFDEML",  # 1.1
     "LFCIILHABDO",  # 1.2
@@ -108,7 +121,7 @@ KEY_ALIASES = pydantic.AliasChoices(
     "HEIKKHLKMOA",  # 3.1
 )
 
-VAL_ALIASES = pydantic.AliasChoices(
+FIELD_ALIASES_VAL = pydantic.AliasChoices(
     "LKJLPJMIGNJ",  # 1.0
     "BHLILFMLNEE",  # 1.1
     "LGKGOMNMBAH",  # 1.2

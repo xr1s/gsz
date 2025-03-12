@@ -1,4 +1,4 @@
-from .base import Element, Text
+from .base import Element, ModelID, ModelMainSubID, Text
 from .book import BookDisplayType, BookSeriesConfig, BookSeriesWorld, LocalbookConfig
 from .item import ItemConfig, ItemPurpose
 from .misc import ExtraEffectConfig, TextJoinConfig, TextJoinItem
@@ -31,4 +31,7 @@ __all__ = (
     "Text",
     "TextJoinConfig",
     "TextJoinItem",
+    # Interfaces
+    "ModelID",
+    "ModelMainSubID",
 )

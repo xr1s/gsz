@@ -1,3 +1,4 @@
+from .base import IView
 from .book import BookDisplayType, BookSeriesConfig, BookSeriesWorld, LocalbookConfig
 from .item import ItemConfig, ItemPurpose
 from .misc import ExtraEffectConfig, TextJoinConfig, TextJoinItem
@@ -28,4 +29,6 @@ __all__ = (
     "NPCMonsterData",
     "TextJoinConfig",
     "TextJoinItem",
+    # Interface
+    "IView",
 )

@@ -1,16 +1,19 @@
-from .base import Model, Text
+import typing
+
+from .base import ModelID, Text
 
 
-class BookDisplayType(Model):
+class BookDisplayType(ModelID):
     book_display_type_id: int
     alignment: int
 
     @property
+    @typing.override
     def id(self) -> int:
         return self.book_display_type_id
 
 
-class BookSeriesConfig(Model):
+class BookSeriesConfig(ModelID):
     book_series_id: int
     book_series: Text
     book_series_comments: Text | None = None
@@ -19,22 +22,24 @@ class BookSeriesConfig(Model):
     is_show_in_bookshelf: bool = False
 
     @property
+    @typing.override
     def id(self) -> int:
         return self.book_series_id
 
 
-class BookSeriesWorld(Model):
+class BookSeriesWorld(ModelID):
     book_series_world: int
     book_series_world_textmap_id: Text
     book_series_world_icon_path: str
     book_series_world_background_path: str
 
     @property
+    @typing.override
     def id(self) -> int:
         return self.book_series_world
 
 
-class LocalbookConfig(Model):
+class LocalbookConfig(ModelID):
     book_id: int
     book_series_id: int
     book_series_inside_id: int
@@ -44,5 +49,6 @@ class LocalbookConfig(Model):
     local_book_image_path: list[str]
 
     @property
+    @typing.override
     def id(self) -> int:
         return self.book_id
