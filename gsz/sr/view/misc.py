@@ -1,5 +1,6 @@
 from __future__ import annotations
 import functools
+import typing
 
 from .. import excel, view
 from .base import View
@@ -8,7 +9,7 @@ from .base import View
 class ExtraEffectConfig(View[excel.ExtraEffectConfig]):
     """精英组别，属性加成"""
 
-    type ExcelOutput = excel.ExtraEffectConfig
+    ExcelOutput: typing.Final = excel.ExtraEffectConfig
 
     @functools.cached_property
     def name(self) -> str:
@@ -16,7 +17,7 @@ class ExtraEffectConfig(View[excel.ExtraEffectConfig]):
 
 
 class RewardData(View[excel.RewardData]):
-    type ExcelOutput = excel.RewardData
+    ExcelOutput: typing.Final = excel.RewardData
 
     @functools.cached_property
     def items(self) -> list[view.ItemConfig] | None:
@@ -26,7 +27,7 @@ class RewardData(View[excel.RewardData]):
 
 
 class TextJoinConfig(View[excel.TextJoinConfig]):
-    type ExcelOutput = excel.TextJoinConfig
+    ExcelOutput: typing.Final = excel.TextJoinConfig
 
     @functools.cached_property
     def default_item(self) -> TextJoinItem:
@@ -40,7 +41,7 @@ class TextJoinConfig(View[excel.TextJoinConfig]):
 
 
 class TextJoinItem(View[excel.TextJoinItem]):
-    type ExcelOutput = excel.TextJoinItem
+    ExcelOutput: typing.Final = excel.TextJoinItem
 
     @property
     def id(self) -> int:

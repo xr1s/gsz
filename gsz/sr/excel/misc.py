@@ -39,7 +39,7 @@ class RewardData(ModelID):
     @pydantic.model_validator(mode="before")
     @classmethod
     def model_serializer(cls, data: typing.Any) -> typing.Any:
-        class RewardData(typing.TypedDict):
+        class RewardData(typing.TypedDict, total=False):
             RewardID: int
             Hcoin: int | None
             ItemID: collections.abc.Sequence[int | None] | None
@@ -66,7 +66,7 @@ class RewardData(ModelID):
         count_pos: list[tuple[int, int]] | None = []
         level_pos: list[tuple[int, int]] | None = []
         rank_pos: list[tuple[int, int]] | None = []
-        returns: RewardData = {}  # pyright: ignore[reportAssignmentType]
+        returns: RewardData = {}
         for key, val in data.items():
             if key in ("RewardID", "Hcoin"):
                 returns[key] = val

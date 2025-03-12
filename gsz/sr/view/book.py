@@ -1,16 +1,17 @@
 from __future__ import annotations
 import functools
+import typing
 
 from .. import excel
 from .base import View
 
 
 class BookDisplayType(View[excel.BookDisplayType]):
-    type ExcelOutput = excel.BookSeriesConfig
+    ExcelOutput: typing.Final = excel.BookDisplayType
 
 
 class BookSeriesConfig(View[excel.BookSeriesConfig]):
-    type ExcelOutput = excel.BookSeriesConfig
+    ExcelOutput: typing.Final = excel.BookSeriesConfig
 
     @functools.cached_property
     def name(self) -> str:
@@ -87,7 +88,7 @@ class BookSeriesConfig(View[excel.BookSeriesConfig]):
 
 
 class BookSeriesWorld(View[excel.BookSeriesWorld]):
-    type ExcelOutput = excel.BookSeriesWorld
+    ExcelOutput: typing.Final = excel.BookSeriesWorld
 
     @property
     def id(self) -> int:
@@ -95,7 +96,7 @@ class BookSeriesWorld(View[excel.BookSeriesWorld]):
 
 
 class LocalbookConfig(View[excel.LocalbookConfig]):
-    type ExcelOutput = excel.LocalbookConfig
+    ExcelOutput: typing.Final = excel.LocalbookConfig
 
     @functools.cached_property
     def name(self) -> str:

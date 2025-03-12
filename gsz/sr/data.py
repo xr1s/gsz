@@ -113,7 +113,7 @@ class excel_output[V: view.IView[excel.ModelID], E: excel.ModelID]:
                     return iter(()) if id is None or isinstance(id, collections.abc.Iterable) else None
                 finally:
                     self.__file_names = ()  # 清理一下方便 GC
-                ExcelOutput = typing.cast(E, typing.cast(typing.Any, self.__type.ExcelOutput))
+                ExcelOutput = typing.cast(E, self.__type.ExcelOutput)
                 ExcelOutputList = pydantic.TypeAdapter(list[ExcelOutput])
                 excels = json.loads(file_path.read_bytes())
                 try:
@@ -230,7 +230,7 @@ class excel_output_main_sub[V: view.IView[excel.ModelMainSubID], E: excel.ModelM
                     return iter(()) if main_id is None or sub_id is None else None
                 finally:
                     self.__file_names = ()  # 清理一下方便 GC
-                ExcelOutput = typing.cast(E, typing.cast(typing.Any, self.__type.ExcelOutput))
+                ExcelOutput = typing.cast(E, self.__type.ExcelOutput)
                 ExcelOutputList = pydantic.TypeAdapter(list[ExcelOutput])
                 excels = json.loads(file_path.read_bytes())
                 try:

@@ -12,7 +12,7 @@ if typing.TYPE_CHECKING:
 class ItemConfig(View[excel.ItemConfig]):
     """道具"""
 
-    type ExcelOutput = excel.ItemConfig
+    ExcelOutput: typing.Final = excel.ItemConfig
 
     @functools.cached_property
     def name(self) -> str:
@@ -50,4 +50,4 @@ class ItemConfig(View[excel.ItemConfig]):
 
 
 class ItemPurpose(View[excel.ItemPurpose]):
-    type ExcelOutput = excel.ItemPurpose
+    ExcelOutput: typing.Final = excel.ItemPurpose

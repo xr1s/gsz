@@ -1,17 +1,21 @@
 import typing
 
+from ..excel import ModelID, ModelMainSubID
+
 if typing.TYPE_CHECKING:
     from ..data import GameData
-    from ..excel import ModelID, ModelMainSubID
+
+E_co = typing.TypeVar("E_co", bound=ModelID | ModelMainSubID, covariant=True)
 
 
-class IView[E: ModelID | ModelMainSubID](typing.Protocol):
-    ExcelOutput: typing.TypeAliasType
+class IView(typing.Protocol[E_co]):  # pyright: ignore[reportInvalidTypeVarUse]
+    ExcelOutput: typing.ClassVar
+    ExcelOutput: type[E_co]
 
-    def __init__(self, game: "GameData", excel: E): ...
+    def __init__(self, game: "GameData", excel: E_co): ...
 
 
-class View[E: ModelID | ModelMainSubID]:
-    def __init__(self, game: "GameData", excel: E):
+class View(typing.Generic[E_co]):
+    def __init__(self, game: "GameData", excel: E_co):
         self._game: GameData = game
-        self._excel: E = excel
+        self._excel: E_co = excel

@@ -1,7 +1,7 @@
 from __future__ import annotations
 import functools
 import itertools
-import re
+import typing
 from typing import TYPE_CHECKING
 
 from .. import excel
@@ -37,13 +37,13 @@ def wiki_name(name: str) -> str:
 class EliteGroup(View[excel.EliteGroup]):
     """精英组别，属性加成"""
 
-    type ExcelOutput = excel.EliteGroup
+    ExcelOutput: typing.Final = excel.EliteGroup
 
 
 class HardLevelGroup(View[excel.HardLevelGroup]):
     """敌方属性成长详情"""
 
-    type ExcelOutput = excel.HardLevelGroup
+    ExcelOutput: typing.Final = excel.HardLevelGroup
 
     @property
     def hp_ratio(self) -> float:
@@ -57,7 +57,7 @@ class HardLevelGroup(View[excel.HardLevelGroup]):
 class MonsterCamp(View[excel.MonsterCamp]):
     """敌人阵营"""
 
-    type ExcelOutput = excel.MonsterCamp
+    ExcelOutput: typing.Final = excel.MonsterCamp
 
     @functools.cached_property
     def name(self) -> str:
@@ -73,7 +73,7 @@ class MonsterConfig(View[excel.MonsterConfig]):
     比如在深渊里的会适当调高降低属性等
     """
 
-    type ExcelOutput = excel.MonsterConfig
+    ExcelOutput: typing.Final = excel.MonsterConfig
 
     @functools.cached_property
     def name(self) -> str:
@@ -214,7 +214,7 @@ class MonsterConfig(View[excel.MonsterConfig]):
 
 
 class MonsterSkillConfig(View[excel.MonsterSkillConfig]):
-    type ExcelOutput = excel.MonsterSkillConfig
+    ExcelOutput: typing.Final = excel.MonsterSkillConfig
 
     @functools.cached_property
     def name(self) -> str:
@@ -254,7 +254,7 @@ class MonsterSkillConfig(View[excel.MonsterSkillConfig]):
 
 
 class MonsterTemplateConfig(View[excel.MonsterTemplateConfig]):
-    type ExcelOutput = excel.MonsterTemplateConfig
+    ExcelOutput: typing.Final = excel.MonsterTemplateConfig
 
     @functools.cached_property
     def name(self) -> str:
@@ -336,7 +336,7 @@ class MonsterTemplateConfig(View[excel.MonsterTemplateConfig]):
 
 
 class NPCMonsterData(View[excel.NPCMonsterData]):
-    type ExcelOutput = excel.NPCMonsterData
+    ExcelOutput: typing.Final = excel.NPCMonsterData
 
     @functools.cached_property
     def name(self) -> str:
