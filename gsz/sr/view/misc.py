@@ -23,7 +23,7 @@ class RewardData(View[excel.RewardData]):
     def items(self) -> list[view.ItemConfig] | None:
         if self._excel.item_id is None:
             return None
-        return list(self._game.item_config_all(self._excel.item_id))
+        return list(self._game.item_config_all(filter(None, self._excel.item_id)))
 
 
 class TextJoinConfig(View[excel.TextJoinConfig]):

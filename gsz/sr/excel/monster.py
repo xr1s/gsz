@@ -175,7 +175,7 @@ class MonsterSkillConfig(ModelID):
     icon_path: str
     skill_desc: Text
     skill_type_desc: Text
-    skill_tag: Text
+    skill_tag: Text | None = None  # 仅出现于 1.1 版本及之后
     phase_list: list[int]
     is_threat: bool = False
     """是否大招（游戏中详情页展示为渐变红底）"""
@@ -216,7 +216,7 @@ class MonsterTemplateConfig(ModelID):
     敌人模板
     对应一种敌人类型
     不同的敌人类型可能是同一个种族，但是数值上会有差异
-    种族是我自创的概念，游戏中没用，指建模头像相同的敌人
+    种族大概就是 group_id 相同的 template，指建模头像相同的敌人
     """
 
     monster_template_id: int
@@ -234,7 +234,7 @@ class MonsterTemplateConfig(ModelID):
     prefab_path: str
     manikin_prefab_path: str
     manikin_config_path: pathlib.Path
-    manikin_image_path: str
+    manikin_image_path: str | None = None  # 仅出现于 1.2 版本及之后
     nature_id: typing.Literal[1]
     attack_base: Value[float]
     defence_base: Value[int] = Value(value=1)
@@ -269,7 +269,7 @@ class NPCMonsterData(ModelID):
     prefab_path: str | None = None  # 仅出现在 1.1 及之前
     config_entity_path: pathlib.Path
     npc_icon_path: str
-    npc_title: None = None
+    npc_title: Text | None = None
     board_show_list: list[typing.Literal[2]]
     json_path: pathlib.Path
     default_ai_path: pathlib.Path

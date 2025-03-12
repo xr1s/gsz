@@ -113,18 +113,20 @@ class excel_output[V: view.IView[excel.ModelID], E: excel.ModelID]:
                     return iter(()) if id is None or isinstance(id, collections.abc.Iterable) else None
                 finally:
                     self.__file_names = ()  # 清理一下方便 GC
-                ExcelOutput = typing.cast(E, self.__type.ExcelOutput)
-                ExcelOutputList = pydantic.TypeAdapter(list[ExcelOutput])
+                ExcelOutput = typing.cast(type[E], self.__type.ExcelOutput)
+                # ItemConfigAvatarSkin.json 由于内容仍未上线而数据文件已经存在（尽管之前一直为空）
+                # 可能是清理测试数据缺漏导致出现大量 null（此前 2.3 之前无，可能和修改数据格式有关），额外过滤一下
+                ExcelOutputList = pydantic.TypeAdapter(list[ExcelOutput | None])
                 excels = json.loads(file_path.read_bytes())
                 try:
                     excel_list = ExcelOutputList.validate_python(excels)
-                    self.__excel_output = {config.id: config for config in excel_list}
+                    self.__excel_output = {config.id: config for config in excel_list if config is not None}
                 except pydantic.ValidationError as exc:
                     ExcelOutputDict = pydantic.TypeAdapter(dict[int, ExcelOutput])
                     try:
                         self.__excel_output = ExcelOutputDict.validate_python(excels)
-                    except pydantic.ValidationError:
-                        raise exc from None
+                    except pydantic.ValidationError as former_structure_exc:
+                        raise former_structure_exc from exc
             if id is None:
                 return (self.__type(game, excel) for excel in self.__excel_output.values())
             if isinstance(id, collections.abc.Iterable):
@@ -230,20 +232,20 @@ class excel_output_main_sub[V: view.IView[excel.ModelMainSubID], E: excel.ModelM
                     return iter(()) if main_id is None or sub_id is None else None
                 finally:
                     self.__file_names = ()  # 清理一下方便 GC
-                ExcelOutput = typing.cast(E, self.__type.ExcelOutput)
-                ExcelOutputList = pydantic.TypeAdapter(list[ExcelOutput])
+                ExcelOutput = typing.cast(type[E], self.__type.ExcelOutput)
+                ExcelOutputList = pydantic.TypeAdapter(list[ExcelOutput | None])
                 excels = json.loads(file_path.read_bytes())
                 try:
                     excel_list = ExcelOutputList.validate_python(excels)
                     self.__excel_output = collections.defaultdict(list)
-                    for excel in excel_list:
+                    for excel in filter(None, excel_list):
                         self.__excel_output[excel.main_id].append(excel)
                 except pydantic.ValidationError as exc:
                     ExcelOutputDict = pydantic.TypeAdapter(dict[int, dict[int, ExcelOutput]])
                     try:
                         excel_dict = ExcelOutputDict.validate_python(excels)
-                    except pydantic.ValidationError:
-                        raise exc from None
+                    except pydantic.ValidationError as former_structure_exc:
+                        raise former_structure_exc from exc
                     self.__excel_output = {main_id: list(excel.values()) for main_id, excel in excel_dict.items()}
             match main_id, sub_id:
                 case None, None:

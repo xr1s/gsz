@@ -26,8 +26,8 @@ class ExtraEffectConfig(ModelID):
 class RewardData(ModelID):
     reward_id: int
     hcoin: int | None = None
-    item_id: list[int] | None = None
-    count: list[int] | None = None
+    item_id: list[int | None] | None = None
+    count: list[int | None] | None = None
     level: list[typing.Literal[1] | None] | None = None
     rank: list[typing.Literal[1] | None] | None = None
 
@@ -38,7 +38,7 @@ class RewardData(ModelID):
 
     @pydantic.model_validator(mode="before")
     @classmethod
-    def model_serializer(cls, data: typing.Any) -> typing.Any:
+    def model_validator(cls, data: typing.Any) -> typing.Any:
         class RewardData(typing.TypedDict, total=False):
             RewardID: int
             Hcoin: int | None
@@ -66,10 +66,10 @@ class RewardData(ModelID):
         count_pos: list[tuple[int, int]] | None = []
         level_pos: list[tuple[int, int]] | None = []
         rank_pos: list[tuple[int, int]] | None = []
-        returns: RewardData = {}
+        reward_data: RewardData = {}
         for key, val in data.items():
             if key in ("RewardID", "Hcoin"):
-                returns[key] = val
+                reward_data[key] = val
             elif key.startswith("ItemID_"):
                 item_id_pos.append((int(key[7:]), val))
             elif key.startswith("Count_"):
@@ -78,11 +78,34 @@ class RewardData(ModelID):
                 level_pos.append((int(key[6:]), val))
             elif key.startswith("Rank_"):
                 rank_pos.append((int(key[5:]), val))
-        field(returns, "ItemID", item_id_pos)
-        field(returns, "Count", count_pos)
-        field(returns, "Level", level_pos)
-        field(returns, "Rank", rank_pos)
-        return returns
+        field(reward_data, "ItemID", item_id_pos)
+        field(reward_data, "Count", count_pos)
+        field(reward_data, "Level", level_pos)
+        field(reward_data, "Rank", rank_pos)
+        return reward_data
+
+    @pydantic.model_serializer
+    def model_serializer(self) -> dict[str, int]:
+        def field(returns: dict[str, int], key: str, val: int | None):
+            if val is not None:
+                returns[key] = val
+
+        reward_data: dict[str, int] = {
+            "RewardID": self.reward_id,
+        }
+        field(reward_data, "Hcoin", self.hcoin)
+        name_fields: tuple[tuple[str, collections.abc.Sequence[int | None] | None], ...] = (
+            ("ItemID", self.item_id),
+            ("Count", self.count),
+            ("Rank", self.rank),
+            ("Level", self.level),
+        )
+        for name, fields in name_fields:
+            if fields is None:
+                continue
+            for index, val in enumerate(fields):
+                field(reward_data, f"{name}_{index + 1}", val)
+        return reward_data
 
 
 class TextJoinType(enum.Enum):

@@ -312,6 +312,7 @@ class ItemConfig(ModelID):
     use_type: UseType | None = None  # 1.3 及之前，后面大概合并为 UseMethod 了
     use_data_id: int | None = None  # 2.5 及之前，可能因为值全部和 id 一样，所以后面删掉了
     custom_data_list: list[int]
+    is_sellable: bool = False  # 仅出现于 2.4 之前
     return_item_id_list: list[ItemList]
     """道具拆分效果，比如光锥、遗器"""
     item_group: int | None = None
