@@ -1,3 +1,4 @@
+import collections.abc
 import enum
 import functools
 import html
@@ -177,7 +178,7 @@ class Formatter:
         if char == "%":
             return self.__flush_format(True)
         self.__flush_format()
-        return self.__feed_text(char)
+        return self.__feed(char)
 
     def __feed_specifier(self, char: str) -> None:
         if char == "]":
@@ -190,7 +191,7 @@ class Formatter:
             self.__flush_format(True)
             return
         self.__flush_format()
-        self.__feed_text(char)
+        self.__feed(char)
 
     def __feed_escaping(self, char: str) -> None:
         _ = self.__states.pop()
@@ -667,7 +668,7 @@ class Formatter:
             case _:
                 raise ValueError(f"invalid var {var}")
 
-    def feed(self, char: str) -> None:  # noqa: PLR0912
+    def __feed(self, char: str) -> None:  # noqa: PLR0912
         if len(self.__states) == 0:
             self.__feed_text(char)
             return
@@ -713,13 +714,13 @@ class Formatter:
     def format(
         self,
         format: str,
-        argument: float | str | tuple[float | str, ...] = (),
+        argument: float | str | tuple[float | str, ...] | collections.abc.Sequence[float | str] = (),
         /,
         *args: float | str,
         image_path: list[str] | None = None,
     ) -> str:
-        if isinstance(argument, tuple):
-            self.__parameter = argument
+        if isinstance(argument, tuple | collections.abc.Sequence):
+            self.__parameter = tuple(argument)
         else:
             self.__parameter = (argument,) + args
         if image_path is not None:
@@ -727,7 +728,7 @@ class Formatter:
         else:
             self.__localbook_img = None
         for char in format:
-            self.feed(char)
+            self.__feed(char)
         self.__is_inline_block = InlineBlock.Inline
         self.__flush()
         value = self.__texts[0].getvalue().rstrip("\n")
