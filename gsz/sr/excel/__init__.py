@@ -1,7 +1,7 @@
 from .base import Element, ModelID, ModelMainSubID, Text
 from .book import BookDisplayType, BookSeriesConfig, BookSeriesWorld, LocalbookConfig
 from .item import ItemConfig, ItemPurpose
-from .misc import ExtraEffectConfig, TextJoinConfig, TextJoinItem
+from .misc import ExtraEffectConfig, RewardData, TextJoinConfig, TextJoinItem
 from .monster import (
     EliteGroup,
     HardLevelGroup,
@@ -28,6 +28,7 @@ __all__ = (
     "MonsterSkillConfig",
     "MonsterTemplateConfig",
     "NPCMonsterData",
+    "RewardData",
     "Text",
     "TextJoinConfig",
     "TextJoinItem",

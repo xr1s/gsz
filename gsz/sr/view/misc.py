@@ -1,7 +1,7 @@
 from __future__ import annotations
 import functools
 
-from .. import excel
+from .. import excel, view
 from .base import View
 
 
@@ -13,6 +13,16 @@ class ExtraEffectConfig(View[excel.ExtraEffectConfig]):
     @functools.cached_property
     def name(self) -> str:
         return self._game.text(self._excel.extra_effect_name)
+
+
+class RewardData(View[excel.RewardData]):
+    type ExcelOutput = excel.RewardData
+
+    @functools.cached_property
+    def items(self) -> list[view.ItemConfig] | None:
+        if self._excel.item_id is None:
+            return None
+        return list(self._game.item_config_all(self._excel.item_id))
 
 
 class TextJoinConfig(View[excel.TextJoinConfig]):

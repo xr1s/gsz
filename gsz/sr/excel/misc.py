@@ -1,5 +1,8 @@
+import collections.abc
 import enum
 import typing
+
+import pydantic
 
 from .base import ModelID, Text, Value
 
@@ -18,6 +21,68 @@ class ExtraEffectConfig(ModelID):
     @typing.override
     def id(self) -> int:
         return self.extra_effect_id
+
+
+class RewardData(ModelID):
+    reward_id: int
+    hcoin: int | None = None
+    item_id: list[int] | None = None
+    count: list[int] | None = None
+    level: list[typing.Literal[1] | None] | None = None
+    rank: list[typing.Literal[1] | None] | None = None
+
+    @property
+    @typing.override
+    def id(self) -> int:
+        return self.reward_id
+
+    @pydantic.model_validator(mode="before")
+    @classmethod
+    def model_serializer(cls, data: typing.Any) -> typing.Any:
+        class RewardData(typing.TypedDict):
+            RewardID: int
+            Hcoin: int | None
+            ItemID: collections.abc.Sequence[int | None] | None
+            Count: collections.abc.Sequence[int | None] | None
+            Level: collections.abc.Sequence[int | None] | None
+            Rank: collections.abc.Sequence[int | None] | None
+
+        def field(
+            returns: RewardData,
+            name: typing.Literal["ItemID", "Count", "Level", "Rank"],
+            pos: list[tuple[int, int]],
+        ):
+            if len(pos) == 0:
+                return
+            items: list[int | None] = [None] * max(pos)[0]
+            for index, item in pos:
+                items[index - 1] = item
+            returns[name] = items
+
+        if not isinstance(data, dict):
+            raise TypeError(f"RewardData must be dict, {data}")
+        data = typing.cast(dict[str, int], data)
+        item_id_pos: list[tuple[int, int]] | None = []
+        count_pos: list[tuple[int, int]] | None = []
+        level_pos: list[tuple[int, int]] | None = []
+        rank_pos: list[tuple[int, int]] | None = []
+        returns: RewardData = {}  # pyright: ignore[reportAssignmentType]
+        for key, val in data.items():
+            if key in ("RewardID", "Hcoin"):
+                returns[key] = val
+            elif key.startswith("ItemID_"):
+                item_id_pos.append((int(key[7:]), val))
+            elif key.startswith("Count_"):
+                count_pos.append((int(key[6:]), val))
+            elif key.startswith("Level_"):
+                level_pos.append((int(key[6:]), val))
+            elif key.startswith("Rank_"):
+                rank_pos.append((int(key[5:]), val))
+        field(returns, "ItemID", item_id_pos)
+        field(returns, "Count", count_pos)
+        field(returns, "Level", level_pos)
+        field(returns, "Rank", rank_pos)
+        return returns
 
 
 class TextJoinType(enum.Enum):

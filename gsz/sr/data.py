@@ -392,6 +392,36 @@ class GameData:
     def item_purpose(self):
         """道具目的"""
 
+    @typing.overload
+    def item_config_all(self) -> collections.abc.Iterable[view.ItemConfig]: ...
+    @typing.overload
+    def item_config_all(self, id: int) -> view.ItemConfig | None: ...
+    @typing.overload
+    def item_config_all(self, id: collections.abc.Iterable[int]) -> collections.abc.Iterable[view.ItemConfig]: ...
+
+    def item_config_all(
+        self, id: int | collections.abc.Iterable[int] | None = None
+    ) -> view.ItemConfig | collections.abc.Iterable[view.ItemConfig] | None:
+        """从所有种类的 ItemConfig 中取得 ID 对应的那个"""
+        methods = [
+            self.item_config,
+            self.item_config_avatar,
+            self.item_config_avatar_player_icon,
+            self.item_config_avatar_rank,
+            self.item_config_avatar_skin,
+            self.item_config_book,
+            self.item_config_disk,
+            self.item_config_equipment,
+            self.item_config_relic,
+            self.item_config_train_dynamic,
+            self.item_player_card,
+        ]
+        if id is None:
+            return itertools.chain.from_iterable(method() for method in methods)
+        if isinstance(id, collections.abc.Iterable):
+            return [next(filter(None, (method(item_id) for method in methods))) for item_id in id]
+        return next(filter(None, (method(id) for method in methods)), None)
+
     ######## book ########
 
     @excel_output(view.BookDisplayType)
@@ -429,6 +459,10 @@ class GameData:
     @functools.cached_property
     def _extra_effect_config_names(self) -> set[str]:
         return {effect.name for effect in self.extra_effect_config()}
+
+    @excel_output(view.RewardData)
+    def reward_data(self):
+        """奖励"""
 
     @excel_output(view.TextJoinConfig)
     def text_join_config(self):
