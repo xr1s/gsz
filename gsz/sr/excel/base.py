@@ -4,6 +4,7 @@ import typing
 
 import pydantic
 import pydantic.alias_generators
+import typing_extensions
 
 
 class Element(enum.Enum):
@@ -22,7 +23,7 @@ class Element(enum.Enum):
     Wind = "Wind"
     """风"""
 
-    @typing.override
+    @typing_extensions.override
     def __str__(self) -> str:  # noqa: PLR0911
         match self:
             case self.Fire:
@@ -77,7 +78,10 @@ class Text(Model):
     hash: int
 
 
-class Value[T](Model):
+T = typing.TypeVar("T")
+
+
+class Value(Model, typing.Generic[T]):
     value: T
 
 

@@ -2,6 +2,7 @@ import enum
 import typing
 
 import pydantic
+import typing_extensions
 
 from .base import ModelID, ModelMainSubID, Text, Value
 
@@ -42,7 +43,7 @@ class RogueBonus(ModelID):
     bonus_icon: typing.Literal["SpriteOutput/AvatarProfessionTattoo/Profession/BgPathsExplore.png"]  # 全是开拓祝福
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.bonus_id
 
@@ -55,7 +56,7 @@ class BuffCategory(enum.Enum):
     Legendary = "Legendary"
     """三星祝福"""
 
-    @typing.override
+    @typing_extensions.override
     def __str__(self) -> str:
         match self:
             case self.Common:
@@ -114,12 +115,12 @@ class RogueBuff(ModelMainSubID):
     aeon_cross_icon: str | None = None  #  仅出现在 1.3 及之后，寰宇蝗灾中回响交错的图标
 
     @property
-    @typing.override
+    @typing_extensions.override
     def main_id(self) -> int:
         return self.maze_buff_id
 
     @property
-    @typing.override
+    @typing_extensions.override
     def sub_id(self) -> int:
         return self.maze_buff_level
 
@@ -134,7 +135,7 @@ class RogueBuffType(ModelID):
     hint_desc: Text | None = None
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.rogue_buff_type
 
@@ -151,7 +152,7 @@ class RogueHandbookMiracle(ModelID):
     miracle_id_for_effect_display: int | None = None
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.miracle_handbook_id
 
@@ -165,7 +166,7 @@ class RogueHandbookMiracleType(ModelID):
     activity_module_id: int | None = None
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.rogue_handbook_miracle_type
 
@@ -197,7 +198,7 @@ class RogueMiracle(ModelID):
     """损坏后会变成什么样, 目前看都是「乱七八糟的代码」系列奇物"""
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.miracle_id
 
@@ -216,7 +217,7 @@ class RogueMiracleDisplay(ModelID):
     miracle_figure_icon_path: str
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.miracle_display_id
 
@@ -234,7 +235,7 @@ class RogueMiracleEffectDisplay(ModelID):
     extra_effect: list[int]
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.miracle_effect_display_id
 
@@ -246,7 +247,7 @@ class RogueMonster(ModelID):
     monster_drop_type: typing.Literal["AreaDrop"] | None = None
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.rogue_monster_id
 
@@ -256,6 +257,6 @@ class RogueMonsterGroup(ModelID):
     rogue_monster_list_and_weight: dict[int, int]
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.rogue_monster_group_id

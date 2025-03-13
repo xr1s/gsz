@@ -9,6 +9,7 @@ from .base import View
 
 if TYPE_CHECKING:
     import collections.abc
+
     from ..excel import Element, monster
 
 NPC_COLLIDE_NAMES = {"可可利亚", "杰帕德", "布洛妮娅", "史瓦罗", "银枝"}

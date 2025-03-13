@@ -3,6 +3,7 @@ import pathlib
 import typing
 
 import pydantic
+import typing_extensions
 
 from .base import (
     FIELD_ALIASES_ROGUE_WEEKLY_TYP,
@@ -12,8 +13,7 @@ from .base import (
     ModelMainSubID,
     Text,
 )
-from .rogue import Path
-from .rogue import BuffCategory
+from .rogue import BuffCategory, Path
 
 
 class RogueTournBuff(ModelMainSubID):
@@ -30,12 +30,12 @@ class RogueTournBuff(ModelMainSubID):
     is_in_handbook: bool = False
 
     @property
-    @typing.override
+    @typing_extensions.override
     def main_id(self) -> int:
         return self.maze_buff_id
 
     @property
-    @typing.override
+    @typing_extensions.override
     def sub_id(self) -> int:
         return self.maze_buff_level
 
@@ -74,7 +74,7 @@ class RogueTournBuffType(ModelID):
     rogue_buff_type_large_icon: str
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.rogue_buff_type
 
@@ -84,7 +84,7 @@ class RogueTournContentDisplay(ModelID):
     display_content: Text
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.display_id
 
@@ -108,7 +108,7 @@ class FormulaCategory(enum.Enum):
     PathEcho = "PathEcho"
     """临界方程"""
 
-    @typing.override
+    @typing_extensions.override
     def __str__(self) -> str:
         match self:
             case self.Rare:
@@ -149,7 +149,7 @@ class RogueTournFormula(ModelID):
     unlock_display_id: int | None = None
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.formula_id
 
@@ -162,7 +162,7 @@ class RogueTournFormulaDisplay(ModelID):
     handbook_unlock_display_id: int | None = None
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.formula_display_id
 
@@ -197,7 +197,7 @@ class RogueTournHandbookMiracle(ModelID):
     unlock_desc: int
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.handbook_miracle_id
 
@@ -213,7 +213,7 @@ class RogueTournMiracle(ModelID):
     handbook_miracle_id: int | None = None
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.miracle_id
 
@@ -244,7 +244,7 @@ class RogueTournTitanBless(ModelID):
     bless_battle_display_category_list: list[BlessBattleDisplayCategory] | None = None
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.titan_bless_id
 
@@ -263,7 +263,7 @@ class RogueTournWeeklyChallenge(ModelID):
     display_monster_groups_3: dict[typing.Literal["0"], int]
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.challenge_id
 
@@ -290,6 +290,6 @@ class RogueTournWeeklyDisplay(ModelID):
     desc_params: list[DescParam]
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.weekly_display_id

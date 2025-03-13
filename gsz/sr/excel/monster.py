@@ -3,6 +3,7 @@ import pathlib
 import typing
 
 import pydantic
+import typing_extensions
 
 from .base import (
     Element,
@@ -28,7 +29,7 @@ class EliteGroup(ModelID):
     stance_ratio: Value[float]
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.elite_group
 
@@ -48,12 +49,12 @@ class HardLevelGroup(ModelMainSubID):
     status_resistance: Value[float] | None = None
 
     @property
-    @typing.override
+    @typing_extensions.override
     def main_id(self) -> int:
         return self.hard_level_group
 
     @property
-    @typing.override
+    @typing_extensions.override
     def sub_id(self) -> int:
         return self.level
 
@@ -68,7 +69,7 @@ class MonsterCamp(ModelID):
     camp_type: typing.Literal["Monster"] = "Monster"  # 1.5 版本之后
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.id_
 
@@ -94,7 +95,7 @@ class Debuff(enum.Enum):
     Entangle = "STAT_Entangle"
     """纠缠"""
 
-    @typing.override
+    @typing_extensions.override
     def __str__(self) -> str:  # noqa: PLR0911
         match self:
             case self.Confine:
@@ -162,7 +163,7 @@ class MonsterConfig(ModelID):
     override_skill_params: list[None] | None = None
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.monster_id
 
@@ -193,7 +194,7 @@ class MonsterSkillConfig(ModelID):
     modifier_list: list[str] = []  # 2.0 无此字段
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.skill_id
 
@@ -254,7 +255,7 @@ class MonsterTemplateConfig(ModelID):
     npc_monster_list: list[int]
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.monster_template_id
 
@@ -282,6 +283,6 @@ class NPCMonsterData(ModelID):
     mapping_info_id: int | None = None
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.id_

@@ -6,8 +6,8 @@ from .. import excel
 from .base import View
 
 if typing.TYPE_CHECKING:
-    from .misc import MazeBuff
     from ..excel import rogue_tourn
+    from .misc import MazeBuff
 
 
 class RogueTournBuff(View[excel.RogueTournBuff]):

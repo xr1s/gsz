@@ -1,4 +1,4 @@
-import typing
+import typing_extensions
 
 from .base import ModelID, Text
 
@@ -8,7 +8,7 @@ class BookDisplayType(ModelID):
     alignment: int
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.book_display_type_id
 
@@ -22,7 +22,7 @@ class BookSeriesConfig(ModelID):
     is_show_in_bookshelf: bool = False
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.book_series_id
 
@@ -34,7 +34,7 @@ class BookSeriesWorld(ModelID):
     book_series_world_background_path: str
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.book_series_world
 
@@ -49,6 +49,6 @@ class LocalbookConfig(ModelID):
     local_book_image_path: list[str]
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.book_id

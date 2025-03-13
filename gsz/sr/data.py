@@ -18,28 +18,31 @@ if typing.TYPE_CHECKING:
     from .excel import Text
 
 
-class GameDataMethod[T](typing.Protocol):
-    @typing.overload
-    def __call__(self) -> collections.abc.Iterable[T]: ...
-    @typing.overload
-    def __call__(self, id: int) -> T | None: ...
-    @typing.overload
-    def __call__(self, id: collections.abc.Iterable[int]) -> collections.abc.Iterable[T]: ...
+T_co = typing.TypeVar("T_co", covariant=True)
 
 
-class GameDataFunction[T](typing.Protocol):
+class GameDataMethod(typing.Protocol[T_co]):
+    @typing.overload
+    def __call__(self) -> collections.abc.Iterable[T_co]: ...
+    @typing.overload
+    def __call__(self, id: int) -> T_co | None: ...
+    @typing.overload
+    def __call__(self, id: collections.abc.Iterable[int]) -> collections.abc.Iterable[T_co]: ...
+
+
+class GameDataFunction(typing.Protocol[T_co]):
     __name__: str
 
     @typing.overload
-    def __get__(self, instance: "GameData", owner: type["GameData"]) -> GameDataMethod[T]: ...
+    def __get__(self, instance: "GameData", owner: type["GameData"]) -> GameDataMethod[T_co]: ...
     @typing.overload
-    def __get__(self, instance: None, owner: type["GameData"]) -> "GameDataFunction[T]": ...
+    def __get__(self, instance: None, owner: type["GameData"]) -> "GameDataFunction[T_co]": ...
     @typing.overload
-    def __call__(self, game: "GameData") -> collections.abc.Iterable[T]: ...
+    def __call__(self, game: "GameData") -> collections.abc.Iterable[T_co]: ...
     @typing.overload
-    def __call__(self, game: "GameData", id: int) -> T | None: ...
+    def __call__(self, game: "GameData", id: int) -> T_co | None: ...
     @typing.overload
-    def __call__(self, game: "GameData", id: collections.abc.Iterable[int]) -> collections.abc.Iterable[T]: ...
+    def __call__(self, game: "GameData", id: collections.abc.Iterable[int]) -> collections.abc.Iterable[T_co]: ...
 
 
 ABBR_WORDS = {"npc"}
@@ -49,7 +52,11 @@ def file_name_generator(method_name: str) -> str:
     return "".join(word.upper() if word in ABBR_WORDS else word.capitalize() for word in method_name.split("_"))
 
 
-class excel_output[V: view.IView[excel.ModelID], E: excel.ModelID]:
+V = typing.TypeVar("V", bound="view.IView[excel.ModelID]")
+E = typing.TypeVar("E", bound="excel.ModelID")
+
+
+class excel_output(typing.Generic[V, E]):
     """
     装饰器，接受参数为 View 类型
     View 类型中需要通过 ExcelOutput 类变量绑定映射数据结构类型
@@ -137,31 +144,35 @@ class excel_output[V: view.IView[excel.ModelID], E: excel.ModelID]:
         return fn
 
 
-class GameDataMainSubMethod[T](typing.Protocol):
+class GameDataMainSubMethod(typing.Protocol[T_co]):
     @typing.overload
-    def __call__(self) -> collections.abc.Iterable[T]: ...
+    def __call__(self) -> collections.abc.Iterable[T_co]: ...
     @typing.overload
-    def __call__(self, main_id: int) -> collections.abc.Iterable[T]: ...
+    def __call__(self, main_id: int) -> collections.abc.Iterable[T_co]: ...
     @typing.overload
-    def __call__(self, main_id: int, sub_id: int) -> T | None: ...
+    def __call__(self, main_id: int, sub_id: int) -> T_co | None: ...
 
 
-class GameDataMainSubFunction[T](typing.Protocol):
+class GameDataMainSubFunction(typing.Protocol[T_co]):
     __name__: str
 
     @typing.overload
-    def __get__(self, instance: "GameData", owner: type["GameData"]) -> GameDataMainSubMethod[T]: ...
+    def __get__(self, instance: "GameData", owner: type["GameData"]) -> GameDataMainSubMethod[T_co]: ...
     @typing.overload
-    def __get__(self, instance: None, owner: type["GameData"]) -> "GameDataMainSubFunction[T]": ...
+    def __get__(self, instance: None, owner: type["GameData"]) -> "GameDataMainSubFunction[T_co]": ...
     @typing.overload
-    def __call__(self, game: "GameData") -> collections.abc.Iterable[T]: ...
+    def __call__(self, game: "GameData") -> collections.abc.Iterable[T_co]: ...
     @typing.overload
-    def __call__(self, game: "GameData", main_id: int) -> collections.abc.Iterable[T]: ...
+    def __call__(self, game: "GameData", main_id: int) -> collections.abc.Iterable[T_co]: ...
     @typing.overload
-    def __call__(self, game: "GameData", main_id: int, sub_id: int) -> T | None: ...
+    def __call__(self, game: "GameData", main_id: int, sub_id: int) -> T_co | None: ...
 
 
-class excel_output_main_sub[V: view.IView[excel.ModelMainSubID], E: excel.ModelMainSubID]:
+MSV = typing.TypeVar("MSV", bound="view.IView[excel.ModelMainSubID]")
+MSE = typing.TypeVar("MSE", bound="excel.ModelMainSubID")
+
+
+class excel_output_main_sub(typing.Generic[MSV, MSE]):
     """
     装饰器，类似 excel_output，接受参数为 View 类型
     View 类型中需要通过 ExcelOutput 类变量绑定映射数据结构类型
@@ -202,24 +213,24 @@ class excel_output_main_sub[V: view.IView[excel.ModelMainSubID], E: excel.ModelM
     ```
     """
 
-    def __init__(self, typ: type[V], *file_names: str):
+    def __init__(self, typ: type[MSV], *file_names: str):
         self.__type = typ
         self.__file_names: tuple[str, ...] = file_names
-        self.__excel_output: dict[int, list[E]] | None = None
+        self.__excel_output: dict[int, list[MSE]] | None = None
 
-    def __call__(self, method: typing.Callable[..., None]) -> GameDataMainSubFunction[V]:
+    def __call__(self, method: typing.Callable[..., None]) -> GameDataMainSubFunction[MSV]:
         if len(self.__file_names) == 0:
             self.__file_names = (file_name_generator(method.__name__),)
 
         @typing.overload
-        def fn(game: "GameData") -> collections.abc.Iterable[V]: ...
+        def fn(game: "GameData") -> collections.abc.Iterable[MSV]: ...
         @typing.overload
-        def fn(game: "GameData", main_id: int) -> collections.abc.Iterable[V]: ...
+        def fn(game: "GameData", main_id: int) -> collections.abc.Iterable[MSV]: ...
         @typing.overload
-        def fn(game: "GameData", main_id: int, sub_id: int) -> V | None: ...
+        def fn(game: "GameData", main_id: int, sub_id: int) -> MSV | None: ...
         def fn(
             game: "GameData", main_id: int | None = None, sub_id: int | None = None
-        ) -> V | collections.abc.Iterable[V] | None:
+        ) -> MSV | collections.abc.Iterable[MSV] | None:
             if self.__excel_output is None:
                 path = game.base / "ExcelOutput"
                 file_names = iter(self.__file_names)
@@ -232,7 +243,7 @@ class excel_output_main_sub[V: view.IView[excel.ModelMainSubID], E: excel.ModelM
                     return iter(()) if main_id is None or sub_id is None else None
                 finally:
                     self.__file_names = ()  # 清理一下方便 GC
-                ExcelOutput = typing.cast(type[E], self.__type.ExcelOutput)
+                ExcelOutput = typing.cast(type[MSE], self.__type.ExcelOutput)
                 ExcelOutputList = pydantic.TypeAdapter(list[ExcelOutput | None])
                 excels = json.loads(file_path.read_bytes())
                 try:

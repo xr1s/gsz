@@ -3,6 +3,7 @@ import enum
 import typing
 
 import pydantic
+import typing_extensions
 
 from .base import ModelID, ModelMainSubID, Text, Value
 
@@ -18,7 +19,7 @@ class ExtraEffectConfig(ModelID):
     extra_effect_type: typing.Literal[1, 2, 3]  # 目前只有 1, 2, 3，从对应的描述上看 1 3 都是开发用数据，不露出
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.extra_effect_id
 
@@ -32,7 +33,7 @@ class RewardData(ModelID):
     rank: list[typing.Literal[1] | None] | None = None
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.reward_id
 
@@ -165,12 +166,12 @@ class MazeBuff(ModelMainSubID):
     is_display_env_in_level: bool = False
 
     @property
-    @typing.override
+    @typing_extensions.override
     def main_id(self) -> int:
         return self.id_
 
     @property
-    @typing.override
+    @typing_extensions.override
     def sub_id(self) -> int:
         return self.lv
 
@@ -188,7 +189,7 @@ class TextJoinConfig(ModelID):
     type: TextJoinType | None = None
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.text_join_id
 
@@ -198,6 +199,6 @@ class TextJoinItem(ModelID):
     text_join_text: Text | None = None
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.text_join_item_id

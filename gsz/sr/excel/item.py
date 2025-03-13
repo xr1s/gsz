@@ -2,6 +2,7 @@ import enum
 import typing
 
 import pydantic
+import typing_extensions
 
 from .base import Model, ModelID, Text
 
@@ -192,7 +193,7 @@ class Rarity(enum.Enum):
     SuperRare = "SuperRare"
     """五星"""
 
-    @typing.override
+    @typing_extensions.override
     def __str__(self) -> str:
         match self:
             case self.Normal:
@@ -320,7 +321,7 @@ class ItemConfig(ModelID):
     is_show_red_dot: bool = False
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.id_
 
@@ -330,6 +331,6 @@ class ItemPurpose(ModelID):
     purpose_text: Text
 
     @property
-    @typing.override
+    @typing_extensions.override
     def id(self) -> int:
         return self.id_
