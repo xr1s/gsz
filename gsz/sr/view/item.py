@@ -18,7 +18,11 @@ class ItemConfig(View[excel.ItemConfig]):
     def name(self) -> str:
         if self._excel.item_name is None:
             return ""
-        return self._game._plain_formatter.format(self._game.text(self._excel.item_name))  # pyright: ignore[reportPrivateUsage]
+        return self._game.text(self._excel.item_name)
+
+    @functools.cached_property
+    def wiki_name(self) -> str:
+        return self._game._plain_formatter.format(self.name)  # pyright: ignore[reportPrivateUsage]
 
     @functools.cached_property
     def icon_path(self) -> str:

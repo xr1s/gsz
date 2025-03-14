@@ -1,0 +1,36 @@
+{{奇物
+|名称=<% if miracle is not none %>${ miracle.wiki_name }<% else %>${ tourn_miracle.wiki_name }<% endif %>
+
+<%- if tourn_miracle is not none %>
+|稀有度=${ tourn_miracle.category }
+<%- endif %>
+|类型=
+|模式=${ modes | join("、") }
+
+<%- if miracle is not none %>
+|模拟宇宙=
+<%- endif %>
+
+<%- if tourn_miracle is not none %>
+|差分宇宙=
+<%- endif %>
+
+<%- if miracle is not none %>
+|模拟宇宙效果=${ miracle.desc | gszformat(miracle.desc_param_list) }
+<%- endif %>
+
+<%- if tourn_miracle is not none %>
+|差分宇宙效果=${ tourn_miracle.desc | gszformat(tourn_miracle.desc_param_list) }
+<%- endif %>
+|介绍=
+  <%- if miracle is not none -%>
+    ${ miracle.bg_desc | gszformat }
+  <%- else -%>
+    ${ tourn_miracle.bg_desc | gszformat }
+  <%- endif %>
+|TAG=<!-- 按奇物图鉴筛选项写，多个间顿号分隔 -->
+|获取方式=<!-- 开局获取、特定事件、一般事件、商店购买，多个间顿号分隔 -->
+|获取途径=<!-- 简单介绍获取途径，顿号分隔，不涉及特定事件的可以留空 -->
+|相关事件=
+|实装版本=
+}}

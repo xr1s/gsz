@@ -53,10 +53,9 @@ def file_name_generator(method_name: str) -> str:
 
 
 V = typing.TypeVar("V", bound="view.IView[excel.ModelID]")
-E = typing.TypeVar("E", bound="excel.ModelID")
 
 
-class excel_output(typing.Generic[V, E]):
+class excel_output(typing.Generic[V]):
     """
     装饰器，接受参数为 View 类型
     View 类型中需要通过 ExcelOutput 类变量绑定映射数据结构类型
@@ -93,7 +92,7 @@ class excel_output(typing.Generic[V, E]):
     def __init__(self, typ: type[V], *file_names: str):
         self.__type = typ
         self.__file_names: tuple[str, ...] = file_names
-        self.__excel_output: dict[int, E] | None = None
+        self.__excel_output: dict[int, excel.ModelID] | None = None
 
     def __call__(self, method: typing.Callable[..., None]) -> GameDataFunction[V]:
         if len(self.__file_names) == 0:
@@ -120,16 +119,15 @@ class excel_output(typing.Generic[V, E]):
                     return iter(()) if id is None or isinstance(id, collections.abc.Iterable) else None
                 finally:
                     self.__file_names = ()  # 清理一下方便 GC
-                ExcelOutput = typing.cast(type[E], self.__type.ExcelOutput)
                 # ItemConfigAvatarSkin.json 由于内容仍未上线而数据文件已经存在（尽管之前一直为空）
                 # 可能是清理测试数据缺漏导致出现大量 null（此前 2.3 之前无，可能和修改数据格式有关），额外过滤一下
-                ExcelOutputList = pydantic.TypeAdapter(list[ExcelOutput | None])
+                ExcelOutputList = pydantic.TypeAdapter(list[self.__type.ExcelOutput | None])
                 excels = json.loads(file_path.read_bytes())
                 try:
                     excel_list = ExcelOutputList.validate_python(excels)
                     self.__excel_output = {config.id: config for config in excel_list if config is not None}
                 except pydantic.ValidationError as exc:
-                    ExcelOutputDict = pydantic.TypeAdapter(dict[int, ExcelOutput])
+                    ExcelOutputDict = pydantic.TypeAdapter(dict[int, self.__type.ExcelOutput])
                     try:
                         self.__excel_output = ExcelOutputDict.validate_python(excels)
                     except pydantic.ValidationError as former_structure_exc:
@@ -169,10 +167,9 @@ class GameDataMainSubFunction(typing.Protocol[T_co]):
 
 
 MSV = typing.TypeVar("MSV", bound="view.IView[excel.ModelMainSubID]")
-MSE = typing.TypeVar("MSE", bound="excel.ModelMainSubID")
 
 
-class excel_output_main_sub(typing.Generic[MSV, MSE]):
+class excel_output_main_sub(typing.Generic[MSV]):
     """
     装饰器，类似 excel_output，接受参数为 View 类型
     View 类型中需要通过 ExcelOutput 类变量绑定映射数据结构类型
@@ -216,7 +213,7 @@ class excel_output_main_sub(typing.Generic[MSV, MSE]):
     def __init__(self, typ: type[MSV], *file_names: str):
         self.__type = typ
         self.__file_names: tuple[str, ...] = file_names
-        self.__excel_output: dict[int, list[MSE]] | None = None
+        self.__excel_output: dict[int, list[excel.ModelMainSubID]] | None = None
 
     def __call__(self, method: typing.Callable[..., None]) -> GameDataMainSubFunction[MSV]:
         if len(self.__file_names) == 0:
@@ -243,8 +240,7 @@ class excel_output_main_sub(typing.Generic[MSV, MSE]):
                     return iter(()) if main_id is None or sub_id is None else None
                 finally:
                     self.__file_names = ()  # 清理一下方便 GC
-                ExcelOutput = typing.cast(type[MSE], self.__type.ExcelOutput)
-                ExcelOutputList = pydantic.TypeAdapter(list[ExcelOutput | None])
+                ExcelOutputList = pydantic.TypeAdapter(list[self.__type.ExcelOutput | None])
                 excels = json.loads(file_path.read_bytes())
                 try:
                     excel_list = ExcelOutputList.validate_python(excels)
@@ -252,7 +248,7 @@ class excel_output_main_sub(typing.Generic[MSV, MSE]):
                     for excel in filter(None, excel_list):
                         self.__excel_output[excel.main_id].append(excel)
                 except pydantic.ValidationError as exc:
-                    ExcelOutputDict = pydantic.TypeAdapter(dict[int, dict[int, ExcelOutput]])
+                    ExcelOutputDict = pydantic.TypeAdapter(dict[int, dict[int, self.__type.ExcelOutput]])
                     try:
                         excel_dict = ExcelOutputDict.validate_python(excels)
                     except pydantic.ValidationError as former_structure_exc:
@@ -273,6 +269,69 @@ class excel_output_main_sub(typing.Generic[MSV, MSE]):
                         if excel.sub_id == sub_id
                     )
                     return next(gen, None)
+
+        return fn
+
+
+NE_co = typing.TypeVar("NE_co", bound="excel.ModelID | excel.ModelMainSubID", covariant=True)
+
+
+class Name(typing.Protocol[NE_co]):
+    _excel: NE_co
+
+    def __init__(self, game: "GameData", excel: NE_co): ...
+
+    @functools.cached_property
+    @typing.overload
+    def name(self) -> str: ...
+
+    @property
+    @typing.overload
+    def name(self) -> str: ...
+
+
+NV = typing.TypeVar("NV", bound="Name[excel.ModelID]")
+
+
+class excel_output_name(typing.Generic[NV]):
+    def __init__(self, typ: type[NV], method: GameDataFunction[NV]):
+        self.__type = typ
+        self.__method = method
+        self.__excel_output: dict[str, excel.ModelID] | None = None
+
+    def __call__(self, _method: typing.Callable[..., None]) -> typing.Callable[["GameData", str], NV | None]:
+        def fn(game: "GameData", name: str) -> NV | None:
+            if self.__excel_output is None:
+                self.__excel_output = {view.name: view._excel for view in self.__method(game)}  # pyright: ignore[reportPrivateUsage]
+            excel = self.__excel_output.get(name)
+            return None if excel is None else self.__type(game, excel)
+
+        return fn
+
+
+MSNV = typing.TypeVar("MSNV", bound="Name[excel.ModelMainSubID]")
+
+
+class excel_output_main_sub_name(typing.Generic[MSNV]):
+    def __init__(self, typ: type[MSNV], method: GameDataMainSubFunction[MSNV]):
+        self.__type = typ
+        self.__method = method
+        self.__excel_output: dict[str, list[excel.ModelMainSubID]] | None = None
+
+    def __call__(
+        self, _method: typing.Callable[..., None]
+    ) -> typing.Callable[["GameData", str], collections.abc.Iterable[MSNV] | None]:
+        def fn(game: "GameData", name: str) -> collections.abc.Iterable[MSNV] | None:
+            if self.__excel_output is None:
+                self.__excel_output = {}
+                for view in self.__method(game):
+                    excel = view._excel  # pyright: ignore[reportPrivateUsage]
+                    if view.name in self.__excel_output:
+                        self.__excel_output[view.name].append(excel)
+                    else:
+                        self.__excel_output[view.name] = [excel]
+            excel_list = self.__excel_output.get(name)
+            return [] if excel_list is None else (self.__type(game, excel) for excel in excel_list)
 
         return fn
 
@@ -555,6 +614,10 @@ class GameData:
     def rogue_buff(self):
         """模拟宇宙祝福"""
 
+    @excel_output_main_sub_name(view.RogueBuff, rogue_buff)
+    def rogue_buff_name(self):
+        """模拟宇宙祝福"""
+
     @excel_output(view.RogueBuffType)
     def rogue_buff_type(self):
         """模拟宇宙祝福命途（因为是模拟宇宙所以不包含同谐）"""
@@ -573,6 +636,10 @@ class GameData:
 
     @excel_output(view.RogueMiracle)
     def rogue_miracle(self):
+        """模拟宇宙奇物"""
+
+    @excel_output_name(view.RogueMiracle, rogue_miracle)
+    def rogue_miracle_name():
         """模拟宇宙奇物"""
 
     @excel_output(view.RogueMiracleDisplay)
@@ -595,6 +662,10 @@ class GameData:
     def rogue_tourn_buff(self):
         """差分宇宙祝福"""
 
+    @excel_output_main_sub_name(view.RogueTournBuff, rogue_tourn_buff)
+    def rogue_tourn_buff_name(self):
+        """模拟宇宙祝福"""
+
     @excel_output(view.RogueTournBuffType)
     def rogue_tourn_buff_type(self):
         """差分宇宙祝福"""
@@ -615,6 +686,10 @@ class GameData:
     def rogue_tourn_miracle(self):
         """差分宇宙奇物（如「天慧合金Ⅰ型」、「绝对失败处方」、「塔奥牌」等的具体奇物会各自分列于此）"""
 
+    @excel_output_name(view.RogueTournMiracle, rogue_tourn_miracle)
+    def rogue_tourn_miracle_name():
+        """差分宇宙奇物"""
+
     @excel_output(view.RogueTournTitanBless)
     def rogue_tourn_titan_bless(self):
         """差分宇宙金血祝颂"""
@@ -625,4 +700,4 @@ class GameData:
 
     @excel_output(view.RogueTournWeeklyDisplay)
     def rogue_tourn_weekly_display(self):
-        """差分宇宙周期预设"""
+        """差分宇宙周期演算预设"""

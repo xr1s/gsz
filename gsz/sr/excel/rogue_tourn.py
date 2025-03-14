@@ -170,14 +170,28 @@ class RogueTournFormulaDisplay(ModelID):
 class MiracleCategory(enum.Enum):
     Common = "Common"
     """一星奇物"""
-    Hex = "Hex"
-    """加权奇物"""
-    Legendary = "Legendary"
-    """三星奇物"""
-    Negative = "Negative"
-    """负面奇物"""
     Rare = "Rare"
     """二星奇物"""
+    Legendary = "Legendary"
+    """三星奇物"""
+    Hex = "Hex"
+    """加权奇物"""
+    Negative = "Negative"
+    """负面奇物"""
+
+    @typing_extensions.override
+    def __str__(self) -> str:
+        match self:
+            case self.Common:
+                return "1星"
+            case self.Rare:
+                return "2星"
+            case self.Legendary:
+                return "3星"
+            case self.Hex:
+                return "加权奇物"
+            case self.Negative:
+                return "负面奇物"
 
 
 class RogueTournHandbookMiracle(ModelID):
