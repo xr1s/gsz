@@ -1,0 +1,27 @@
+{{祝福
+|名称=${ name }
+|稀有度=${ category | default("", true) }<!-- 例：3星 -->
+|命途=${ buff_type }<!-- 例：存护 -->
+|模式=${ modes | join("、") }<!-- 模拟宇宙、差分宇宙 -->
+|模拟宇宙=<!-- 模拟宇宙、寰宇蝗灾、黄金与机械 -->
+|差分宇宙=${ tourn_mode }<!-- 人间喜剧、千面英雄 -->
+
+<%- if rogue_degrade is not none %>
+|模拟宇宙效果=${ rogue_degrade.desc | gszformat(rogue_degrade.param_list) }
+<%- endif %>
+
+<%- if rogue_upgrade is not none %>
+|模拟宇宙强化效果=${ rogue_upgrade.desc | gszformat(rogue_upgrade.param_list) }
+<%- endif %>
+
+<%- if tourn_upgrade is not none %>
+|差分宇宙效果=${ tourn_upgrade.desc | gszformat(tourn_upgrade.param_list) }
+<%- endif %>
+
+<%- if tourn_upgrade is not none %>
+|差分宇宙强化效果=${ tourn_upgrade.desc | gszformat(tourn_upgrade.param_list) }
+<%- endif %>
+|TAG=<!-- 参照筛选表 -->
+|类型=${ typ }<!-- 填数字，命途回响=1，回响构音=2，回响交错=3，一般三星祝福=4，二星祝福=5，一星祝福=6 -->
+|排序=<!-- 游戏内图鉴中同命途同类型祝福间排序 -->
+}}

@@ -290,38 +290,17 @@ class Name(typing.Protocol[NE_co]):
     def name(self) -> str: ...
 
 
-NV = typing.TypeVar("NV", bound="Name[excel.ModelID]")
+NV = typing.TypeVar("NV", bound="Name[excel.ModelID | excel.ModelMainSubID]")
 
 
 class excel_output_name(typing.Generic[NV]):
-    def __init__(self, typ: type[NV], method: GameDataFunction[NV]):
+    def __init__(self, typ: type[NV], method: GameDataFunction[NV] | GameDataMainSubFunction[NV]):
         self.__type = typ
         self.__method = method
-        self.__excel_output: dict[str, excel.ModelID] | None = None
+        self.__excel_output: dict[str, list[excel.ModelID | excel.ModelMainSubID]] | None = None
 
-    def __call__(self, _method: typing.Callable[..., None]) -> typing.Callable[["GameData", str], NV | None]:
-        def fn(game: "GameData", name: str) -> NV | None:
-            if self.__excel_output is None:
-                self.__excel_output = {view.name: view._excel for view in self.__method(game)}  # pyright: ignore[reportPrivateUsage]
-            excel = self.__excel_output.get(name)
-            return None if excel is None else self.__type(game, excel)
-
-        return fn
-
-
-MSNV = typing.TypeVar("MSNV", bound="Name[excel.ModelMainSubID]")
-
-
-class excel_output_main_sub_name(typing.Generic[MSNV]):
-    def __init__(self, typ: type[MSNV], method: GameDataMainSubFunction[MSNV]):
-        self.__type = typ
-        self.__method = method
-        self.__excel_output: dict[str, list[excel.ModelMainSubID]] | None = None
-
-    def __call__(
-        self, _method: typing.Callable[..., None]
-    ) -> typing.Callable[["GameData", str], collections.abc.Iterable[MSNV] | None]:
-        def fn(game: "GameData", name: str) -> collections.abc.Iterable[MSNV] | None:
+    def __call__(self, _method: typing.Callable[..., None]) -> typing.Callable[["GameData", str], list[NV]]:
+        def fn(game: "GameData", name: str) -> list[NV]:
             if self.__excel_output is None:
                 self.__excel_output = {}
                 for view in self.__method(game):
@@ -331,7 +310,7 @@ class excel_output_main_sub_name(typing.Generic[MSNV]):
                     else:
                         self.__excel_output[view.name] = [excel]
             excel_list = self.__excel_output.get(name)
-            return [] if excel_list is None else (self.__type(game, excel) for excel in excel_list)
+            return [] if excel_list is None else [self.__type(game, excel) for excel in excel_list]
 
         return fn
 
@@ -614,9 +593,36 @@ class GameData:
     def rogue_buff(self):
         """模拟宇宙祝福"""
 
-    @excel_output_main_sub_name(view.RogueBuff, rogue_buff)
+    @excel_output_name(view.RogueBuff, rogue_buff)
     def rogue_buff_name(self):
         """模拟宇宙祝福"""
+
+    @excel_output(view.RogueBuffGroup)
+    def rogue_buff_group(self):
+        """模拟宇宙祝福组，似乎是按 DLC 分类的"""
+
+    @functools.cached_property
+    def __rogue_buff_tag_groups(self) -> collections.defaultdict[int, list["excel.RogueBuffGroup"]]:
+        tag_to_group: collections.defaultdict[int, list[excel.RogueBuffGroup]] = collections.defaultdict(list)
+        for group in self.rogue_buff_group():
+            for tag in group.rogue_buff_drop:
+                tag_to_group[tag].append(group._excel)  # pyright: ignore[reportPrivateUsage]
+        return tag_to_group
+
+    def rogue_buff_tag_groups(self, tag: int) -> list[view.RogueBuffGroup]:
+        return [view.RogueBuffGroup(self, group) for group in self.__rogue_buff_tag_groups[tag]]
+
+    @functools.cached_property
+    def __rogue_buff_tag_buff(self) -> dict[int, "excel.RogueBuff"]:
+        tag_to_buff: dict[int, excel.RogueBuff] = {}
+        for buff in self.rogue_buff():
+            assert buff.tag not in tag_to_buff
+            tag_to_buff[buff.tag] = buff._excel  # pyright: ignore[reportPrivateUsage]
+        return tag_to_buff
+
+    def rogue_buff_tag_buff(self, tag: int) -> view.RogueBuff | None:
+        buff = self.__rogue_buff_tag_buff.get(tag)
+        return None if buff is None else view.RogueBuff(self, buff)
 
     @excel_output(view.RogueBuffType)
     def rogue_buff_type(self):
@@ -662,7 +668,34 @@ class GameData:
     def rogue_tourn_buff(self):
         """差分宇宙祝福"""
 
-    @excel_output_main_sub_name(view.RogueTournBuff, rogue_tourn_buff)
+    @excel_output(view.RogueTournBuffGroup)
+    def rogue_tourn_buff_group(self):
+        """差分宇宙祝福组，似乎是按 TournMode 分类的"""
+
+    @functools.cached_property
+    def __rogue_tourn_buff_tag_groups(self) -> dict[int, list["excel.RogueTournBuffGroup"]]:
+        tag_to_group: collections.defaultdict[int, list[excel.RogueTournBuffGroup]] = collections.defaultdict(list)
+        for group in self.rogue_tourn_buff_group():
+            for tag in group.rogue_buff_drop:
+                tag_to_group[tag].append(group._excel)  # pyright: ignore[reportPrivateUsage]
+        return tag_to_group
+
+    def rogue_tourn_buff_tag_groups(self, tag: int) -> list[view.RogueTournBuffGroup]:
+        return [view.RogueTournBuffGroup(self, group) for group in self.__rogue_tourn_buff_tag_groups[tag]]
+
+    @functools.cached_property
+    def __rogue_tourn_buff_tag_buff(self) -> dict[int, "excel.RogueTournBuff"]:
+        tag_to_buff: dict[int, excel.RogueTournBuff] = {}
+        for buff in self.rogue_tourn_buff():
+            assert buff.tag not in tag_to_buff
+            tag_to_buff[buff.tag] = buff._excel  # pyright: ignore[reportPrivateUsage]
+        return tag_to_buff
+
+    def rogue_tourn_buff_tag_buff(self, tag: int) -> view.RogueTournBuff | None:
+        buff = self.__rogue_tourn_buff_tag_buff.get(tag)
+        return None if buff is None else view.RogueTournBuff(self, buff)
+
+    @excel_output_name(view.RogueTournBuff, rogue_tourn_buff)
     def rogue_tourn_buff_name(self):
         """模拟宇宙祝福"""
 

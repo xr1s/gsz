@@ -5,14 +5,8 @@ import typing
 import pydantic
 import typing_extensions
 
-from .base import (
-    FIELD_ALIASES_ROGUE_WEEKLY_TYP,
-    FIELD_ALIASES_ROGUE_WEEKLY_VAL,
-    Model,
-    ModelID,
-    ModelMainSubID,
-    Text,
-)
+from . import aliases
+from .base import Model, ModelID, ModelMainSubID, Text
 from .rogue import BuffCategory, Path
 
 
@@ -63,6 +57,38 @@ class TestPath(enum.Enum):
     """智识"""
 
 
+class Mode(enum.Enum):
+    TournMode1 = "Tourn1"
+    """人间喜剧"""
+    TournMode2 = "Tourn2"
+    """千面英雄"""
+
+    @typing_extensions.override
+    def __str__(self):
+        match self:
+            case self.TournMode1:
+                return "人间喜剧"
+            case self.TournMode2:
+                return "千面英雄"
+
+    def __lt__(self, value: "Mode") -> bool:
+        return int(self.value.removeprefix("Tourn")) < int(value.value.removeprefix("Tourn"))
+
+    def __gt__(self, value: "Mode") -> bool:
+        return int(self.value.removeprefix("Tourn")) > int(value.value.removeprefix("Tourn"))
+
+
+class RogueTournBuffGroup(ModelID):
+    rogue_buff_group_id: int
+    tourn_mode: Mode | None = None
+    rogue_buff_drop: list[int]
+
+    @property
+    @typing_extensions.override
+    def id(self) -> int:
+        return self.rogue_buff_group_id
+
+
 class RogueTournBuffType(ModelID):
     rogue_buff_type: int
     rogue_buff_type_name: Text
@@ -87,13 +113,6 @@ class RogueTournContentDisplay(ModelID):
     @typing_extensions.override
     def id(self) -> int:
         return self.display_id
-
-
-class Mode(enum.Enum):
-    TournMode1 = "Tourn1"
-    """人间喜剧"""
-    TournMode2 = "Tourn2"
-    """千面英雄"""
 
 
 class FormulaCategory(enum.Enum):
@@ -294,8 +313,8 @@ class DescParamType(enum.Enum):
 
 
 class DescParam(Model):
-    type: typing.Annotated[DescParamType, pydantic.Field(validation_alias=FIELD_ALIASES_ROGUE_WEEKLY_TYP)]
-    value: typing.Annotated[int, pydantic.Field(validation_alias=FIELD_ALIASES_ROGUE_WEEKLY_VAL)]
+    type: typing.Annotated[DescParamType, pydantic.Field(validation_alias=aliases.ROGUE_WEEKLY_TYP)]
+    value: typing.Annotated[int, pydantic.Field(validation_alias=aliases.ROGUE_WEEKLY_VAL)]
 
 
 class RogueTournWeeklyDisplay(ModelID):

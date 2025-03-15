@@ -5,17 +5,8 @@ import typing
 import pydantic
 import typing_extensions
 
-from .base import (
-    Element,
-    FIELD_ALIASES_ID,
-    FIELD_ALIASES_KEY,
-    FIELD_ALIASES_VAL,
-    Model,
-    ModelID,
-    ModelMainSubID,
-    Text,
-    Value,
-)
+from . import aliases
+from .base import Element, Model, ModelID, ModelMainSubID, Text, Value
 
 
 class EliteGroup(ModelID):
@@ -75,8 +66,8 @@ class MonsterCamp(ModelID):
 
 
 class CustomValue(Model):
-    key: typing.Annotated[str, pydantic.Field(validation_alias=FIELD_ALIASES_KEY)]
-    val: typing.Annotated[int, pydantic.Field(validation_alias=FIELD_ALIASES_VAL)] = 0
+    key: typing.Annotated[str, pydantic.Field(validation_alias=aliases.KEY)]
+    val: typing.Annotated[int, pydantic.Field(validation_alias=aliases.VAL)] = 0
 
 
 class Debuff(enum.Enum):
@@ -129,7 +120,7 @@ class DamageTypeResistance(Model):
 
 
 class AISkillSequence(Model):
-    id: typing.Annotated[int, pydantic.Field(validation_alias=FIELD_ALIASES_ID)]
+    id: typing.Annotated[int, pydantic.Field(validation_alias=aliases.ID)]
 
 
 class MonsterConfig(ModelID):

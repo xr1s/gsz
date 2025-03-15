@@ -4,6 +4,7 @@ import typing
 import pydantic
 import typing_extensions
 
+from . import aliases
 from .base import ModelID, ModelMainSubID, Text, Value
 
 
@@ -123,6 +124,16 @@ class RogueBuff(ModelMainSubID):
     @typing_extensions.override
     def sub_id(self) -> int:
         return self.maze_buff_level
+
+
+class RogueBuffGroup(ModelID):
+    rogue_buff_group_id: typing.Annotated[int, pydantic.Field(validation_alias=aliases.ROGUE_BUFF_GROUP_ID)]
+    rogue_buff_drop: typing.Annotated[list[int], pydantic.Field(validation_alias=aliases.ROGUE_BUFF_DROP)]
+
+    @property
+    @typing_extensions.override
+    def id(self) -> int:
+        return self.rogue_buff_group_id
 
 
 class RogueBuffType(ModelID):

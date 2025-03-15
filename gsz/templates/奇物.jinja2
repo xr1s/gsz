@@ -1,30 +1,30 @@
 {{奇物
-|名称=<% if miracle is not none %>${ miracle.wiki_name }<% else %>${ tourn_miracle.wiki_name }<% endif %>
+|名称=${ name }
 
 <%- if tourn_miracle is not none %>
-|稀有度=${ tourn_miracle.category }
+|稀有度=${ tourn_miracle.category }<!-- 例：1星、2星、3星、加权奇物、负面奇物，模拟宇宙留空 -->
 <%- endif %>
-|类型=
-|模式=${ modes | join("、") }
+|类型=<!-- 例：星神火漆、球形代码、咕咕钟，其他则留空 -->
+|模式=${ modes | join("、") }<!-- 模拟宇宙、差分宇宙 -->
 
-<%- if miracle is not none %>
-|模拟宇宙=
-<%- endif %>
-
-<%- if tourn_miracle is not none %>
-|差分宇宙=
+<%- if rogue_modes | length != 0 %>
+|模拟宇宙=${ rogue_modes | join("、") }<!-- 模拟宇宙、寰宇蝗灾、黄金与机械、不可知域 -->
 <%- endif %>
 
-<%- if miracle is not none %>
-|模拟宇宙效果=${ miracle.desc | gszformat(miracle.desc_param_list) }
+<%- if tourn_modes | length != 0 %>
+|差分宇宙=${ tourn_modes | join("、") }<!-- 人间喜剧、千面英雄 -->
+<%- endif %>
+
+<%- if rogue_miracle is not none %>
+|模拟宇宙效果=${ rogue_miracle.desc | gszformat(rogue_miracle.desc_param_list) }
 <%- endif %>
 
 <%- if tourn_miracle is not none %>
 |差分宇宙效果=${ tourn_miracle.desc | gszformat(tourn_miracle.desc_param_list) }
 <%- endif %>
 |介绍=
-  <%- if miracle is not none -%>
-    ${ miracle.bg_desc | gszformat }
+  <%- if rogue_miracle is not none -%>
+    ${ rogue_miracle.bg_desc | gszformat }
   <%- else -%>
     ${ tourn_miracle.bg_desc | gszformat }
   <%- endif %>

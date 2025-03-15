@@ -14,6 +14,7 @@ from .monster import (
 from .rogue import (
     RogueBonus,
     RogueBuff,
+    RogueBuffGroup,
     RogueBuffType,
     RogueHandbookMiracle,
     RogueHandbookMiracleType,
@@ -25,6 +26,7 @@ from .rogue import (
 )
 from .rogue_tourn import (
     RogueTournBuff,
+    RogueTournBuffGroup,
     RogueTournBuffType,
     RogueTournFormula,
     RogueTournFormulaDisplay,
@@ -62,6 +64,7 @@ __all__ = (
     "RogueBonus",
     "RogueBuff",
     "RogueBuffType",
+    "RogueBuffGroup",
     "RogueHandbookMiracle",
     "RogueHandbookMiracleType",
     "RogueMiracle",
@@ -71,6 +74,7 @@ __all__ = (
     "RogueMonsterGroup",
     # rogue_tourn
     "RogueTournBuff",
+    "RogueTournBuffGroup",
     "RogueTournBuffType",
     "RogueTournFormula",
     "RogueTournFormulaDisplay",

@@ -1,13 +1,16 @@
 from __future__ import annotations
 import functools
+import itertools
 import typing
 
 from .. import excel
+from ..excel import rogue
 from .base import View
 
 if typing.TYPE_CHECKING:
+    import collections.abc
     from . import misc
-    from .rogue_tourn import RogueTournMiracle
+    from .rogue_tourn import RogueTournMiracle, RogueTournBuff
 
 
 class RogueBonus(View[excel.RogueBonus]):
@@ -30,12 +33,24 @@ class RogueBuff(View[excel.RogueBuff]):
         return self.__maze_buff.name
 
     @property
+    def wiki_name(self) -> str:
+        return self._game._mw_formatter.format(self.__maze_buff.name.replace("\xa0", ""))  # pyright: ignore[reportPrivateUsage]
+
+    @property
+    def level(self) -> int:
+        return self.__maze_buff.level
+
+    @property
     def desc(self) -> str:
         return self.__maze_buff.desc
 
     @property
     def param_list(self) -> tuple[float, ...]:
         return self.__maze_buff.param_list
+
+    @property
+    def tag(self) -> int:
+        return self._excel.rogue_buff_tag
 
     @functools.cached_property
     def __maze_buff(self) -> misc.MazeBuff:
@@ -45,14 +60,139 @@ class RogueBuff(View[excel.RogueBuff]):
         assert maze_buff is not None
         return maze_buff
 
+    def maze_buff(self) -> misc.MazeBuff:
+        from .misc import MazeBuff
+
+        return MazeBuff(self._game, self.__maze_buff._excel)
+
     @functools.cached_property
-    def __type(self) -> RogueBuffType:
+    def __rogue_buff_group(self) -> list[RogueBuffGroup]:
+        return self._game.rogue_buff_tag_groups(self.tag)
+
+    @functools.cached_property
+    def __tag_drops(self) -> list[RogueBuff]:
+        return list(itertools.chain.from_iterable(group.drops() for group in self.__rogue_buff_group))
+
+    @functools.cached_property
+    def tag_drops(self) -> collections.abc.Iterable[RogueBuff]:
+        return [RogueBuff(self._game, member._excel) for member in self.__tag_drops]
+
+    @functools.cached_property
+    def __rogue_buff_type(self) -> RogueBuffType:
         typ = self._game.rogue_buff_type(self._excel.rogue_buff_type)
         assert typ is not None
         return typ
 
+    def type(self) -> RogueBuffType:
+        return RogueBuffType(self._game, self.__rogue_buff_type._excel)
+
+    @functools.cached_property
+    def __rogue_tourn_buffs(self) -> list[RogueTournBuff]:
+        return list(self._game.rogue_tourn_buff_name(self.name))
+
+    def tourn_buffs(self) -> collections.abc.Iterable[RogueTournBuff]:
+        from .rogue_tourn import RogueTournBuff
+
+        return (RogueTournBuff(self._game, buff._excel) for buff in self.__rogue_tourn_buffs)
+
+    @property
+    def category(self) -> rogue.BuffCategory | None:
+        if self._excel.rogue_buff_category is not None:
+            return self._excel.rogue_buff_category
+        match self._excel.rogue_buff_rarity:
+            case 1:
+                return rogue.BuffCategory.Common
+            case 2:
+                return rogue.BuffCategory.Rare
+            case 3 | 4:
+                return rogue.BuffCategory.Legendary
+            case None:
+                return None  # 无尽活动存在无稀有度祝福
+
+    @functools.cached_property
+    def __upgrade(self) -> RogueBuff | None:
+        if self.__maze_buff.level_max == 1:
+            return None
+        if self._excel.maze_buff_level == 2:
+            return self
+        return self._game.rogue_buff(self._excel.maze_buff_id, 2)
+
+    def upgrade(self) -> RogueBuff | None:
+        return None if self.__upgrade is None else RogueBuff(self._game, self.__upgrade._excel)
+
+    @functools.cached_property
+    def __degrade(self) -> RogueBuff:
+        if self._excel.maze_buff_level == 1:
+            return self
+        buff = self._game.rogue_buff(self._excel.maze_buff_id, 1)
+        assert buff is not None
+        return buff
+
+    def degrade(self) -> RogueBuff:
+        return RogueBuff(self._game, self.__degrade._excel)
+
     def wiki(self) -> str:
-        return self._game._template_environment.get_template("祝福.jinja2").render(buff=self)  # pyright: ignore[reportPrivateUsage]
+        tourn_buffs = list(self.tourn_buffs())
+        tourn_buffs.sort(key=lambda buff: buff.level)
+        tourn_degrade = None
+        tourn_upgrade = None
+        if len(tourn_buffs) >= 1:
+            tourn_degrade = tourn_buffs[0]
+        if len(tourn_buffs) >= 2:
+            tourn_upgrade = tourn_buffs[1]
+        modes = ["模拟宇宙"] if len(tourn_buffs) == 0 else ["模拟宇宙", "差分宇宙"]
+        typ = None
+        match self.category:
+            case rogue.BuffCategory.Common:
+                typ = 6
+            case rogue.BuffCategory.Rare:
+                typ = 5
+            case rogue.BuffCategory.Legendary:
+                typ = 4
+                if self.name.startswith("命途回响"):
+                    typ = 1
+                if self.name.startswith("回响构音"):
+                    typ = 2
+                if self.name.startswith("回响交错"):
+                    typ = 3
+            case None:
+                typ = None
+        return self._game._template_environment.get_template("祝福.jinja2").render(  # pyright: ignore[reportPrivateUsage]
+            name=self.wiki_name,
+            category=self.category,
+            buff_type=self.__rogue_buff_type.subtitle,
+            rogue_degrade=self.__degrade,
+            rogue_upgrade=self.__upgrade,
+            tourn_degrade=tourn_upgrade,
+            tourn_upgrade=tourn_degrade,
+            modes=modes,
+            typ=typ,
+        )
+
+
+class RogueBuffGroup(View[excel.RogueBuffGroup]):
+    ExcelOutput: typing.Final = excel.RogueBuffGroup
+
+    @property
+    def id(self) -> int:
+        return self._excel.id
+
+    @property
+    def rogue_buff_drop(self) -> list[int]:
+        return self._excel.rogue_buff_drop
+
+    @functools.cached_property
+    def __drops(self) -> list[RogueBuff]:
+        members: list[RogueBuff] = []
+        for member_tag in self.rogue_buff_drop:
+            buff = self._game.rogue_buff_tag_buff(member_tag)
+            if buff is None:
+                continue
+            members.append(buff)
+        return members
+
+    def drops(self) -> collections.abc.Iterable[RogueBuff]:
+        return (RogueBuff(self._game, member._excel) for member in self.__drops)
 
 
 class RogueBuffType(View[excel.RogueBuffType]):
@@ -76,9 +216,20 @@ class RogueBuffType(View[excel.RogueBuffType]):
 class RogueHandbookMiracle(View[excel.RogueHandbookMiracle]):
     ExcelOutput: typing.Final = excel.RogueHandbookMiracle
 
+    @functools.cached_property
+    def __rogue_handbook_miracle_type(self) -> list[RogueHandbookMiracleType]:
+        return list(self._game.rogue_handbook_miracle_type(self._excel.miracle_type_list))
+
+    def types(self) -> collections.abc.Iterable[RogueHandbookMiracleType]:
+        return (RogueHandbookMiracleType(self._game, typ._excel) for typ in self.__rogue_handbook_miracle_type)
+
 
 class RogueHandbookMiracleType(View[excel.RogueHandbookMiracleType]):
     ExcelOutput: typing.Final = excel.RogueHandbookMiracleType
+
+    @functools.cached_property
+    def title(self) -> str:
+        return self._game.text(self._excel.rogue_miracle_type_title)
 
 
 class RogueMiracle(View[excel.RogueMiracle]):
@@ -129,15 +280,20 @@ class RogueMiracle(View[excel.RogueMiracle]):
         return ""
 
     @functools.cached_property
-    def __rogue_tourn_miracle(self) -> RogueTournMiracle | None:
+    def __rogue_miracles(self) -> list[RogueMiracle]:
+        return self._game.rogue_miracle_name(self.name)
+
+    def rogue_miracles(self) -> collections.abc.Iterable[RogueMiracle]:
+        return (RogueMiracle(self._game, miracle._excel) for miracle in self.__rogue_miracles)
+
+    @functools.cached_property
+    def __rogue_tourn_miracles(self) -> list[RogueTournMiracle]:
         return self._game.rogue_tourn_miracle_name(self.name)
 
-    def rogue_tourn(self) -> RogueTournMiracle | None:
+    def tourn_miracles(self) -> collections.abc.Iterable[RogueTournMiracle]:
         from .rogue_tourn import RogueTournMiracle
 
-        if self.__rogue_tourn_miracle is not None:
-            return RogueTournMiracle(self._game, self.__rogue_tourn_miracle._excel)
-        return None
+        return (RogueTournMiracle(self._game, miracle._excel) for miracle in self.__rogue_tourn_miracles)
 
     @functools.cached_property
     def __rogue_miracle_display(self) -> RogueMiracleDisplay | None:
@@ -164,6 +320,11 @@ class RogueMiracle(View[excel.RogueMiracle]):
         assert display is not None
         return display
 
+    def display(self) -> RogueMiracleDisplay | None:
+        if self.__rogue_miracle_display is None:
+            return None
+        return RogueMiracleDisplay(self._game, self.__rogue_miracle_display._excel)
+
     @functools.cached_property
     def __rogue_miracle_effect_display(self) -> RogueMiracleEffectDisplay | None:
         if self._excel.miracle_effect_display_id is None:
@@ -171,11 +332,6 @@ class RogueMiracle(View[excel.RogueMiracle]):
         display = self._game.rogue_miracle_effect_display(self._excel.miracle_effect_display_id)
         assert display is not None
         return display
-
-    def display(self) -> RogueMiracleDisplay | None:
-        if self.__rogue_miracle_display is None:
-            return None
-        return RogueMiracleDisplay(self._game, self.__rogue_miracle_display._excel)
 
     def effect_display(self) -> RogueMiracleEffectDisplay | None:
         if self.__rogue_miracle_effect_display is None:
@@ -196,9 +352,22 @@ class RogueMiracle(View[excel.RogueMiracle]):
         return RogueHandbookMiracle(self._game, self.__rogue_handbook_miracle._excel)
 
     def wiki(self) -> str:
-        modes = ["模拟宇宙"] if self.__rogue_tourn_miracle is None else ["模拟宇宙", "差分宇宙"]
+        modes = ["模拟宇宙"] if len(self.__rogue_tourn_miracles) == 0 else ["模拟宇宙", "差分宇宙"]
+        rogue_modes = (
+            []
+            if self.__rogue_handbook_miracle is None
+            else [typ.title.removeprefix("模拟宇宙：") for typ in self.__rogue_handbook_miracle.types()]
+        )
+        tourn_miracles = list(self.tourn_miracles())
+        tourn_miracles.sort(key=lambda miracle: miracle.mode)
+        tourn_miracle = None if len(tourn_miracles) == 0 else tourn_miracles[-1]
         return self._game._template_environment.get_template("奇物.jinja2").render(  # pyright: ignore[reportPrivateUsage]
-            miracle=self, tourn_miracle=self.__rogue_tourn_miracle, modes=modes
+            name=self.wiki_name,
+            modes=modes,
+            rogue_miracle=self,
+            rogue_modes=rogue_modes,
+            tourn_miracle=tourn_miracle,
+            tourn_modes=[miracle.mode for miracle in tourn_miracles],
         )
 
 

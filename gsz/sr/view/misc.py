@@ -33,6 +33,14 @@ class MazeBuff(View[excel.MazeBuff]):
     def name(self) -> str:
         return self._game.text(self._excel.buff_name)
 
+    @property
+    def level(self) -> int:
+        return self._excel.lv
+
+    @property
+    def level_max(self) -> int:
+        return self._excel.lv_max
+
     @functools.cached_property
     def desc(self) -> str:
         return self._game.text(self._excel.buff_desc)
