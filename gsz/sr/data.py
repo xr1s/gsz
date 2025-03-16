@@ -276,21 +276,28 @@ class excel_output_main_sub(typing.Generic[MSV]):
 NE_co = typing.TypeVar("NE_co", bound="excel.ModelID | excel.ModelMainSubID", covariant=True)
 
 
-class Name(typing.Protocol[NE_co]):
+class PropertyName(typing.Protocol[NE_co]):
+    _excel: NE_co
+
+    def __init__(self, game: "GameData", excel: NE_co): ...
+
+    @property
+    def name(self) -> str: ...
+
+
+class CachedPropertyName(typing.Protocol[NE_co]):
     _excel: NE_co
 
     def __init__(self, game: "GameData", excel: NE_co): ...
 
     @functools.cached_property
-    @typing.overload
-    def name(self) -> str: ...
-
-    @property
-    @typing.overload
     def name(self) -> str: ...
 
 
-NV = typing.TypeVar("NV", bound="Name[excel.ModelID | excel.ModelMainSubID]")
+NV = typing.TypeVar(
+    "NV",
+    bound="PropertyName[excel.ModelID | excel.ModelMainSubID] | CachedPropertyName[excel.ModelID | excel.ModelMainSubID]",
+)
 
 
 class excel_output_name(typing.Generic[NV]):
@@ -632,6 +639,27 @@ class GameData:
     def rogue_handbook_miracle(self):
         """模拟宇宙奇物图鉴信息（解锁奖励、在哪些 DLC 中出现等）"""
 
+    @excel_output_name(view.RogueHandbookMiracle, rogue_handbook_miracle)
+    def rogue_handbook_miracle_name(self):
+        """模拟宇宙图鉴奇物（如「绝对失败处方」、「塔奥牌」等有不同效果的奇物故事等会出现于此）"""
+
+    @functools.cached_property
+    def __rogue_handbook_miracle_miracles(self) -> dict[int, list["excel.RogueMiracle"]]:
+        miracles: dict[int, list[excel.RogueMiracle]] = {}
+        for miracle in itertools.chain(self.rogue_miracle(), self.rogue_magic_miracle()):
+            model = miracle._excel  # pyright: ignore[reportPrivateUsage]
+            if model.unlock_handbook_miracle_id is None:
+                continue
+            if model.unlock_handbook_miracle_id in miracles:
+                miracles[model.unlock_handbook_miracle_id].append(model)
+            else:
+                miracles[model.unlock_handbook_miracle_id] = [model]
+        return miracles
+
+    def rogue_handbook_miracle_miracles(self, handbook_miracle_id: int) -> collections.abc.Iterable[view.RogueMiracle]:
+        miracles = self.__rogue_handbook_miracle_miracles.get(handbook_miracle_id, ())
+        return (view.RogueMiracle(self, miracle) for miracle in miracles)
+
     @excel_output(view.RogueHandbookMiracleType)
     def rogue_handbook_miracle_type(self):
         """模拟宇宙奇物图鉴所属 DLC"""
@@ -663,6 +691,22 @@ class GameData:
     @excel_output(view.RogueMonsterGroup)
     def rogue_monster_group(self):
         """为每个位面首领区域中可能出现的敌人"""
+
+    ######## rogue_magic ########
+
+    @excel_output(view.RogueMiracle)
+    def rogue_magic_miracle(self):
+        """不可知域奇物"""
+
+    @excel_output_name(view.RogueMiracle, rogue_magic_miracle)
+    def rogue_magic_miracle_name():
+        """不可知域奇物"""
+
+    @excel_output(view.RogueMiracleDisplay)
+    def rogue_magic_miracle_display(self):
+        """不可知域奇物效果"""
+
+    ######## rogue_tourn ########
 
     @excel_output_main_sub(view.RogueTournBuff)
     def rogue_tourn_buff(self):
@@ -714,6 +758,29 @@ class GameData:
     @excel_output(view.RogueTournHandbookMiracle)
     def rogue_tourn_handbook_miracle(self):
         """差分宇宙图鉴奇物（如「绝对失败处方」、「塔奥牌」等有不同效果的奇物故事等会出现于此）"""
+
+    @excel_output_name(view.RogueTournHandbookMiracle, rogue_tourn_handbook_miracle)
+    def rogue_tourn_handbook_miracle_name(self):
+        """差分宇宙图鉴奇物（如「绝对失败处方」、「塔奥牌」等有不同效果的奇物故事等会出现于此）"""
+
+    @functools.cached_property
+    def __rogue_tourn_handbook_miracle_miracles(self) -> dict[int, list["excel.RogueTournMiracle"]]:
+        miracles: dict[int, list[excel.RogueTournMiracle]] = {}
+        for miracle in self.rogue_tourn_miracle():
+            model = miracle._excel  # pyright: ignore[reportPrivateUsage]
+            if model.handbook_miracle_id is None:
+                continue
+            if model.handbook_miracle_id in miracles:
+                miracles[model.handbook_miracle_id].append(model)
+            else:
+                miracles[model.handbook_miracle_id] = [model]
+        return miracles
+
+    def rogue_tourn_handbook_miracle_miracles(
+        self, handbook_miracle_id: int
+    ) -> collections.abc.Iterable[view.RogueTournMiracle]:
+        miracles = self.__rogue_tourn_handbook_miracle_miracles.get(handbook_miracle_id, ())
+        return (view.RogueTournMiracle(self, miracle) for miracle in miracles)
 
     @excel_output(view.RogueTournMiracle)
     def rogue_tourn_miracle(self):

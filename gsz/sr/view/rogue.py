@@ -10,7 +10,7 @@ from .base import View
 if typing.TYPE_CHECKING:
     import collections.abc
     from . import misc
-    from .rogue_tourn import RogueTournMiracle, RogueTournBuff
+    from .rogue_tourn import RogueTournMiracle, RogueTournBuff, RogueTournHandbookMiracle
 
 
 class RogueBonus(View[excel.RogueBonus]):
@@ -216,12 +216,111 @@ class RogueBuffType(View[excel.RogueBuffType]):
 class RogueHandbookMiracle(View[excel.RogueHandbookMiracle]):
     ExcelOutput: typing.Final = excel.RogueHandbookMiracle
 
+    @property
+    def name(self) -> str:
+        if self.__rogue_magic_miracle is not None:
+            return self.__rogue_magic_miracle.name
+        if self.__rogue_miracle_display is not None:
+            return self.__rogue_miracle_display.name
+        return ""
+
+    @functools.cached_property
+    def wiki_name(self) -> str:
+        return self._game._mw_formatter.format(self.name)  # pyright: ignore[reportPrivateUsage]
+
+    @property
+    def desc(self) -> str:
+        if self.__rogue_miracle_effect_display is not None:
+            return self.__rogue_miracle_effect_display.desc
+        if self.__rogue_magic_miracle is not None:
+            return self.__rogue_magic_miracle.desc
+        if self.__rogue_miracle_display is not None:
+            return self.__rogue_miracle_display.desc
+        return ""
+
+    @property
+    def desc_param_list(self) -> tuple[float, ...]:
+        if self.__rogue_miracle_effect_display is not None:
+            return self.__rogue_miracle_effect_display.desc_param_list
+        if self.__rogue_magic_miracle is not None:
+            return self.__rogue_magic_miracle.desc_param_list
+        if self.__rogue_miracle_display is not None:
+            return self.__rogue_miracle_display.desc_param_list
+        return ()
+
+    @property
+    def bg_desc(self) -> str:
+        if self.__rogue_magic_miracle is not None:
+            return self.__rogue_magic_miracle.bg_desc
+        if self.__rogue_miracle_display is not None:
+            return self.__rogue_miracle_display.bg_desc
+        return ""
+
     @functools.cached_property
     def __rogue_handbook_miracle_type(self) -> list[RogueHandbookMiracleType]:
         return list(self._game.rogue_handbook_miracle_type(self._excel.miracle_type_list))
 
+    @functools.cached_property
+    def __rogue_magic_miracle(self) -> RogueMiracle | None:
+        if self._excel.miracle_id_for_effect_display is None:
+            return None
+        miracle = self._game.rogue_magic_miracle(self._excel.miracle_id_for_effect_display)
+        assert miracle is not None
+        return miracle
+
     def types(self) -> collections.abc.Iterable[RogueHandbookMiracleType]:
         return (RogueHandbookMiracleType(self._game, typ._excel) for typ in self.__rogue_handbook_miracle_type)
+
+    @functools.cached_property
+    def __rogue_miracle_display(self) -> RogueMiracleDisplay | None:
+        # 不可知域 2.7 ~ 3.0 版本的奇物都没有正确的 RogueMiracleDisplay，索引到 RogueTournMiracleDisplay 去了
+        display = self._game.rogue_miracle_display(self._excel.miracle_display_id)
+        if display is None:
+            display = self._game.rogue_tourn_miracle_display(self._excel.miracle_display_id)
+        assert display is not None
+        return display
+
+    @functools.cached_property
+    def __rogue_miracle_effect_display(self) -> RogueMiracleEffectDisplay | None:
+        if self._excel.miracle_effect_display_id is None:
+            return None
+        display = self._game.rogue_miracle_effect_display(self._excel.miracle_effect_display_id)
+        assert display is not None
+        return display
+
+    @functools.cached_property
+    def __rogue_miracles(self) -> list[RogueMiracle]:
+        return list(self._game.rogue_handbook_miracle_miracles(self._excel.id))
+
+    def rogue_miracles(self) -> collections.abc.Iterable[RogueMiracle]:
+        return (RogueMiracle(self._game, miracle._excel) for miracle in self.__rogue_miracles)
+
+    @functools.cached_property
+    def __rogue_tourn_handbook_miracle(self) -> RogueTournHandbookMiracle | None:
+        handbook = [
+            handbook
+            for handbook in self._game.rogue_tourn_handbook_miracle_name(self.name)
+            if len(list(handbook.tourn_miracles())) != 0
+        ]
+        return None if len(handbook) == 0 else handbook[-1]
+
+    @functools.cached_property
+    def __same_name_rogue_tourn_miracles(self) -> list[RogueTournMiracle]:
+        return self._game.rogue_tourn_miracle_name(self.name)
+
+    def wiki(self) -> str:
+        modes = ["模拟宇宙"] if len(self.__same_name_rogue_tourn_miracles) == 0 else ["模拟宇宙", "差分宇宙"]
+        rogue_modes = [typ.title.removeprefix("模拟宇宙：") for typ in self.__rogue_handbook_miracle_type]
+        tourn_modes = list({miracle.mode for miracle in self.__same_name_rogue_tourn_miracles})
+        tourn_modes.sort()
+        return self._game._template_environment.get_template("奇物.jinja2").render(  # pyright: ignore[reportPrivateUsage]
+            name=self.wiki_name,
+            modes=modes,
+            rogue_miracle=self,
+            rogue_modes=rogue_modes,
+            tourn_miracle=self.__rogue_tourn_handbook_miracle,
+            tourn_modes=tourn_modes,
+        )
 
 
 class RogueHandbookMiracleType(View[excel.RogueHandbookMiracleType]):
@@ -235,40 +334,40 @@ class RogueHandbookMiracleType(View[excel.RogueHandbookMiracleType]):
 class RogueMiracle(View[excel.RogueMiracle]):
     ExcelOutput: typing.Final = excel.RogueMiracle
 
-    @property
+    @functools.cached_property
     def name(self) -> str:
+        if self._excel.miracle_name is not None:
+            return self._game.text(self._excel.miracle_name)
         if self.__rogue_miracle_display is not None:
             return self.__rogue_miracle_display.name
         return ""
 
     @functools.cached_property
-    def wiki_name(self) -> str:
-        return self._game._mw_formatter.format(self.name)  # pyright: ignore[reportPrivateUsage]
-
-    @property
     def desc(self) -> str:
+        if self._excel.miracle_desc is not None:
+            desc = self._game.text(self._excel.miracle_desc)
+            if desc != "":
+                return desc
         if self.__rogue_miracle_effect_display is not None:
             return self.__rogue_miracle_effect_display.desc
         if self.__rogue_miracle_display is not None:
             return self.__rogue_miracle_display.desc
         return ""
 
-    @property
-    def simple_desc(self) -> str:
-        if self.__rogue_miracle_effect_display is not None:
-            return self.__rogue_miracle_effect_display.simple_desc
-        return ""
-
-    @property
+    @functools.cached_property
     def desc_param_list(self) -> tuple[float, ...]:
+        if self._excel.desc_param_list is not None:
+            return tuple(param.value for param in self._excel.desc_param_list)
         if self.__rogue_miracle_effect_display is not None:
             return self.__rogue_miracle_effect_display.desc_param_list
         if self.__rogue_miracle_display is not None:
             return self.__rogue_miracle_display.desc_param_list
         return ()
 
-    @property
+    @functools.cached_property
     def bg_desc(self) -> str:
+        if self._excel.miracle_bg_desc is not None:
+            return self._game.text(self._excel.miracle_bg_desc)
         if self.__rogue_miracle_display is not None:
             return self.__rogue_miracle_display.bg_desc
         return ""
@@ -285,15 +384,6 @@ class RogueMiracle(View[excel.RogueMiracle]):
 
     def rogue_miracles(self) -> collections.abc.Iterable[RogueMiracle]:
         return (RogueMiracle(self._game, miracle._excel) for miracle in self.__rogue_miracles)
-
-    @functools.cached_property
-    def __rogue_tourn_miracles(self) -> list[RogueTournMiracle]:
-        return self._game.rogue_tourn_miracle_name(self.name)
-
-    def tourn_miracles(self) -> collections.abc.Iterable[RogueTournMiracle]:
-        from .rogue_tourn import RogueTournMiracle
-
-        return (RogueTournMiracle(self._game, miracle._excel) for miracle in self.__rogue_tourn_miracles)
 
     @functools.cached_property
     def __rogue_miracle_display(self) -> RogueMiracleDisplay | None:
@@ -317,6 +407,8 @@ class RogueMiracle(View[excel.RogueMiracle]):
             )
             return RogueMiracleDisplay(game=self._game, excel=display)
         display = self._game.rogue_miracle_display(self._excel.miracle_display_id)
+        if display is None:
+            display = self._game.rogue_tourn_miracle_display(self._excel.miracle_display_id)
         assert display is not None
         return display
 
@@ -350,25 +442,6 @@ class RogueMiracle(View[excel.RogueMiracle]):
         if self.__rogue_handbook_miracle is None:
             return None
         return RogueHandbookMiracle(self._game, self.__rogue_handbook_miracle._excel)
-
-    def wiki(self) -> str:
-        modes = ["模拟宇宙"] if len(self.__rogue_tourn_miracles) == 0 else ["模拟宇宙", "差分宇宙"]
-        rogue_modes = (
-            []
-            if self.__rogue_handbook_miracle is None
-            else [typ.title.removeprefix("模拟宇宙：") for typ in self.__rogue_handbook_miracle.types()]
-        )
-        tourn_miracles = list(self.tourn_miracles())
-        tourn_miracles.sort(key=lambda miracle: miracle.mode)
-        tourn_miracle = None if len(tourn_miracles) == 0 else tourn_miracles[-1]
-        return self._game._template_environment.get_template("奇物.jinja2").render(  # pyright: ignore[reportPrivateUsage]
-            name=self.wiki_name,
-            modes=modes,
-            rogue_miracle=self,
-            rogue_modes=rogue_modes,
-            tourn_miracle=tourn_miracle,
-            tourn_modes=[miracle.mode for miracle in tourn_miracles],
-        )
 
 
 class RogueMiracleDisplay(View[excel.RogueMiracleDisplay]):
