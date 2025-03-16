@@ -1,4 +1,4 @@
-from .base import Element, ModelID, ModelMainSubID, Text
+from .base import Element, ModelID, ModelMainSubID, Text, Value
 from .book import BookDisplayType, BookSeriesConfig, BookSeriesWorld, LocalbookConfig
 from .item import ItemConfig, ItemPurpose
 from .misc import ExtraEffectConfig, MazeBuff, RewardData, TextJoinConfig, TextJoinItem
@@ -84,8 +84,9 @@ __all__ = (
     "RogueTournWeeklyChallenge",
     "RogueTournWeeklyDisplay",
     # common
-    "Text",
     "Element",
+    "Text",
+    "Value",
     # interfaces
     "ModelID",
     "ModelMainSubID",
