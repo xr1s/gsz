@@ -330,7 +330,9 @@ class Formatter:
         if percent:
             param *= 100
         if specifier == "":
-            return str(param)
+            if isinstance(param, int | float):
+                return str(param).rstrip("0").rstrip(".")
+            return param
         if specifier.startswith("f"):
             prec = int(specifier[1:])  # may throws ValueError
             return f"{param:.{prec}f}".rstrip("0").rstrip(".")
