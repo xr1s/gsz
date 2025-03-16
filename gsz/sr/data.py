@@ -723,6 +723,10 @@ class GameData:
     def rogue_tourn_miracle_name():
         """差分宇宙奇物"""
 
+    @excel_output(view.RogueMiracleDisplay)
+    def rogue_tourn_miracle_display(self):
+        """差分宇宙奇物展示信息"""
+
     @excel_output(view.RogueTournTitanBless)
     def rogue_tourn_titan_bless(self):
         """差分宇宙金血祝颂"""

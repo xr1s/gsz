@@ -221,6 +221,9 @@ class RogueTournFormula(View[excel.RogueTournFormula]):
         assert display is not None
         return display
 
+    def display(self) -> RogueTournFormulaDisplay:
+        return RogueTournFormulaDisplay(self._game, self.__rogue_tourn_formula_display._excel)
+
     @functools.cached_property
     def maze_buff(self) -> MazeBuff:
         maze_buff = self._game.rogue_maze_buff(self._excel.maze_buff_id)
@@ -240,8 +243,8 @@ class RogueTournMiracle(View[excel.RogueTournMiracle]):
 
     @property
     def name(self) -> str:
-        if self.__rogue_miracle_display.name != "":
-            return self.__rogue_miracle_display.name
+        if self.__rogue_tourn_miracle_display.name != "":
+            return self.__rogue_tourn_miracle_display.name
         return ""
 
     @functools.cached_property
@@ -252,13 +255,13 @@ class RogueTournMiracle(View[excel.RogueTournMiracle]):
     def desc(self) -> str:
         if self.__rogue_miracle_effect_display is not None:
             return self.__rogue_miracle_effect_display.desc
-        return self.__rogue_miracle_display.desc
+        return self.__rogue_tourn_miracle_display.desc
 
     @property
     def desc_param_list(self) -> tuple[float, ...]:
         if self.__rogue_miracle_effect_display is not None:
             return self.__rogue_miracle_effect_display.desc_param_list
-        return self.__rogue_miracle_display.desc_param_list
+        return self.__rogue_tourn_miracle_display.desc_param_list
 
     @property
     def category(self) -> rogue_tourn.MiracleCategory:
@@ -270,22 +273,24 @@ class RogueTournMiracle(View[excel.RogueTournMiracle]):
 
     @property
     def bg_desc(self) -> str:
-        return self.__rogue_miracle_display.bg_desc
+        return self.__rogue_tourn_miracle_display.bg_desc
 
     @property
     def tag(self) -> str:
-        return self.__rogue_miracle_display.tag
+        return self.__rogue_tourn_miracle_display.tag
 
     @functools.cached_property
-    def __rogue_miracle_display(self) -> RogueMiracleDisplay:
+    def __rogue_tourn_miracle_display(self) -> RogueMiracleDisplay:
         display = self._game.rogue_miracle_display(self._excel.miracle_display_id)
+        if display is None:
+            display = self._game.rogue_tourn_miracle_display(self._excel.miracle_display_id)
         assert display is not None
         return display
 
     def display(self) -> RogueMiracleDisplay:
         from .rogue import RogueMiracleDisplay
 
-        return RogueMiracleDisplay(self._game, self.__rogue_miracle_display._excel)
+        return RogueMiracleDisplay(self._game, self.__rogue_tourn_miracle_display._excel)
 
     @functools.cached_property
     def __rogue_miracle_effect_display(self) -> RogueMiracleEffectDisplay | None:
