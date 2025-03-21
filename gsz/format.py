@@ -330,12 +330,16 @@ class Formatter:
         if percent:
             param *= 100
         if specifier == "":
-            if isinstance(param, int | float):
-                return str(param).rstrip("0").rstrip(".")
-            return param
+            match param:
+                case int():
+                    return str(param)
+                case float():
+                    return str(param) if param.is_integer() else str(param).rstrip("0").rstrip(".")
+                case str():
+                    return param
         if specifier.startswith("f"):
             prec = int(specifier[1:])  # may throws ValueError
-            return f"{param:.{prec}f}".rstrip("0").rstrip(".")
+            return f"{param:.{prec}f}"
         if specifier == "i":
             # TODO: 需要给数字做千分位分隔
             param = round(float(param))
@@ -590,11 +594,13 @@ class Formatter:
                 _ = self.__m_text = ""
             case "Img":
                 if self.__localbook_img is None:
-                    self.__push(f"{{Img#{val}}}")
+                    _ = self.__texts[-1].write("{{Img#")
+                    self.__push(f"{val}")
                     return
                 index = int(val)
                 if index > len(self.__localbook_img):
-                    self.__push(f"{{Img#{val}}}")
+                    _ = self.__texts[-1].write("{{Img#")
+                    self.__push(f"{val}")
                     return
                 _ = self.__texts[-1].write(f"<!-- {self.__localbook_img[index - 1]} -->")
             case "M":  # 一般很短，暂时不考虑堆栈
@@ -615,14 +621,14 @@ class Formatter:
                 self.__push("开拓者")  # TODO: 根据游戏区分
             case "RUBY_B":
                 if self.__syntax in (Syntax.MediaWiki, Syntax.MediaWikiPretty):
-                    self.__push("{{注音|")
+                    _ = self.__texts[-1].write("{{注音|")
                     self.__ruby = val
             case "RUBY_E":
                 if self.__syntax in (Syntax.MediaWiki, Syntax.MediaWikiPretty):
-                    self.__push("|")
+                    _ = self.__texts[-1].write("|")
                     self.__push(self.__ruby)
                     _ = self.__ruby = ""
-                    self.__push("}}")
+                    _ = self.__texts[-1].write("}}")
             case "TEXTJOIN":
                 if not isinstance(self.__game, SRGameData):
                     self.__push(f"{{TEXTJOIN#{val}}}")
@@ -641,31 +647,31 @@ class Formatter:
                     and sum(len(item) for item in items) < 100
                 ):
                     if default != 0:
-                        self.__push("{{黑幕|")
+                        _ = self.__texts[-1].write("{{黑幕|")
                         _ = self.__texts[-1].write(
                             "/".join(self.__text_join_item_formatter.format(item) for item in items[:default])
                         )
-                        self.__push("/}}")
+                        _ = self.__texts[-1].write("/}}")
                     _ = self.__texts[-1].write(self.__text_join_item_formatter.format(items[default]))
                     if default != len(items) - 1:
-                        self.__push("{{黑幕|/")
+                        _ = self.__texts[-1].write("{{黑幕|/")
                         _ = self.__texts[-1].write(
                             "/".join(self.__text_join_item_formatter.format(item) for item in items[default + 1 :])
                         )
-                        self.__push("}}")
+                        _ = self.__texts[-1].write("}}")
                     return
                 if self.__syntax == Syntax.MediaWikiPretty:
                     self.__display_block_afterward()
-                    self.__push("{{切换板|开始}}")
+                    _ = self.__texts[-1].write("{{切换板|开始}}")
                     for index in range(len(items)):
                         _ = self.__texts[-1].write(
                             "\n  {{切换板|默认" + ("显示" if index == default else "折叠") + "|<!-- 补充标题 -->}}"
                         )
                     for index, item in enumerate(items):
                         _ = self.__texts[-1].write("\n  ")
-                        self.__push("{{切换板|" + ("显示" if index == default else "折叠") + "内容}}")
+                        _ = self.__texts[-1].write("{{切换板|" + ("显示" if index == default else "折叠") + "内容}}")
                         _ = self.__texts[-1].write(self.__text_join_item_formatter.format(item))
-                        self.__push("{{切换板|内容结束}}")
+                        _ = self.__texts[-1].write("{{切换板|内容结束}}")
                     _ = self.__texts[-1].write("\n{{切换板|结束}}")
             case _:
                 raise ValueError(f"invalid var {var}")

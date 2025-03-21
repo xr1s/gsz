@@ -24,6 +24,7 @@ class MockSRGameData:
 
 def test_format_simple():
     formatter = Formatter()
+    assert formatter.format("#1到#2", 0, 100) == "0到100"
     assert formatter.format("世界第#1美少女", 1) == "世界第1美少女"
     assert formatter.format("造成#1[i]%基础伤害", 18) == "造成1800%基础伤害"
     assert formatter.format("所有角色失去#2[f1]%生命值", 0, 0.3) == "所有角色失去30.0%生命值"
@@ -69,7 +70,7 @@ def test_simple_tag():
     assert formatter.format("<size=+4px>字号</size>") == '<span style="font-size: 1.2em">字号</span>'
     assert formatter.format('<align="right">右对齐</align>') == '<p style="text-align: right">右对齐</p>'
 
-    assert formatter.format("<color=#f29e3800>特殊颜色</color>") == "{{颜色|描述2|特殊颜色}}"
+    assert formatter.format("<color=#f29e38ff>特殊颜色</color>") == "{{颜色|描述2|特殊颜色}}"
 
 
 def test_plain_syntax():
@@ -91,7 +92,7 @@ def test_nested_tags():
 def test_invalid_tag():
     formatter = Formatter(syntax=Syntax.MediaWiki)
     assert formatter.format("<>") == "&lt;&gt;"
-    assert formatter.format("<=>") == "&lt;=&gt;"
+    assert formatter.format("<=>") == "&lt;{{=}}&gt;"
     assert formatter.format("<(￣︶￣)>") == "&lt;(￣︶￣)&gt;"
     assert formatter.format("<Grand\u00a0Melodie\u00a0黄金的时刻>") == "&lt;Grand&nbsp;Melodie&nbsp;黄金的时刻&gt;"
     assert formatter.format("</b>") == "&lt;/b&gt;"
