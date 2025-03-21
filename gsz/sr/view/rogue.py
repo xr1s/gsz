@@ -344,6 +344,7 @@ class RogueMiracle(View[excel.RogueMiracle]):
 
     @functools.cached_property
     def desc(self) -> str:
+        """效果"""
         if self._excel.miracle_desc is not None:
             desc = self._game.text(self._excel.miracle_desc)
             if desc != "":
@@ -366,6 +367,7 @@ class RogueMiracle(View[excel.RogueMiracle]):
 
     @functools.cached_property
     def bg_desc(self) -> str:
+        """奇物背景故事"""
         if self._excel.miracle_bg_desc is not None:
             return self._game.text(self._excel.miracle_bg_desc)
         if self.__rogue_miracle_display is not None:
@@ -379,11 +381,22 @@ class RogueMiracle(View[excel.RogueMiracle]):
         return ""
 
     @functools.cached_property
-    def __rogue_miracles(self) -> list[RogueMiracle]:
+    def __same_name_rogue_miracles(self) -> list[RogueMiracle]:
         return self._game.rogue_miracle_name(self.name)
 
-    def rogue_miracles(self) -> collections.abc.Iterable[RogueMiracle]:
-        return (RogueMiracle(self._game, miracle._excel) for miracle in self.__rogue_miracles)
+    def same_name_rogue_miracles(self) -> collections.abc.Iterable[RogueMiracle]:
+        """同名模拟宇宙奇物"""
+        return (RogueMiracle(self._game, miracle._excel) for miracle in self.__same_name_rogue_miracles)
+
+    @functools.cached_property
+    def __same_name_tourn_miracles(self) -> list[RogueTournMiracle]:
+        return self._game.rogue_tourn_miracle_name(self.name)
+
+    def same_name_tourn_miracles(self) -> collections.abc.Iterable[RogueTournMiracle]:
+        """同名模拟宇宙奇物"""
+        from .rogue_tourn import RogueTournMiracle
+
+        return (RogueTournMiracle(self._game, miracle._excel) for miracle in self.__same_name_tourn_miracles)
 
     @functools.cached_property
     def __rogue_miracle_display(self) -> RogueMiracleDisplay | None:
@@ -413,6 +426,7 @@ class RogueMiracle(View[excel.RogueMiracle]):
         return display
 
     def display(self) -> RogueMiracleDisplay | None:
+        """奇物名称、效果、背景故事等字段"""
         if self.__rogue_miracle_display is None:
             return None
         return RogueMiracleDisplay(self._game, self.__rogue_miracle_display._excel)
@@ -426,6 +440,7 @@ class RogueMiracle(View[excel.RogueMiracle]):
         return display
 
     def effect_display(self) -> RogueMiracleEffectDisplay | None:
+        """新版奇物效果字段，取代 RogueMiracleDisplay"""
         if self.__rogue_miracle_effect_display is None:
             return None
         return RogueMiracleEffectDisplay(self._game, self.__rogue_miracle_effect_display._excel)
@@ -439,6 +454,7 @@ class RogueMiracle(View[excel.RogueMiracle]):
         return handbook
 
     def handbook(self) -> RogueHandbookMiracle | None:
+        """对应图鉴条目"""
         if self.__rogue_handbook_miracle is None:
             return None
         return RogueHandbookMiracle(self._game, self.__rogue_handbook_miracle._excel)

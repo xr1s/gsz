@@ -92,7 +92,7 @@ class excel_output(typing.Generic[V]):
     def __init__(self, typ: type[V], *file_names: str):
         self.__type = typ
         self.__file_names: tuple[str, ...] = file_names
-        self.__excel_output: dict[int, excel.ModelID] | None = None
+        self.__excel_output: dict[int | None, excel.ModelID] | None = None
 
     def __call__(self, method: typing.Callable[..., None]) -> GameDataFunction[V]:
         if len(self.__file_names) == 0:
@@ -127,7 +127,7 @@ class excel_output(typing.Generic[V]):
                     excel_list = ExcelOutputList.validate_python(excels)
                     self.__excel_output = {config.id: config for config in excel_list if config is not None}
                 except pydantic.ValidationError as exc:
-                    ExcelOutputDict = pydantic.TypeAdapter(dict[int, self.__type.ExcelOutput])
+                    ExcelOutputDict = pydantic.TypeAdapter(dict[int | None, self.__type.ExcelOutput])
                     try:
                         self.__excel_output = ExcelOutputDict.validate_python(excels)
                     except pydantic.ValidationError as former_structure_exc:
@@ -805,3 +805,12 @@ class GameData:
     @excel_output(view.RogueTournWeeklyDisplay)
     def rogue_tourn_weekly_display(self):
         """差分宇宙周期演算预设"""
+
+    ######## talk ########
+    @excel_output(view.TalkSentenceConfig)
+    def talk_sentence_config(self):
+        """各种对话，包括剧情、模拟宇宙事件等"""
+
+    @excel_output(view.VoiceConfig)
+    def voice_config(self):
+        """语音"""

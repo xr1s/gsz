@@ -36,6 +36,7 @@ from .rogue_tourn import (
     RogueTournWeeklyChallenge,
     RogueTournWeeklyDisplay,
 )
+from .talk import TalkSentenceConfig, VoiceConfig
 
 __all__ = (
     # book
@@ -83,6 +84,9 @@ __all__ = (
     "RogueTournTitanBless",
     "RogueTournWeeklyChallenge",
     "RogueTournWeeklyDisplay",
+    # talk
+    "TalkSentenceConfig",
+    "VoiceConfig",
     # Interface
     "IView",
 )

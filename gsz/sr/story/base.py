@@ -19,4 +19,6 @@ class Model(pydantic.BaseModel):
 
 
 def get_discriminator(v: typing.Any) -> str:
-    return v.get("$type").removeprefix("RPG.GameCore.")
+    if isinstance(v, dict):
+        return typing.cast(str, v.get("$type")).removeprefix("RPG.GameCore.")  # pyright: ignore[reportUnknownMemberType]
+    return v.typ.removeprefix("RPG.GameCore.")

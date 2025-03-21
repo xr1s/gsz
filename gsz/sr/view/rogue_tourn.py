@@ -1,16 +1,17 @@
 from __future__ import annotations
+import datetime
 import functools
 import itertools
 import typing
 
 from .. import excel
-from ..excel import rogue
+from ..excel import rogue, rogue_tourn
 from .base import View
 from .misc import MazeBuff
+from .story import Story
 
 if typing.TYPE_CHECKING:
     import collections.abc
-    from ..excel import rogue_tourn
     from .rogue import RogueMiracle, RogueHandbookMiracle, RogueMiracleDisplay, RogueMiracleEffectDisplay, RogueBuff
 
 
@@ -204,19 +205,33 @@ class RogueTournFormula(View[excel.RogueTournFormula]):
 
     @functools.cached_property
     def wiki_name(self) -> str:
-        return self._game._mw_formatter.format(self.name)  # pyright: ignore[reportPrivateUsage]
+        name = self._game._mw_formatter.format(self.name)  # pyright: ignore[reportPrivateUsage]
+        if self.category == rogue_tourn.FormulaCategory.PathEcho and self.mode == rogue_tourn.Mode.TournMode1:
+            return name + "（方程）"
+        if self.name == "赏金猎人":
+            return name + "（方程）"
+        return name
 
     @property
     def desc(self) -> str:
+        """效果"""
         return self.maze_buff.desc
+
+    @property
+    def category(self) -> rogue_tourn.FormulaCategory:
+        """稀有度"""
+        return self._excel.formula_category
 
     @property
     def param_list(self) -> tuple[float, ...]:
         return self.maze_buff.param_list
 
     @property
-    def tourn_mode(self) -> rogue_tourn.Mode | None:
-        """None 应该是测试数据，观察到 None 里有一些重复的数据"""
+    def mode(self) -> rogue_tourn.Mode | None:
+        """
+        人间喜剧、千面英雄
+        None 应该是测试数据，观察到 None 里有一些重复的数据
+        """
         return self._excel.tourn_mode
 
     @functools.cached_property
@@ -226,7 +241,19 @@ class RogueTournFormula(View[excel.RogueTournFormula]):
         return display
 
     def display(self) -> RogueTournFormulaDisplay:
+        """方程效果和演绎"""
         return RogueTournFormulaDisplay(self._game, self.__rogue_tourn_formula_display._excel)
+
+    @functools.cached_property
+    def __story(self) -> Story | None:
+        """推演"""
+        if self._game.base.joinpath(self._excel.formula_story_json).is_file():
+            return Story(self._game, self._excel.formula_story_json)
+        return None
+
+    def story(self) -> Story | None:
+        """推演"""
+        return self.__story
 
     @functools.cached_property
     def maze_buff(self) -> MazeBuff:
@@ -344,6 +371,7 @@ class RogueTournMiracle(View[excel.RogueTournMiracle]):
 
     @property
     def desc(self) -> str:
+        """效果"""
         if self.__rogue_miracle_effect_display is not None:
             return self.__rogue_miracle_effect_display.desc
         return self.__rogue_tourn_miracle_display.desc
@@ -356,14 +384,17 @@ class RogueTournMiracle(View[excel.RogueTournMiracle]):
 
     @property
     def category(self) -> rogue_tourn.MiracleCategory:
+        """稀有度"""
         return self._excel.miracle_category
 
     @property
     def mode(self) -> rogue_tourn.Mode:
+        """人间喜剧、千面英雄"""
         return self._excel.tourn_mode
 
     @property
     def bg_desc(self) -> str:
+        """背景故事"""
         return self.__rogue_tourn_miracle_display.bg_desc
 
     @property
@@ -379,6 +410,7 @@ class RogueTournMiracle(View[excel.RogueTournMiracle]):
         return display
 
     def display(self) -> RogueMiracleDisplay:
+        """奇物名称、效果、背景故事等字段"""
         from .rogue import RogueMiracleDisplay
 
         return RogueMiracleDisplay(self._game, self.__rogue_tourn_miracle_display._excel)
@@ -392,6 +424,7 @@ class RogueTournMiracle(View[excel.RogueTournMiracle]):
         return display
 
     def effect_display(self) -> RogueMiracleEffectDisplay | None:
+        """新版奇物效果字段，取代 RogueMiracleDisplay"""
         from .rogue import RogueMiracleEffectDisplay
 
         if self.__rogue_miracle_effect_display is None:
@@ -399,22 +432,24 @@ class RogueTournMiracle(View[excel.RogueTournMiracle]):
         return RogueMiracleEffectDisplay(self._game, self.__rogue_miracle_effect_display._excel)
 
     @functools.cached_property
-    def __rogue_miracles(self) -> list[RogueMiracle]:
+    def __same_name_rogue_miracles(self) -> list[RogueMiracle]:
         return self._game.rogue_miracle_name(self.name)
 
-    def rogue_miracles(self) -> list[RogueMiracle]:
+    def same_name_rogue_miracles(self) -> collections.abc.Iterable[RogueMiracle]:
+        """同名模拟宇宙奇物"""
         from .rogue import RogueMiracle
 
-        return [RogueMiracle(self._game, miracle._excel) for miracle in self.__rogue_miracles]
+        return (RogueMiracle(self._game, miracle._excel) for miracle in self.__same_name_rogue_miracles)
 
     @functools.cached_property
-    def __rogue_tourn_miracles(self) -> list[RogueTournMiracle]:
+    def __same_name_rogue_tourn_miracles(self) -> list[RogueTournMiracle]:
         return self._game.rogue_tourn_miracle_name(self.name)
 
-    def tourn_miracles(self) -> list[RogueTournMiracle]:
+    def same_name_tourn_miracles(self) -> collections.abc.Iterable[RogueTournMiracle]:
+        """同名差分宇宙奇物"""
         from .rogue_tourn import RogueTournMiracle
 
-        return [RogueTournMiracle(self._game, miracle._excel) for miracle in self.__rogue_tourn_miracles]
+        return [RogueTournMiracle(self._game, miracle._excel) for miracle in self.__same_name_rogue_tourn_miracles]
 
 
 class RogueTournTitanBless(View[excel.RogueTournTitanBless]):
@@ -424,6 +459,63 @@ class RogueTournTitanBless(View[excel.RogueTournTitanBless]):
 class RogueTournWeeklyChallenge(View[excel.RogueTournWeeklyChallenge]):
     ExcelOutput: typing.Final = excel.RogueTournWeeklyChallenge
 
+    @property
+    def id(self) -> int:
+        return self._excel.challenge_id
+
+    ASIA_SHANGHAI: datetime.timezone = datetime.timezone(datetime.timedelta(hours=8))
+    FIRST_CHALLENGE_MONDAY: datetime.datetime = datetime.datetime(2024, 6, 16, 20, tzinfo=ASIA_SHANGHAI)
+
+    @functools.cached_property
+    def __begin_time(self) -> datetime.datetime:
+        if self.id == 1:
+            return self.FIRST_CHALLENGE_MONDAY + datetime.timedelta(days=2, hours=6)
+        return self.FIRST_CHALLENGE_MONDAY + datetime.timedelta(weeks=self.id - 1)
+
+    def begin_time(self) -> datetime.datetime:
+        return self.__begin_time
+
+    @functools.cached_property
+    def __end_time(self) -> datetime.datetime:
+        return self.FIRST_CHALLENGE_MONDAY + datetime.timedelta(weeks=self.id, milliseconds=-1)
+
+    def end_time(self) -> datetime.datetime:
+        return self.__end_time
+
 
 class RogueTournWeeklyDisplay(View[excel.RogueTournWeeklyDisplay]):
     ExcelOutput: typing.Final = excel.RogueTournWeeklyDisplay
+
+    @functools.cached_property
+    def content(self) -> str:
+        return self._game.text(self._excel.weekly_display_content)
+
+    @functools.cached_property
+    def __miracles(self) -> list[RogueTournMiracle]:
+        miracle_ids = [
+            param.value for param in self._excel.desc_params if param.type == rogue_tourn.DescParamType.Miracle
+        ]
+        return list(self._game.rogue_tourn_miracle(miracle_ids))
+
+    def miracles(self) -> collections.abc.Iterable[RogueTournMiracle]:
+        return (RogueTournMiracle(self._game, miracle._excel) for miracle in self.__miracles)
+
+    @functools.cached_property
+    def __formulas(self) -> list[RogueTournFormula]:
+        formula_ids = [
+            param.value for param in self._excel.desc_params if param.type == rogue_tourn.DescParamType.Formula
+        ]
+        return list(self._game.rogue_tourn_formula(formula_ids))
+
+    def formulas(self) -> collections.abc.Iterable[RogueTournFormula]:
+        return (RogueTournFormula(self._game, formula._excel) for formula in self.__formulas)
+
+    @functools.cached_property
+    def __titan_blesses(self) -> list[RogueTournTitanBless]:
+        titan_blessing_ids = [
+            param.value for param in self._excel.desc_params if param.type == rogue_tourn.DescParamType.TitanBless
+        ]
+        return list(self._game.rogue_tourn_titan_bless(titan_blessing_ids))
+
+    def titan_blesses(self) -> collections.abc.Iterable[RogueTournTitanBless]:
+        return (RogueTournTitanBless(self._game, titan_bless._excel) for titan_bless in self.__titan_blesses)

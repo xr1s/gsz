@@ -61,7 +61,7 @@ class Model(pydantic.BaseModel):
 class ModelID(Model, metaclass=abc.ABCMeta):
     @property
     @abc.abstractmethod
-    def id(self) -> int: ...
+    def id(self) -> int | None: ...
 
 
 class ModelMainSubID(Model, metaclass=abc.ABCMeta):
