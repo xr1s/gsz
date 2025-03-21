@@ -95,15 +95,30 @@ ROGUE_BUFF_GROUP_ID = pydantic.AliasChoices(
 )
 
 ROGUE_BUFF_DROP = pydantic.AliasChoices(
-    "GNGDPDOMDFH",
-    "DKLEHCPFLFJ",
-    "NDFFCMBIOAG",
-    "ILLJGPJPFAC",
-    "HLKMFHBOAIA",
-    "KCFPNHGBGIA",
-    "LEEMGFGKCMO",
-    "NFPAICKGMBC",
-    "AMGHNOBDGLM",
-    "DNKFBOAIDCE",
-    "ADJICNNJFEM",
+    "GNGDPDOMDFH",  # 3.1
+    "DKLEHCPFLFJ",  # 3.0
+    "NDFFCMBIOAG",  # 2.7
+    "ILLJGPJPFAC",  # 2.6
+    "HLKMFHBOAIA",  # 2.5
+    "KCFPNHGBGIA",  # 2.4
+    "LEEMGFGKCMO",  # 2.3
+    "NFPAICKGMBC",  # 2.2
+    "AMGHNOBDGLM",  # 2.1
+    "DNKFBOAIDCE",  # 2.0
+    "ADJICNNJFEM",  # 1.6
+)
+
+UNLOCK_NPC_ID = pydantic.AliasChoices(
+    "MBNKLBEBOHB",  # 3.1
+    "HLNMOFDGLAA",  # 3.0
+    "KOPDNGGIFKN",  # 2.7
+    "GNBAICOJALE",  # 2.6
+    "GFKCKEKCGIB",  # 2.5
+)
+UNLOCK_PROGRESS = pydantic.AliasChoices(
+    "NNDEOKKKKPE",  # 3.1
+    "AFMKGEHANLM",  # 3.0
+    "FINLPBFNLHP",  # 2.7
+    "EJJEHNGJCJH",  # 2.6
+    "EEMMLHDLGKP",  # 2.5
 )

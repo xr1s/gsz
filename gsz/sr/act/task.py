@@ -12,6 +12,10 @@ class Model(BaseModel):
     typ: typing.Annotated[str, pydantic.Field(alias="$type")]
 
 
+class AdvNpcFaceToPlayer(Model):
+    finish_immadiate: bool
+
+
 class BattlePerformInit(Model):
     area_prefab_path: str
     capture_team_light_list: list[performance.CaptureTeam]
@@ -73,6 +77,10 @@ class PlayRogueOptionTalk(Model):
     option_list: list[talk.RogueOptionTalk]
 
 
+class PlayRogueSimpleTalk(Model):
+    simple_talk_list: list[talk.RogueSimpleTalk]
+
+
 class PlayTimeline(Model):
     timeline_name: str
     type: typing.Literal["CutScene", "Discussion", "Story"] | None
@@ -81,6 +89,10 @@ class PlayTimeline(Model):
 class PredicateTaskList(Model):
     predicate: predicate.Predicate
     success_task_list: list[int]
+
+
+class SetAllRogueDoorState(Model):
+    pass
 
 
 class SetAsRogueDialogue(Model):
@@ -97,12 +109,21 @@ class SetMissionCustomValue(Model):
     custom_value: int
 
 
+class SetRogueRoomFinish(Model):
+    pass
+
+
 class ShowRogueTalkBg(Model):
     talk_bg_id: int
 
 
 class ShowRogueTalkUI(Model):
     show: bool
+
+
+class SwitchUIMenuBGM(Model):
+    should_stop: bool = False
+    state_name: str | None = None
 
 
 class TriggerCustomString(Model):
@@ -116,12 +137,21 @@ class WaitCustomString(Model):
     wait_owner_only: bool = False
 
 
+class WaitDialogueEvent(Model):
+    dialogue_event_list: list[talk.DialogueEvent]
+
+
 class WaitPerformanceEnd(Model):
     pass
 
 
+class WaitRogueSimpleTalkFinish(Model):
+    pass
+
+
 Task = typing.Annotated[
-    typing.Annotated[BattlePerformInit, pydantic.Tag("BattlePerformInit")]
+    typing.Annotated[AdvNpcFaceToPlayer, pydantic.Tag("AdvNpcFaceToPlayer")]
+    | typing.Annotated[BattlePerformInit, pydantic.Tag("BattlePerformInit")]
     | typing.Annotated[BattlePerformTimeline, pydantic.Tag("BattlePerformTimeline")]
     | typing.Annotated[BattlePlayVideo, pydantic.Tag("BattlePlayVideo")]
     | typing.Annotated[CollectDataConditions, pydantic.Tag("CollectDataConditions")]
@@ -131,15 +161,21 @@ Task = typing.Annotated[
     | typing.Annotated[PlayAndWaitRogueSimpleTalk, pydantic.Tag("PlayAndWaitRogueSimpleTalk")]
     | typing.Annotated[PlayOptionTalk, pydantic.Tag("PlayOptionTalk")]
     | typing.Annotated[PlayRogueOptionTalk, pydantic.Tag("PlayRogueOptionTalk")]
+    | typing.Annotated[PlayRogueSimpleTalk, pydantic.Tag("PlayRogueSimpleTalk")]
     | typing.Annotated[PlayTimeline, pydantic.Tag("PlayTimeline")]
     | typing.Annotated[PredicateTaskList, pydantic.Tag("PredicateTaskList")]
+    | typing.Annotated[SetAllRogueDoorState, pydantic.Tag("SetAllRogueDoorState")]
     | typing.Annotated[SetAsRogueDialogue, pydantic.Tag("SetAsRogueDialogue")]
     | typing.Annotated[SetBattleBGMState, pydantic.Tag("SetBattleBGMState")]
     | typing.Annotated[SetMissionCustomValue, pydantic.Tag("SetMissionCustomValue")]
+    | typing.Annotated[SetRogueRoomFinish, pydantic.Tag("SetRogueRoomFinish")]
     | typing.Annotated[ShowRogueTalkBg, pydantic.Tag("ShowRogueTalkBg")]
     | typing.Annotated[ShowRogueTalkUI, pydantic.Tag("ShowRogueTalkUI")]
+    | typing.Annotated[SwitchUIMenuBGM, pydantic.Tag("SwitchUIMenuBGM")]
     | typing.Annotated[TriggerCustomString, pydantic.Tag("TriggerCustomString")]
     | typing.Annotated[WaitCustomString, pydantic.Tag("WaitCustomString")]
-    | typing.Annotated[WaitPerformanceEnd, pydantic.Tag("WaitPerformanceEnd")],
+    | typing.Annotated[WaitDialogueEvent, pydantic.Tag("WaitDialogueEvent")]
+    | typing.Annotated[WaitPerformanceEnd, pydantic.Tag("WaitPerformanceEnd")]
+    | typing.Annotated[WaitRogueSimpleTalkFinish, pydantic.Tag("WaitRogueSimpleTalkFinish")],
     pydantic.Discriminator(get_discriminator),
 ]

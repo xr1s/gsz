@@ -1,11 +1,12 @@
 import enum
+import pathlib
 import typing
 
 import pydantic
 import typing_extensions
 
 from . import aliases
-from .base import ModelID, ModelMainSubID, Text, Value
+from .base import Model, ModelID, ModelMainSubID, Text, Value
 
 
 class Path(enum.Enum):
@@ -151,6 +152,72 @@ class RogueBuffType(ModelID):
         return self.rogue_buff_type
 
 
+class UnlockNPCProgressID(Model):
+    unlock_npc_id: typing.Annotated[int, pydantic.Field(validation_alias=aliases.UNLOCK_NPC_ID)]
+    unlock_progress: typing.Annotated[int | None, pydantic.Field(validation_alias=aliases.UNLOCK_PROGRESS)] = None
+
+
+class RogueDialogueDynamicDisplay(ModelID):
+    display_id: int
+    content_text: Text
+
+    @property
+    @typing_extensions.override
+    def id(self) -> int:
+        return self.display_id
+
+
+class RogueDialogueOptionDisplay(ModelID):
+    option_display_id: int
+    option_title: Text | None = None
+    option_desc: Text | None = None
+
+    @property
+    @typing_extensions.override
+    def id(self) -> int:
+        return self.option_display_id
+
+
+class RogueEventSpecialOption(ModelID):
+    special_option_id: int
+    aeon_icon: str
+    aeon_figure: str
+
+    @property
+    @typing_extensions.override
+    def id(self) -> int:
+        return self.special_option_id
+
+
+class RogueHandBookEvent(ModelID):
+    event_handbook_id: int
+    unlock_npc_progress_id_list: list[UnlockNPCProgressID]
+    event_title: Text
+    event_type: Text
+    event_reward: int
+    order: int
+    event_type_list: list[int]
+    unlock_hint_desc: Text
+    image_id: int
+
+    @property
+    @typing_extensions.override
+    def id(self) -> int:
+        return self.event_handbook_id
+
+
+class RogueHandBookEventType(ModelID):
+    rogue_hand_book_event_type: int
+    rogue_event_type_title: Text
+    type_icon: str
+    activity_module_id: int | None = None
+
+    @property
+    @typing_extensions.override
+    def id(self) -> int:
+        return self.rogue_hand_book_event_type
+
+
 class RogueHandbookMiracle(ModelID):
     """模拟宇宙奇物图鉴信息（解锁奖励、在哪些 DLC 中出现等）"""
 
@@ -271,3 +338,13 @@ class RogueMonsterGroup(ModelID):
     @typing_extensions.override
     def id(self) -> int:
         return self.rogue_monster_group_id
+
+
+class RogueNPC(ModelID):
+    rogue_npc_id: int
+    npc_json_path: pathlib.Path
+
+    @property
+    @typing_extensions.override
+    def id(self) -> int:
+        return self.rogue_npc_id

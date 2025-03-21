@@ -3,14 +3,15 @@ import functools
 import itertools
 import typing
 
-from .. import excel
+from .. import act, excel
 from ..excel import rogue
 from .base import View
 
 if typing.TYPE_CHECKING:
     import collections.abc
-    from . import misc
+    from .misc import RewardData, MazeBuff
     from .rogue_tourn import RogueTournMiracle, RogueTournBuff, RogueTournHandbookMiracle
+    from .act import Dialogue
 
 
 class RogueBonus(View[excel.RogueBonus]):
@@ -53,14 +54,14 @@ class RogueBuff(View[excel.RogueBuff]):
         return self._excel.rogue_buff_tag
 
     @functools.cached_property
-    def __maze_buff(self) -> misc.MazeBuff:
+    def __maze_buff(self) -> MazeBuff:
         maze_buff = self._game.rogue_maze_buff(self._excel.maze_buff_id, self._excel.maze_buff_level)
         if maze_buff is None:
             maze_buff = self._game.maze_buff(self._excel.maze_buff_id, self._excel.maze_buff_level)
         assert maze_buff is not None
         return maze_buff
 
-    def maze_buff(self) -> misc.MazeBuff:
+    def maze_buff(self) -> MazeBuff:
         from .misc import MazeBuff
 
         return MazeBuff(self._game, self.__maze_buff._excel)
@@ -211,6 +212,135 @@ class RogueBuffType(View[excel.RogueBuffType]):
         if self._excel.rogue_buff_type_sub_title is None:
             return ""
         return self._game.text(self._excel.rogue_buff_type_sub_title)
+
+
+class RogueDialogueDynamicDisplay(View[excel.RogueDialogueDynamicDisplay]):
+    ExcelOutput: typing.Final = excel.RogueDialogueDynamicDisplay
+
+    @functools.cached_property
+    def content(self) -> str:
+        return self._game.text(self._excel.content_text)
+
+
+class RogueDialogueOptionDisplay(View[excel.RogueDialogueOptionDisplay]):
+    ExcelOutput: typing.Final = excel.RogueDialogueOptionDisplay
+
+    @functools.cached_property
+    def title(self) -> str:
+        if self._excel.option_title is None:
+            return ""
+        return self._game.text(self._excel.option_title)
+
+    @functools.cached_property
+    def desc(self) -> str:
+        if self._excel.option_desc is None:
+            return ""
+        return self._game.text(self._excel.option_desc)
+
+
+class RogueEventSpecialOption(View[excel.RogueEventSpecialOption]):
+    ExcelOutput: typing.Final = excel.RogueEventSpecialOption
+
+    @property
+    def wiki_name(self) -> str:  # noqa: PLR0911, PLR0912
+        match self._excel.special_option_id:
+            case 1:  # 出现于寰宇蝗灾
+                return "存护"
+            case 2:  # 出现于寰宇蝗灾
+                return "记忆"
+            case 3:  # 出现于寰宇蝗灾
+                return "虚无"
+            case 4:  # 出现于寰宇蝗灾
+                return "丰饶"
+            case 5:  # 出现于寰宇蝗灾
+                return "巡猎"
+            case 6:  # 出现于寰宇蝗灾
+                return "毁灭"
+            case 7:  # 出现于寰宇蝗灾
+                return "欢愉"
+            case 8:  # 出现于寰宇蝗灾
+                return "繁育"
+            case 9:  # 出现于黄金与机械
+                return "智识"
+            case 101:  # 出现于阮梅事件
+                return "阮梅"
+            case 201:  # 出现于千面英雄
+                return "泰坦日"
+            case 202:  # 出现于千面英雄
+                return "泰坦月"
+            case _:
+                raise ValueError("unknown special option {self}")
+
+
+class RogueHandBookEvent(View[excel.RogueHandBookEvent]):
+    ExcelOutput: typing.Final = excel.RogueHandBookEvent
+
+    @property
+    def name(self) -> str:
+        return self.title
+
+    @functools.cached_property
+    def title(self) -> str:
+        return self._game.text(self._excel.event_title)
+
+    @functools.cached_property
+    def type(self) -> str:
+        return self._game.text(self._excel.event_type)
+
+    @functools.cached_property
+    def __types(self) -> list[RogueHandBookEventType]:
+        return list(self._game.rogue_hand_book_event_type(self._excel.event_type_list))
+
+    def types(self) -> collections.abc.Iterable[RogueHandBookEventType]:
+        return (RogueHandBookEventType(self._game, typ._excel) for typ in self.__types)
+
+    @functools.cached_property
+    def __npcs(self) -> list[RogueNPC]:
+        npcs: list[RogueNPC] = []
+        for npc_progress_id in self._excel.unlock_npc_progress_id_list:
+            npc = self._game.rogue_npc(npc_progress_id.unlock_npc_id)
+            if npc is None:
+                npc = self._game.rogue_magic_npc(npc_progress_id.unlock_npc_id)
+            assert npc is not None
+            npcs.append(npc)
+        return npcs
+
+    def npcs(self) -> collections.abc.Iterable[RogueNPC]:
+        return (RogueNPC(self._game, npc._excel) for npc in self.__npcs)
+
+    @functools.cached_property
+    def __dialogues(self) -> list[Dialogue]:
+        dialogues: list[Dialogue] = []
+        for prog_id, npc in zip(self._excel.unlock_npc_progress_id_list, self.__npcs, strict=True):
+            dialogue = next(
+                dialogue for dialogue in npc.dialogue_list() if dialogue.progress == prog_id.unlock_progress
+            )
+            dialogues.append(dialogue)
+        return dialogues
+
+    def dialogues(self) -> collections.abc.Iterable[Dialogue]:
+        from .act import Dialogue
+
+        return (Dialogue(self._game, dialogue._dialogue) for dialogue in self.__dialogues)  # pyright: ignore[reportPrivateUsage]
+
+    @functools.cached_property
+    def __reward(self) -> RewardData:
+        reward = self._game.reward_data(self._excel.event_reward)
+        assert reward is not None
+        return reward
+
+    def reward(self) -> RewardData:
+        from .misc import RewardData
+
+        return RewardData(self._game, self.__reward._excel)
+
+
+class RogueHandBookEventType(View[excel.RogueHandBookEventType]):
+    ExcelOutput: typing.Final = excel.RogueHandBookEventType
+
+    @functools.cached_property
+    def title(self) -> str:
+        return self._game.text(self._excel.rogue_event_type_title)
 
 
 class RogueHandbookMiracle(View[excel.RogueHandbookMiracle]):
@@ -518,3 +648,18 @@ class RogueMonster(View[excel.RogueMonster]):
 
 class RogueMonsterGroup(View[excel.RogueMonsterGroup]):
     ExcelOutput: typing.Final = excel.RogueMonsterGroup
+
+
+class RogueNPC(View[excel.RogueNPC]):
+    ExcelOutput: typing.Final = excel.RogueNPC
+
+    @functools.cached_property
+    def __dialogue_list(self) -> list[act.Dialogue]:
+        npc_json_path = self._game.base / self._excel.npc_json_path
+        npc = act.RogueNPC.model_validate_json(npc_json_path.read_bytes())
+        return npc.dialogue_list
+
+    def dialogue_list(self) -> collections.abc.Iterable[Dialogue]:
+        from .act import Dialogue
+
+        return (Dialogue(self._game, dialogue) for dialogue in self.__dialogue_list)

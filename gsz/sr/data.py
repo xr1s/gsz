@@ -118,7 +118,7 @@ class excel_output(typing.Generic[V]):
                     self.__excel_output = {}
                     return iter(()) if id is None or isinstance(id, collections.abc.Iterable) else None
                 finally:
-                    self.__file_names = ()  # 清理一下方便 GC
+                    del self.__file_names  # 清理一下方便 GC
                 # ItemConfigAvatarSkin.json 由于内容仍未上线而数据文件已经存在（尽管之前一直为空）
                 # 可能是清理测试数据缺漏导致出现大量 null（此前 2.3 之前无，可能和修改数据格式有关），额外过滤一下
                 ExcelOutputList = pydantic.TypeAdapter(list[self.__type.ExcelOutput | None])
@@ -635,6 +635,30 @@ class GameData:
     def rogue_buff_type(self):
         """模拟宇宙祝福命途（因为是模拟宇宙所以不包含同谐）"""
 
+    @excel_output(view.RogueDialogueDynamicDisplay)
+    def rogue_dialogue_dynamic_display(self):
+        """模拟宇宙事件对话选项的展示 ID（暂时不明作用）"""
+
+    @excel_output(view.RogueDialogueOptionDisplay)
+    def rogue_dialogue_option_display(self):
+        """模拟宇宙事件对话选项"""
+
+    @excel_output(view.RogueEventSpecialOption)
+    def rogue_event_special_option(self):
+        """模拟宇宙事件特殊选项，如阮梅特殊选项、寰宇蝗灾命途选项等"""
+
+    @excel_output(view.RogueHandBookEvent)
+    def rogue_hand_book_event(self):
+        """模拟宇宙事件图鉴信息"""
+
+    @excel_output_name(view.RogueHandBookEvent, rogue_hand_book_event)
+    def rogue_hand_book_event_name(self):
+        """差分宇宙事件图鉴信息"""
+
+    @excel_output(view.RogueHandBookEventType)
+    def rogue_hand_book_event_type(self):
+        """模拟宇宙事件图鉴所属模式、DLC"""
+
     @excel_output(view.RogueHandbookMiracle)
     def rogue_handbook_miracle(self):
         """模拟宇宙奇物图鉴信息（解锁奖励、在哪些 DLC 中出现等）"""
@@ -692,6 +716,10 @@ class GameData:
     def rogue_monster_group(self):
         """为每个位面首领区域中可能出现的敌人"""
 
+    @excel_output(view.RogueNPC)
+    def rogue_npc(self):
+        """模拟宇宙事件对应的配置文件"""
+
     ######## rogue_magic ########
 
     @excel_output(view.RogueMiracle)
@@ -705,6 +733,10 @@ class GameData:
     @excel_output(view.RogueMiracleDisplay)
     def rogue_magic_miracle_display(self):
         """不可知域奇物效果"""
+
+    @excel_output(view.RogueNPC)
+    def rogue_magic_npc(self):
+        """不可知域事件配置"""
 
     ######## rogue_tourn ########
 
@@ -755,6 +787,14 @@ class GameData:
     def rogue_tourn_formula_display(self):
         """差分宇宙方程效果"""
 
+    @excel_output(view.RogueTournHandBookEvent)
+    def rogue_tourn_hand_book_event(self):
+        """差分宇宙事件图鉴信息"""
+
+    @excel_output_name(view.RogueTournHandBookEvent, rogue_tourn_hand_book_event)
+    def rogue_tourn_hand_book_event_name(self):
+        """差分宇宙事件图鉴信息"""
+
     @excel_output(view.RogueTournHandbookMiracle)
     def rogue_tourn_handbook_miracle(self):
         """差分宇宙图鉴奇物（如「绝对失败处方」、「塔奥牌」等有不同效果的奇物故事等会出现于此）"""
@@ -793,6 +833,10 @@ class GameData:
     @excel_output(view.RogueMiracleDisplay)
     def rogue_tourn_miracle_display(self):
         """差分宇宙奇物展示信息"""
+
+    @excel_output(view.RogueNPC)
+    def rogue_tourn_npc(self):
+        """差分宇宙事件对应的配置文件"""
 
     @excel_output(view.RogueTournTitanBless)
     def rogue_tourn_titan_bless(self):

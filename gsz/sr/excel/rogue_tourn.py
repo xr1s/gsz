@@ -7,7 +7,7 @@ import typing_extensions
 
 from . import aliases
 from .base import Model, ModelID, ModelMainSubID, Text
-from .rogue import BuffCategory, Path
+from .rogue import BuffCategory, Path, UnlockNPCProgressID
 
 
 class RogueTournBuff(ModelMainSubID):
@@ -211,6 +211,22 @@ class MiracleCategory(enum.Enum):
                 return "加权奇物"
             case self.Negative:
                 return "负面奇物"
+
+
+class RogueTournHandBookEvent(ModelID):
+    event_handbook_id: int
+    unlock_npc_progress_id_list: list[UnlockNPCProgressID]
+    event_title: Text
+    type_display_id: int
+    unlock_display_id: int
+    priority: int
+    is_used: bool
+    image_id: int
+
+    @property
+    @typing_extensions.override
+    def id(self) -> int:
+        return self.event_handbook_id
 
 
 class RogueTournHandbookMiracle(ModelID):

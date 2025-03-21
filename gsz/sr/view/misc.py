@@ -2,8 +2,12 @@ from __future__ import annotations
 import functools
 import typing
 
-from .. import excel, view
+from .. import excel
 from .base import View
+
+if typing.TYPE_CHECKING:
+    import collections.abc
+    from .item import ItemConfig
 
 
 class ExtraEffectConfig(View[excel.ExtraEffectConfig]):
@@ -20,10 +24,23 @@ class RewardData(View[excel.RewardData]):
     ExcelOutput: typing.Final = excel.RewardData
 
     @functools.cached_property
-    def items(self) -> list[view.ItemConfig] | None:
+    def __items(self) -> list[ItemConfig | None]:
         if self._excel.item_id is None:
-            return None
-        return list(self._game.item_config_all(filter(None, self._excel.item_id)))
+            return []
+        items: list[ItemConfig | None] = []
+        for item_id in self._excel.item_id:
+            if item_id is None:
+                items.append(None)
+                continue
+            item = self._game.item_config_all(item_id)
+            assert item is not None
+            items.append(item)
+        return items
+
+    def items(self) -> collections.abc.Iterable[ItemConfig | None]:
+        from .item import ItemConfig
+
+        return (None if item is None else ItemConfig(self._game, item._excel) for item in self.__items)
 
 
 class MazeBuff(View[excel.MazeBuff]):

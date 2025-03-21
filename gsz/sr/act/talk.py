@@ -7,6 +7,12 @@ from ..excel import Text
 from .base import Model
 
 
+class DialogueEvent(Model):
+    dialogue_event_id: int | None = None
+    success_custom_string: str | None = None
+    failure_custom_string: str | None = None
+
+
 class RogueSimpleTalk(Model):
     talk_bg_id: int | None = None
     talk_sentence_id: int
@@ -33,11 +39,12 @@ class OptionIconType(enum.Enum):
 
 
 class RogueOptionTalk(Model):
-    talk_sentence_id: int
+    talk_sentence_id: int | None = None
     option_textmap_id: Text | None = None
     option_icon_type: OptionIconType | None = None
     rogue_option_id: int | None = None
-    trigger_custom_string: str
+    trigger_custom_string: str | None = None
+    delete_after_selection: bool = False
 
 
 class OptionTalkInfo(Model):

@@ -6,13 +6,21 @@ import typing
 
 from .. import excel
 from ..excel import rogue, rogue_tourn
+from .act import Act
 from .base import View
 from .misc import MazeBuff
-from .story import Story
 
 if typing.TYPE_CHECKING:
     import collections.abc
-    from .rogue import RogueMiracle, RogueHandbookMiracle, RogueMiracleDisplay, RogueMiracleEffectDisplay, RogueBuff
+    from .act import Dialogue
+    from .rogue import (
+        RogueMiracle,
+        RogueHandbookMiracle,
+        RogueMiracleDisplay,
+        RogueMiracleEffectDisplay,
+        RogueBuff,
+        RogueNPC,
+    )
 
 
 class RogueTournBuff(View[excel.RogueTournBuff]):
@@ -245,13 +253,13 @@ class RogueTournFormula(View[excel.RogueTournFormula]):
         return RogueTournFormulaDisplay(self._game, self.__rogue_tourn_formula_display._excel)
 
     @functools.cached_property
-    def __story(self) -> Story | None:
+    def __story(self) -> Act | None:
         """推演"""
         if self._game.base.joinpath(self._excel.formula_story_json).is_file():
-            return Story(self._game, self._excel.formula_story_json)
+            return Act(self._game, self._excel.formula_story_json)
         return None
 
-    def story(self) -> Story | None:
+    def story(self) -> Act | None:
         """推演"""
         return self.__story
 
@@ -263,6 +271,47 @@ class RogueTournFormula(View[excel.RogueTournFormula]):
 
 class RogueTournFormulaDisplay(View[excel.RogueTournFormulaDisplay]):
     ExcelOutput: typing.Final = excel.RogueTournFormulaDisplay
+
+
+class RogueTournHandBookEvent(View[excel.RogueTournHandBookEvent]):
+    ExcelOutput: typing.Final = excel.RogueTournHandBookEvent
+
+    @property
+    def name(self) -> str:
+        return self.title
+
+    @functools.cached_property
+    def title(self) -> str:
+        return self._game.text(self._excel.event_title)
+
+    @functools.cached_property
+    def __npcs(self) -> list[RogueNPC]:
+        npcs: list[RogueNPC] = []
+        for npc_progress_id in self._excel.unlock_npc_progress_id_list:
+            npc = self._game.rogue_tourn_npc(npc_progress_id.unlock_npc_id)
+            assert npc is not None
+            npcs.append(npc)
+        return npcs
+
+    def npcs(self) -> collections.abc.Iterable[RogueNPC]:
+        from .rogue import RogueNPC
+
+        return (RogueNPC(self._game, npc._excel) for npc in self.__npcs)
+
+    @functools.cached_property
+    def __dialogues(self) -> list[Dialogue]:
+        dialogues: list[Dialogue] = []
+        for prog_id, npc in zip(self._excel.unlock_npc_progress_id_list, self.__npcs, strict=True):
+            dialogue = next(
+                dialogue for dialogue in npc.dialogue_list() if dialogue.progress == prog_id.unlock_progress
+            )
+            dialogues.append(dialogue)
+        return dialogues
+
+    def dialogues(self) -> collections.abc.Iterable[Dialogue]:
+        from .act import Dialogue
+
+        return (Dialogue(self._game, dialogue._dialogue) for dialogue in self.__dialogues)  # pyright: ignore[reportPrivateUsage]
 
 
 class RogueTournHandbookMiracle(View[excel.RogueTournHandbookMiracle]):
