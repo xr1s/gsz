@@ -92,6 +92,7 @@ class Formatter:
         syntax: Syntax | None = None,
         game: SRGameData | None = None,
         gender_order: GenderOrder = GenderOrder.Preserve,
+        percent_as_plain: bool = False,
     ):
         self.__game = game
         self.__syntax: Syntax = syntax if syntax is not None else Syntax.Plain
@@ -104,6 +105,7 @@ class Formatter:
         self.__close_tag: io.StringIO = io.StringIO()
         self.__parameter: tuple[float | str, ...] = ()
         self.__is_inline_block: InlineBlock = InlineBlock.Inline
+        self.__percent_as_plain: bool = percent_as_plain
         # var 相关状态
         self.__gender_order = gender_order
         self.__f_text = ""
@@ -175,7 +177,7 @@ class Formatter:
         if char == "[":
             self.__states[-1] = State.Specifier
             return None
-        if char == "%":
+        if not self.__percent_as_plain and char == "%":
             return self.__flush_format(True)
         self.__flush_format()
         return self.__feed(char)
@@ -187,7 +189,7 @@ class Formatter:
         self.__specifier += char
 
     def __feed_param_end(self, char: str) -> None:
-        if char == "%":
+        if not self.__percent_as_plain and char == "%":
             self.__flush_format(True)
             return
         self.__flush_format()

@@ -42,7 +42,7 @@ class Option:
         option: RogueDialogueOptionDisplay,
         special: RogueEventSpecialOption | None,
         dynamic: list[RogueDialogueDynamicDisplay],
-        desc_value: list[int],
+        desc_value: list[int | str],
     ):
         self._game: GameData = game
         self.__option = option
@@ -71,7 +71,7 @@ class Option:
         return [RogueDialogueDynamicDisplay(self._game, dynamic._excel) for dynamic in self.__dynamic]  # pyright: ignore[reportPrivateUsage]
 
     @property
-    def desc_value(self) -> list[int]:
+    def desc_value(self) -> list[int | str]:
         return self.__desc_value
 
 
@@ -116,22 +116,28 @@ class Dialogue:
             special = (
                 None if opt.special_option_id is None else self._game.rogue_event_special_option(opt.special_option_id)
             )
+            desc_value: list[int | str] = []
             dynamic: list[RogueDialogueDynamicDisplay] = []
-            if opt.dynamic_map is not None:
+            if opt.dynamic_map is not None and len(opt.dynamic_map) != 0:
                 dynamic_ids = [dynamic.display_id for dynamic in opt.dynamic_map.values()]
                 dynamic = list(self._game.rogue_dialogue_dynamic_display(dynamic_ids))
-            desc_value: list[int] = []
+                desc_value.append("、".join(dyn.content for dyn in dynamic))
             if opt.desc_value is not None:
-                desc_value = [0]  # desc_value 传入作为 #2
+                if len(desc_value) != 1:  # desc_value 传入作为 #5
+                    desc_value.append("")
                 desc_value.append(opt.desc_value)
             if opt.desc_value2 is not None:
                 while len(desc_value) < 4:  # desc_value2 传入作为 #5
-                    desc_value.append(0)
+                    desc_value.append("")
                 desc_value.append(opt.desc_value2)
-            if opt.desc_value3 is not None:  # desc_value 传入作为 #6
+            if opt.desc_value3 is not None:  # desc_value3 传入作为 #6
                 while len(desc_value) < 5:
-                    desc_value.append(0)
+                    desc_value.append("")
                 desc_value.append(opt.desc_value3)
+            if opt.desc_value4 is not None:  # desc_value4 传入作为 #7
+                while len(desc_value) < 6:
+                    desc_value.append("")
+                desc_value.append(opt.desc_value4)
             options.append(Option(self._game, option, special, dynamic, desc_value))
         return options
 
@@ -143,7 +149,9 @@ class Dialogue:
 
     @property
     def __formatter(self):
-        return self._game._mw_formatter  # pyright: ignore[reportPrivateUsage]
+        from ...format import Formatter, Syntax
+
+        return Formatter(syntax=Syntax.MediaWiki, game=self._game, percent_as_plain=True)
 
     def wiki(self) -> str:
         # 以后再 template 化
