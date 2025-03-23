@@ -44,6 +44,7 @@ class RogueOptionTalk(Model):
     option_icon_type: OptionIconType | None = None
     rogue_option_id: int | None = None
     trigger_custom_string: str | None = None
+    has_triggered: bool = False
     delete_after_selection: bool = False
 
 

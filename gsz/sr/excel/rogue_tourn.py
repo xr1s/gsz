@@ -275,6 +275,22 @@ class TitanType(enum.Enum):
     Xenatos = "Xenatos"
     Zagreus = "Zagreus"
 
+    @typing_extensions.override
+    def __str__(self) -> str:
+        match self:
+            case self.Ianos:
+                return "缇宝"
+            case self.Moneta:
+                return "阿格莱雅"
+            case self.Nikadory:
+                return "万敌"
+            case self.Phageina:
+                return "海瑟音"
+            case self.Xenatos:
+                return "遐蝶"
+            case self.Zagreus:
+                return "赛飞儿"
+
 
 class BlessBattleDisplayCategory(enum.Enum):
     Day = "Day"

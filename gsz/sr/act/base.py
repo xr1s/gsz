@@ -2,7 +2,7 @@ import typing
 
 import pydantic
 
-ABBR_WORDS = {"id", "npc"}
+ABBR_WORDS = {"id", "npc", "ui"}
 
 
 def alias_generator(field_name: str) -> str:

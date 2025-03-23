@@ -1,15 +1,18 @@
 from __future__ import annotations
 import functools
 import io
+import itertools
 import typing
 
 from .. import act
+from ..act import task
 
 
 if typing.TYPE_CHECKING:
     import collections.abc
     import pathlib
     from .rogue import RogueDialogueDynamicDisplay, RogueDialogueOptionDisplay, RogueEventSpecialOption
+    from .talk import TalkSentenceConfig
     from ..data import GameData
 
 
@@ -20,6 +23,13 @@ class Act:
             excel if isinstance(excel, act.Act) else act.Act.model_validate_json(game.base.joinpath(excel).read_bytes())
         )
 
+    @functools.cached_property
+    def __tasks(self) -> list[act.Task]:
+        return [task for seq in self._act.on_start_sequece for task in seq.task_list]
+
+    def tasks(self) -> collections.abc.Iterable[Task]:
+        return (Task(self._game, task) for task in self.__tasks)
+
 
 class Task:
     def __init__(self, game: GameData, excel: act.Task):
@@ -28,11 +38,20 @@ class Task:
 
     @property
     def custom_string(self) -> str:
-        from ..act.task import WaitCustomString
-
-        if isinstance(self._task, WaitCustomString):
+        if isinstance(self._task, task.WaitCustomString):
             return self._task.custom_string.value
         return ""
+
+    @functools.cached_property
+    def __talks(self) -> list[TalkSentenceConfig]:
+        if isinstance(self._task, task.PlayRogueSimpleTalk | task.PlayAndWaitRogueSimpleTalk | task.PlayAeonTalk):
+            return list(self._game.talk_sentence_config(talk.talk_sentence_id for talk in self._task.simple_talk_list))
+        return []
+
+    def talks(self) -> collections.abc.Iterable[TalkSentenceConfig]:
+        from .talk import TalkSentenceConfig
+
+        return [TalkSentenceConfig(self._game, talk._excel) for talk in self.__talks]  # pyright: ignore[reportPrivateUsage]
 
 
 class Option:
@@ -154,8 +173,14 @@ class Dialogue:
         return Formatter(syntax=Syntax.MediaWiki, game=self._game, percent_as_plain=True)
 
     def wiki(self) -> str:
-        # 以后再 template 化
         text = io.StringIO()
+        talks = itertools.chain.from_iterable(task.talks() for task in self.dialogue().tasks())
+        for talk in talks:
+            _ = text.write("{{事件|")
+            _ = text.write(self.__formatter.format(talk.name))
+            _ = text.write("|")
+            _ = text.write(self.__formatter.format(talk.text))
+            _ = text.write("}}\n")
         _ = text.write("{{模拟宇宙事件选项2")
         for index, opt in enumerate(self.__options):
             _ = text.write(f"\n|选项{index + 1}=")

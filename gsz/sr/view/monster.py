@@ -344,3 +344,7 @@ class NPCMonsterData(View[excel.NPCMonsterData]):
         if self._excel.npc_name is None:
             return ""
         return self._game.text(self._excel.npc_name)
+
+    @property
+    def wiki_name(self) -> str:
+        return wiki_name(self.name)

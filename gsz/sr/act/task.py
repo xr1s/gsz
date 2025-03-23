@@ -64,6 +64,12 @@ class LevelPerformanceInitialize(Model):
     use_new_streaming_source_type: bool = False
 
 
+class PlayAeonTalk(Model):
+    aeon_talk_id: typing.Annotated[int, pydantic.Field(validation_alias="AeonTalkId")]
+    aeon_talk_count: int
+    simple_talk_list: list[talk.RogueSimpleTalk]
+
+
 class PlayAndWaitRogueSimpleTalk(Model):
     simple_talk_list: list[talk.RogueSimpleTalk]
 
@@ -121,6 +127,13 @@ class ShowRogueTalkUI(Model):
     show: bool
 
 
+class ShowUI(Model):
+    name: str
+    wait_for_exit: bool
+    on_ui_custom_event: list[None]
+    on_ui_exit_immediately: list["Task"]
+
+
 class SwitchUIMenuBGM(Model):
     should_stop: bool = False
     state_name: str | None = None
@@ -128,6 +141,19 @@ class SwitchUIMenuBGM(Model):
 
 class TriggerCustomString(Model):
     custom_string: Value[str]
+
+
+class TriggerDialogueEvent(Model):
+    dialogue_event_id: int
+
+
+class TriggerSound(Model):
+    sound_name: Value[str]
+    emitter_type: typing.Literal["DefaultEmitter"]
+
+
+class TutorialTaskUnlock(Model):
+    trigger_param: Value[str]
 
 
 class WaitCustomString(Model):
@@ -158,6 +184,7 @@ Task = typing.Annotated[
     | typing.Annotated[EndPerformance, pydantic.Tag("EndPerformance")]
     | typing.Annotated[FinishLevelGraph, pydantic.Tag("FinishLevelGraph")]
     | typing.Annotated[LevelPerformanceInitialize, pydantic.Tag("LevelPerformanceInitialize")]
+    | typing.Annotated[PlayAeonTalk, pydantic.Tag("PlayAeonTalk")]
     | typing.Annotated[PlayAndWaitRogueSimpleTalk, pydantic.Tag("PlayAndWaitRogueSimpleTalk")]
     | typing.Annotated[PlayOptionTalk, pydantic.Tag("PlayOptionTalk")]
     | typing.Annotated[PlayRogueOptionTalk, pydantic.Tag("PlayRogueOptionTalk")]
@@ -171,8 +198,12 @@ Task = typing.Annotated[
     | typing.Annotated[SetRogueRoomFinish, pydantic.Tag("SetRogueRoomFinish")]
     | typing.Annotated[ShowRogueTalkBg, pydantic.Tag("ShowRogueTalkBg")]
     | typing.Annotated[ShowRogueTalkUI, pydantic.Tag("ShowRogueTalkUI")]
+    | typing.Annotated[ShowUI, pydantic.Tag("ShowUI")]
     | typing.Annotated[SwitchUIMenuBGM, pydantic.Tag("SwitchUIMenuBGM")]
     | typing.Annotated[TriggerCustomString, pydantic.Tag("TriggerCustomString")]
+    | typing.Annotated[TriggerDialogueEvent, pydantic.Tag("TriggerDialogueEvent")]
+    | typing.Annotated[TriggerSound, pydantic.Tag("TriggerSound")]
+    | typing.Annotated[TutorialTaskUnlock, pydantic.Tag("TutorialTaskUnlock")]
     | typing.Annotated[WaitCustomString, pydantic.Tag("WaitCustomString")]
     | typing.Annotated[WaitDialogueEvent, pydantic.Tag("WaitDialogueEvent")]
     | typing.Annotated[WaitPerformanceEnd, pydantic.Tag("WaitPerformanceEnd")]

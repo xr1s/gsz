@@ -9,9 +9,11 @@ from .base import View
 
 if typing.TYPE_CHECKING:
     import collections.abc
-    from .misc import RewardData, MazeBuff
-    from .rogue_tourn import RogueTournMiracle, RogueTournBuff, RogueTournHandbookMiracle
+
     from .act import Dialogue
+    from .misc import MazeBuff, RewardData
+    from .monster import NPCMonsterData
+    from .rogue_tourn import RogueTournBuff, RogueTournHandbookMiracle, RogueTournMiracle
 
 
 class RogueBonus(View[excel.RogueBonus]):
@@ -24,6 +26,10 @@ class RogueBonus(View[excel.RogueBonus]):
     @functools.cached_property
     def desc(self) -> str:
         return self._game.text(self._excel.bonus_desc)
+
+    @property
+    def id(self) -> int:
+        return self._excel.bonus_id
 
 
 class RogueBuff(View[excel.RogueBuff]):
@@ -356,7 +362,7 @@ class RogueHandbookMiracle(View[excel.RogueHandbookMiracle]):
 
     @functools.cached_property
     def wiki_name(self) -> str:
-        return self._game._mw_formatter.format(self.name)  # pyright: ignore[reportPrivateUsage]
+        return self._game._mw_formatter.format(self.name.replace("#", "＃"))  # pyright: ignore[reportPrivateUsage]
 
     @property
     def desc(self) -> str:
@@ -645,9 +651,36 @@ class RogueMiracleEffectDisplay(View[excel.RogueMiracleEffectDisplay]):
 class RogueMonster(View[excel.RogueMonster]):
     ExcelOutput: typing.Final = excel.RogueMonster
 
+    @property
+    def name(self) -> str:
+        return self.__monster.name
+
+    @property
+    def wiki_name(self) -> str:
+        return self.__monster.wiki_name
+
+    @functools.cached_property
+    def __monster(self) -> NPCMonsterData:
+        monster = self._game.npc_monster_data(self._excel.npc_monster_id)
+        assert monster is not None
+        return monster
+
+    def monster(self) -> NPCMonsterData:
+        from .monster import NPCMonsterData
+
+        return NPCMonsterData(self._game, self.__monster._excel)
+
 
 class RogueMonsterGroup(View[excel.RogueMonsterGroup]):
     ExcelOutput: typing.Final = excel.RogueMonsterGroup
+
+    def monsters(self) -> list[RogueMonster]:
+        monsters: list[RogueMonster] = []
+        for monster_id in self._excel.rogue_monster_list_and_weight:
+            monster = self._game.rogue_monster(monster_id)
+            assert monster is not None
+            monsters.append(monster)
+        return monsters
 
 
 class RogueNPC(View[excel.RogueNPC]):

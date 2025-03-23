@@ -1,0 +1,28 @@
+{{#subobject:${ challenge.name }
+|名称=${ challenge.name }
+|开始时间=${ challenge.begin_date().strftime("%Y/%m/%d") }
+|结束时间=${ challenge.end_date().strftime("%Y/%m/%d") }
+
+<%- if miracles | length != 0 %>
+|起始奇物=${ miracles | map(attribute="wiki_name") | join(", ") }
+<%- endif %>
+
+<%- if formulas | length != 0 %>
+|起始方程=${ formulas | map(attribute="wiki_name") | join(", ") }
+<%- endif %>
+
+<%- if titan_blesses | length != 0 %>
+|起始金血祝颂=${ titan_blesses | map(attribute="name") | join(", ") }
+<%- endif %>
+
+<%- if bonus is not none %>
+|开拓祝福=${ bonus.title }
+|开拓祝福内容=${ bonus.desc }
+<%- endif %>
+|第一位面首领=${ challenge.monster_1st_plain() | map(attribute="wiki_name") | join(", ") }
+|第一位面首领V3=${ challenge.monster_1st_plain_v3() | map(attribute="wiki_name") | join(", ") }
+|第二位面首领=${ challenge.monster_2nd_plain() | map(attribute="wiki_name") | join(", ") }
+|第二位面首领V3=${ challenge.monster_2nd_plain_v3() | map(attribute="wiki_name") | join(", ") }
+|第三位面首领=${ challenge.monster_3rd_plain() | map(attribute="wiki_name") | join(", ") }
+|规则=${ details | map("gszformat") | join(", ") }
+}}
