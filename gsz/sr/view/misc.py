@@ -19,6 +19,10 @@ class ExtraEffectConfig(View[excel.ExtraEffectConfig]):
     def name(self) -> str:
         return self._game.text(self._excel.extra_effect_name)
 
+    @functools.cached_property
+    def desc(self) -> str:
+        return self._game.text(self._excel.extra_effect_desc)
+
 
 class RewardData(View[excel.RewardData]):
     ExcelOutput: typing.Final = excel.RewardData

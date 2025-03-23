@@ -561,6 +561,10 @@ class GameData:
     def monster_config(self):
         """敌人详情"""
 
+    @excel_output_name(view.MonsterConfig, monster_config)
+    def monster_config_name(self):
+        """敌人详情"""
+
     @excel_output(view.MonsterSkillConfig)
     def monster_skill_config(self):
         """敌人技能"""

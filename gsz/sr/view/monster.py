@@ -85,11 +85,14 @@ class MonsterConfig(View[excel.MonsterConfig]):
         return wiki_name(self.name)
 
     @functools.cached_property
-    def template(self) -> MonsterTemplateConfig | None:
+    def __template(self) -> MonsterTemplateConfig | None:
         template = self._game.monster_template_config(self._excel.monster_template_id)
         if template is None:
             template = self._game.monster_template_unique_config(self._excel.monster_template_id)
         return template  # 注意 1.0~1.3, 2.0 存在几个数据会返回 None
+
+    def template(self) -> MonsterTemplateConfig | None:
+        return None if self.__template is None else MonsterTemplateConfig(self._game, self.__template._excel)
 
     def hp(self, level: int | None = None) -> float:
         """
@@ -98,14 +101,14 @@ class MonsterConfig(View[excel.MonsterConfig]):
 
         需要注意基础生命值未必等于 1 级的生命值
         """
-        if self.template is None:
+        if self.__template is None:
             return 0.0
         if level is None:
-            return self.template.hp_base * self._excel.hp_modify_ratio.value
+            return self.__template.hp_base * self._excel.hp_modify_ratio.value
         hard_level_group = self._game.hard_level_group(self._excel.hard_level_group, level)
         if hard_level_group is None:
             return 0.0
-        return self.template.hp_base * self._excel.hp_modify_ratio.value * hard_level_group.hp_ratio
+        return self.__template.hp_base * self._excel.hp_modify_ratio.value * hard_level_group.hp_ratio
 
     def speed(self, level: int | None = None) -> float:
         """
@@ -114,10 +117,10 @@ class MonsterConfig(View[excel.MonsterConfig]):
 
         需要注意基础速度未必等于 1 级的速度
         """
-        if self.template is None:
+        if self.__template is None:
             return 0.0
         monster_speed_base = (
-            self.template.speed_base * self._excel.speed_modify_ratio.value + self._excel.speed_modify_value.value
+            self.__template.speed_base * self._excel.speed_modify_ratio.value + self._excel.speed_modify_value.value
         )
         if level is None:
             return monster_speed_base
@@ -128,11 +131,11 @@ class MonsterConfig(View[excel.MonsterConfig]):
 
     def stance(self) -> int:
         """敌方韧性，不随等级变化"""
-        if self.template is None:
+        if self.__template is None:
             return 0
         # 我也不知道为什么这个要除以三，但游戏里是这样的
         return (
-            self.template.stance_base * self._excel.stance_modify_ratio.value + self._excel.stance_modify_value.value
+            self.__template.stance_base * self._excel.stance_modify_ratio.value + self._excel.stance_modify_value.value
         ) // 3
 
     @functools.cached_property
@@ -140,21 +143,23 @@ class MonsterConfig(View[excel.MonsterConfig]):
         return self._game.text(self._excel.monster_introduction) if self._excel.monster_introduction is not None else ""
 
     @functools.cached_property
-    def skills(self) -> list[MonsterSkillConfig]:
+    def __skills(self) -> list[MonsterSkillConfig]:
         return list(self._game.monster_skill_config(self._excel.skill_list))
 
-    @functools.cached_property
+    def skills(self) -> collections.abc.Iterable[MonsterSkillConfig]:
+        return (MonsterSkillConfig(self._game, skill._excel) for skill in self.__skills)
+
     def damage_types(self) -> list[Element]:
         """所有可能的伤害属性，有些敌人可能不同技能有不同的伤害属性"""
-        return list({skill.damage_type for skill in self.skills if skill.damage_type is not None})
+        return list({skill.damage_type for skill in self.__skills if skill.damage_type is not None})
 
     @functools.cached_property
     def phase(self) -> int:
         """敌人总共有多少阶段，只能从技能里找最大的那个 phase"""
-        return max(itertools.chain.from_iterable(skill.phase_list for skill in self.skills), default=1)
+        return max(itertools.chain.from_iterable(skill.phase_list for skill in self.__skills), default=1)
 
     @functools.cached_property
-    def summons(self) -> list[MonsterConfig]:
+    def __summons(self) -> list[MonsterConfig]:
         """召唤物，不过这大概不完整，目前没找到能完整列出召唤物的手段"""
         summons: set[str] = set()
         return [
@@ -163,15 +168,14 @@ class MonsterConfig(View[excel.MonsterConfig]):
             if summon is not None and summon.name not in summons
         ]
 
-    @property
     def weakness(self) -> list[Element]:
         return self._excel.stance_weak_list
 
     @property
     def rank(self) -> monster.Rank | None:
-        if self.template is None:
+        if self.__template is None:
             return None
-        return self.template.rank
+        return self.__template.rank
 
     @staticmethod
     def __element_resistance_name(element: Element) -> str:
@@ -181,7 +185,10 @@ class MonsterConfig(View[excel.MonsterConfig]):
 
     def skills_at_phase(self, phase: int) -> collections.abc.Iterable[MonsterSkillConfig]:
         """在 phase 阶段的技能列表，phase 从 1 开始计数"""
-        return (skill for skill in self.skills if phase in skill.phase_list)
+        return itertools.chain(
+            (skill for skill in self.__skills if phase in skill.phase_list and skill.is_threat),
+            (skill for skill in self.__skills if phase in skill.phase_list and not skill.is_threat),
+        )
 
     def threat_count_at_phase(self, phase: int) -> int:
         """在 phase 阶段的大招数，phase 从 1 开始计数"""
@@ -199,13 +206,13 @@ class MonsterConfig(View[excel.MonsterConfig]):
         ]
         debuff_resistance = [debuff.key for debuff in self._excel.debuff_resist]
         tags: list[str] = []
-        if len(self.summons) != 0:
+        if len(self.__summons) != 0:
             tags.append("召唤")
         if self.name.endswith("（错误）"):
             tags.append("错误")
         if self.name.endswith("（完整）"):
             tags.append("完整")
-        return self._game._template_environment.get_template("enemy.jinja2").render(  # pyright: ignore[reportPrivateUsage]
+        return self._game._template_environment.get_template("敌人.jinja2").render(  # pyright: ignore[reportPrivateUsage]
             monster=self,
             damage_type_resistance=damage_type_resistance,
             element_resistance=element_resistance,
@@ -243,7 +250,7 @@ class MonsterSkillConfig(View[excel.MonsterSkillConfig]):
 
     @functools.cached_property
     def tag(self) -> str:
-        return self._game.text(self._excel.skill_tag)
+        return "" if self._excel.skill_tag is None else self._game.text(self._excel.skill_tag)
 
     @functools.cached_property
     def param_list(self) -> tuple[float, ...]:
@@ -281,8 +288,8 @@ class MonsterTemplateConfig(View[excel.MonsterTemplateConfig]):
     def group_id(self) -> int | None:
         return self._excel.template_group_id
 
-    @property
-    def group(self) -> list[MonsterTemplateConfig]:
+    @functools.cached_property
+    def __group(self) -> list[MonsterTemplateConfig]:
         if self.group_id is None:
             return [self]
         group = self._game._monster_template_group.get(self.group_id)  # pyright: ignore[reportPrivateUsage]
@@ -314,10 +321,15 @@ class MonsterTemplateConfig(View[excel.MonsterTemplateConfig]):
                 return "普通"
 
     @functools.cached_property
+    def __camp(self) -> MonsterCamp | None:
+        camp_id = self._excel.monster_camp_id
+        if camp_id is None:
+            # 有些 camp 可能存在 group 中的原型上
+            camp_id = self.__group[0]._excel.monster_camp_id
+        return None if camp_id is None else self._game.monster_camp(camp_id)
+
     def camp(self) -> MonsterCamp | None:
-        if self._excel.monster_camp_id is None:
-            return None
-        return self._game.monster_camp(self._excel.monster_camp_id)
+        return None if self.__camp is None else MonsterCamp(self._game, self.__camp._excel)
 
     # fmt: off
     MISSING_NPC_MONSTER: set[int] = {
@@ -328,12 +340,15 @@ class MonsterTemplateConfig(View[excel.MonsterTemplateConfig]):
     # fmt: on
 
     @functools.cached_property
-    def npc_monster(self) -> list[NPCMonsterData]:
+    def __npc_monsters(self) -> list[NPCMonsterData]:
         return list(
             self._game.npc_monster_data(
                 filter(lambda id: id not in self.MISSING_NPC_MONSTER, self._excel.npc_monster_list)
             )
         )
+
+    def npc_monsters(self) -> collections.abc.Iterable[NPCMonsterData]:
+        return (NPCMonsterData(self._game, monster._excel) for monster in self.__npc_monsters)
 
 
 class NPCMonsterData(View[excel.NPCMonsterData]):
