@@ -21,6 +21,7 @@ gsz = ["templates/*.jinja2"]
 [tool.pyright]
 reportAny = false
 reportImportCycles = false
+reportMissingTypeStubs = false
 
 [tool.ruff]
 include = ["\\.pyi?$"]
@@ -74,5 +75,6 @@ ignore = [
 
 [dependency-groups]
 dev = [
+    "fire>=0.7.0",
     "pytest>=8.3.5",
 ]
