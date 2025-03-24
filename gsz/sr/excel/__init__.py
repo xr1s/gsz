@@ -1,7 +1,22 @@
 from .base import Element, ModelID, ModelMainSubID, Text, Value
 from .book import BookDisplayType, BookSeriesConfig, BookSeriesWorld, LocalbookConfig
 from .item import ItemConfig, ItemPurpose
+from .message import (
+    EmojiConfig,
+    EmojiGroup,
+    MessageContactsCamp,
+    MessageContactsConfig,
+    MessageContactsType,
+    MessageGroupConfig,
+    MessageItemConfig,
+    MessageItemImage,
+    MessageItemLink,
+    MessageItemRaidEntrance,
+    MessageItemVideo,
+    MessageSectionConfig,
+)
 from .misc import ExtraEffectConfig, MazeBuff, RewardData, TextJoinConfig, TextJoinItem
+from .mission import MainMission, SubMission
 from .monster import (
     EliteGroup,
     HardLevelGroup,
@@ -54,6 +69,28 @@ __all__ = (
     # item
     "ItemConfig",
     "ItemPurpose",
+    # message
+    "EmojiConfig",
+    "EmojiGroup",
+    "MessageContactsCamp",
+    "MessageContactsConfig",
+    "MessageContactsType",
+    "MessageGroupConfig",
+    "MessageItemConfig",
+    "MessageItemImage",
+    "MessageItemLink",
+    "MessageItemRaidEntrance",
+    "MessageItemVideo",
+    "MessageSectionConfig",
+    # misc
+    "ExtraEffectConfig",
+    "MazeBuff",
+    "RewardData",
+    "TextJoinConfig",
+    "TextJoinItem",
+    # mission
+    "MainMission",
+    "SubMission",
     # monster
     "EliteGroup",
     "HardLevelGroup",
@@ -62,12 +99,6 @@ __all__ = (
     "MonsterSkillConfig",
     "MonsterTemplateConfig",
     "NPCMonsterData",
-    # misc
-    "ExtraEffectConfig",
-    "MazeBuff",
-    "RewardData",
-    "TextJoinConfig",
-    "TextJoinItem",
     # rogue
     "RogueBonus",
     "RogueBuff",

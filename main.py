@@ -96,6 +96,10 @@ class Main:
         for challenge in self.__game.rogue_tourn_weekly_challenge():
             print(challenge.wiki(), end="\n\n")
 
+    def book(self):
+        for series in self.__game.book_series_config():
+            print(series.wiki(), end="\n\n")
+
     def text(self, *hashes: int):
         print("\n".join(self.__game.text(Text(hash=hash)) for hash in hashes))
 
@@ -104,6 +108,20 @@ class Main:
             talk = self.__game.talk_sentence_config(id)
             assert talk is not None
             print(f"{talk.name}：{talk.text}")
+
+    def message(self, contacts_name: str | None = None, section_id: int | None = None):
+        if section_id is not None:
+            assert isinstance(section_id, int)
+            section = self.__game.message_section_config(section_id)
+            if section is not None:
+                print(section.wiki())
+            return
+        if contacts_name is not None:
+            assert isinstance(contacts_name, str)
+        for contacts in self.__game.message_contacts_config():
+            if contacts_name is not None and self.__formatter.format(contacts.name) != contacts_name:
+                continue
+            print(contacts.wiki(), end="\n\n")
 
     def main(self):
         pass  # 调试代码可以放这里

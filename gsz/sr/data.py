@@ -508,6 +508,96 @@ class GameData:
                 book_series[book.series.id] = [book._excel]  # pyright: ignore[reportPrivateUsage]
         return book_series
 
+    ######## message ########
+
+    @excel_output(view.EmojiConfig)
+    def emoji_config(self):
+        """表情"""
+
+    @excel_output(view.EmojiGroup)
+    def emoji_group(self):
+        """表情包"""
+
+    @excel_output(view.MessageContactsCamp)
+    def message_contacts_camp(self):
+        """联系人阵营"""
+
+    @excel_output(view.MessageContactsConfig)
+    def message_contacts_config(self):
+        """联系人"""
+
+    @excel_output(view.MessageContactsType)
+    def message_contacts_type(self):
+        """联系人类型（群聊、NPC、自机角色）"""
+
+    @excel_output(view.MessageGroupConfig)
+    def message_group_config(self):
+        """联系人聊天记录（关联联系人和聊天记录）"""
+
+    @excel_output(view.MessageItemConfig)
+    def message_item_config(self):
+        """聊天单条消息"""
+
+    @excel_output(view.MessageItemImage)
+    def message_item_image(self):
+        """聊天单条消息中的图片"""
+
+    @excel_output(view.MessageItemLink)
+    def message_item_link(self):
+        """聊天单条消息中的链接（只在绥园任务出现）"""
+
+    @excel_output(view.MessageItemRaidEntrance)
+    def message_item_raid_entrance(self):
+        """聊天单条消息中的秘境任务（只在罗浮丹恒视角出现）"""
+
+    @excel_output(view.MessageItemVideo)
+    def message_item_video(self):
+        """聊天单条消息中的视频（只在空间站冥火大公绑架案出现）"""
+
+    @excel_output(view.MessageSectionConfig)
+    def message_section_config(self):
+        """一次聊天"""
+
+    @functools.cached_property
+    def _message_section_config_items(self) -> dict[int, list["excel.MessageItemConfig"]]:
+        items: dict[int, list[excel.MessageItemConfig]] = {}
+        for item in self.message_item_config():
+            if item.section_id is None:
+                continue
+            model = item._excel  # pyright: ignore[reportPrivateUsage]
+            if item.section_id in items:
+                items[item.section_id].append(model)
+            else:
+                items[item.section_id] = [model]
+        return items
+
+    @functools.cached_property
+    def _message_contact_sections(self) -> dict[int, list["excel.MessageSectionConfig"]]:
+        result: dict[int, list[excel.MessageSectionConfig]] = {}
+        for group in self.message_group_config():
+            model = group._excel  # pyright: ignore[reportPrivateUsage]
+            sections = [
+                section._excel  # pyright: ignore[reportPrivateUsage]
+                for section in self.message_section_config(model.message_section_id_list)
+            ]
+            if model.message_contacts_id in result:
+                result[model.message_contacts_id].extend(sections)
+            else:
+                result[model.message_contacts_id] = sections
+        return result
+
+    @functools.cached_property
+    def _message_section_contacts(self) -> dict[int, "excel.MessageContactsConfig"]:
+        result: dict[int, excel.MessageContactsConfig] = {}
+        for group in self.message_group_config():
+            model = group._excel  # pyright: ignore[reportPrivateUsage]
+            for section_id in model.message_section_id_list:
+                assert section_id not in result
+                contacts = self.message_contacts_config(model.message_contacts_id)
+                assert contacts is not None
+                result[section_id] = contacts._excel  # pyright: ignore[reportPrivateUsage]
+        return result
+
     ######## misc ########
 
     @excel_output(view.ExtraEffectConfig)
@@ -542,6 +632,16 @@ class GameData:
         if default_item_index == -1:
             default_item_index = 1
         return default_item_index, [item.text for item in config.item_list]
+
+    ######## mission ########
+
+    @excel_output(view.MainMission)
+    def main_mission(self):
+        """任务（会展示在任务列表里的内容）"""
+
+    @excel_output(view.SubMission)
+    def sub_mission(self):
+        """子任务（某一小节，比如与某人对话、与敌人战斗）"""
 
     ######## monster ########
 
