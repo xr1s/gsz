@@ -11,7 +11,7 @@
 |相关角色=
 |相关任务=
 }}
-<%- for book in series.books %>
+<%- for book in series.books() %>
 
 {{书籍/分卷
 |名称=${ book.name | gszformat }

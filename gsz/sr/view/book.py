@@ -5,6 +5,9 @@ import typing
 from .. import excel
 from .base import View
 
+if typing.TYPE_CHECKING:
+    import collections.abc
+
 
 class BookDisplayType(View[excel.BookDisplayType]):
     ExcelOutput: typing.Final = excel.BookDisplayType
@@ -34,9 +37,12 @@ class BookSeriesConfig(View[excel.BookSeriesConfig]):
         return world
 
     @functools.cached_property
-    def books(self) -> list[LocalbookConfig]:
+    def __books(self) -> list[LocalbookConfig]:
         books = self._game._book_series_localbook.get(self.id, ())  # pyright: ignore[reportPrivateUsage]
         return [LocalbookConfig(self._game, excel) for excel in books]
+
+    def books(self) -> collections.abc.Iterable[LocalbookConfig]:
+        return (LocalbookConfig(self._game, book._excel) for book in self.__books)
 
     @property
     def is_show_in_bookshelf(self) -> bool:
@@ -48,9 +54,9 @@ class BookSeriesConfig(View[excel.BookSeriesConfig]):
 
     @functools.cached_property
     def __series_type(self) -> str:  # noqa: PLR0911, PLR0912
-        item = self._game.item_config_book(self.books[0].id)
+        item = self._game.item_config_book(self.__books[0].id)
         if item is None:
-            item = self._game.item_config(self.books[0].id)
+            item = self._game.item_config(self.__books[0].id)
         if item is None:
             return "资料"  #  大地图或者剧情中散落的阅读物
         [_file_path, file_name] = item.icon_path.rsplit("/", 1)
@@ -82,7 +88,7 @@ class BookSeriesConfig(View[excel.BookSeriesConfig]):
                 raise ValueError("可能是新版本新增不同类型的图书 {} {}", self.name, file_stem)
 
     def wiki(self) -> str:
-        return self._game._template_environment.get_template("book-series.jinja2").render(  # pyright: ignore[reportPrivateUsage]
+        return self._game._template_environment.get_template("书籍.jinja2").render(  # pyright: ignore[reportPrivateUsage]
             series=self, series_type=self.__series_type
         )
 

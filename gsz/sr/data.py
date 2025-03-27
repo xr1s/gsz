@@ -490,6 +490,10 @@ class GameData:
     def book_series_config(self):
         """阅读物系列"""
 
+    @excel_output_name(view.BookSeriesConfig, book_series_config)
+    def book_series_config_name(self):
+        """阅读物系列"""
+
     @excel_output(view.BookSeriesWorld)
     def book_series_world(self):
         """阅读物所属的世界"""

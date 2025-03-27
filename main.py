@@ -96,7 +96,16 @@ class Main:
         for challenge in self.__game.rogue_tourn_weekly_challenge():
             print(challenge.wiki(), end="\n\n")
 
-    def book(self):
+    def book(self, title: str | None = None, pretty: bool = False):
+        if title is not None:
+            assert isinstance(title, str)
+            for series in self.__game.book_series_config_name(title):
+                if pretty:
+                    for book in series.books():
+                        print(self.__formatter.format(book.content))
+                else:
+                    print(series.wiki(), end="\n\n")
+            return
         for series in self.__game.book_series_config():
             print(series.wiki(), end="\n\n")
 
