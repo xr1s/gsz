@@ -200,7 +200,8 @@ class Formatter:
         if char == "n":
             if self.__is_inline_block == InlineBlock.Block:
                 self.__is_inline_block = InlineBlock.Inline
-                _ = self.__texts[-1].write("\n")
+                if self.__syntax == Syntax.MediaWikiPretty:
+                    _ = self.__texts[-1].write("\n")
                 return  # 前一个是 block 标签，需要手动无视一次回车
             self.__push("\n")
             if self.__syntax == Syntax.MediaWikiPretty:
