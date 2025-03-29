@@ -6,6 +6,14 @@ from .. import excel
 from .base import View
 
 
+class HeartDialTalk(View[excel.HeartDialTalk]):
+    ExcelOutput: typing.Final = excel.HeartDialTalk
+
+    @functools.cached_property
+    def sdf_text(self) -> str:
+        return self._game.text(self._excel.sdf_text)
+
+
 class TalkSentenceConfig(View[excel.TalkSentenceConfig]):
     ExcelOutput: typing.Final = excel.TalkSentenceConfig
 
