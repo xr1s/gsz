@@ -959,10 +959,25 @@ class GameData:
         """差分宇宙周期演算预设"""
 
     ######## talk ########
-    @excel_output(view.TalkSentenceConfig)
-    def talk_sentence_config(self):
-        """各种对话，包括剧情、模拟宇宙事件等"""
 
     @excel_output(view.VoiceConfig)
     def voice_config(self):
         """语音"""
+
+    @excel_output(view.TalkSentenceConfig)
+    def talk_sentence_config(self):
+        """各种对话，包括剧情、模拟宇宙事件等"""
+
+    @excel_output(view.HeartDialTalk)
+    def heart_dial_talk(self):
+        """语音"""
+
+    ######## tutorial ########
+
+    @excel_output(view.TutorialGuideData)
+    def tutorial_guide_data(self):
+        """教学内容，单页"""
+
+    @excel_output(view.TutorialGuideGroup)
+    def tutorial_guide_group(self):
+        """教学内容"""

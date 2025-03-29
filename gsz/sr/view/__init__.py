@@ -58,7 +58,8 @@ from .rogue_tourn import (
     RogueTournWeeklyChallenge,
     RogueTournWeeklyDisplay,
 )
-from .talk import TalkSentenceConfig, VoiceConfig
+from .talk import HeartDialTalk, TalkSentenceConfig, VoiceConfig
+from .tutorial import TutorialGuideData, TutorialGuideGroup
 
 __all__ = (
     # book
@@ -130,8 +131,12 @@ __all__ = (
     "RogueTournWeeklyChallenge",
     "RogueTournWeeklyDisplay",
     # talk
+    "HeartDialTalk",
     "TalkSentenceConfig",
     "VoiceConfig",
+    # tutorial
+    "TutorialGuideData",
+    "TutorialGuideGroup",
     # Interface
     "IView",
 )

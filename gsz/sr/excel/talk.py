@@ -1,8 +1,22 @@
 import enum
+import typing
 
+import pydantic
 import typing_extensions
 
 from .base import ModelID, Text
+
+
+class HeartDialTalk(ModelID):
+    id_: int
+    voice_id: int | None = None
+    sdf_text: typing.Annotated[Text, pydantic.Field(alias="SDFText")]
+    floor_id_list: list[int]
+
+    @property
+    @typing_extensions.override
+    def id(self) -> int:
+        return self.id_
 
 
 class TalkSentenceConfig(ModelID):
