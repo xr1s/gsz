@@ -171,6 +171,7 @@ class RogueDialogueOptionDisplay(ModelID):
     option_display_id: int
     option_title: Text | None = None
     option_desc: Text | None = None
+    option_detail_desc: Text | None = None
 
     @property
     @typing_extensions.override

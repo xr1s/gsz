@@ -519,7 +519,7 @@ class MessageSectionConfig(View[excel.MessageSectionConfig]):
     def nexts(self) -> list[int]:
         return self._excel.start_message_item_id_list
 
-    def find_common_confluence(self, current: Node) -> MessageItemConfig | None:
+    def __find_confluence(self, current: Node) -> MessageItemConfig | None:
         """找到公共后继，主要为了处理选项"""
         if current.confluence is not None:
             return current.confluence  # 记忆化
@@ -536,7 +536,7 @@ class MessageSectionConfig(View[excel.MessageSectionConfig]):
                     # 某条分支已经迭代到整个对话列表最后一句了，这条分支不继续找了
                     # 但是有可能另一分支速度较慢，仍未到聚合点，所以需要继续迭代找完为止
                     continue
-                next_node = self.find_common_confluence(node)
+                next_node = self.__find_confluence(node)
                 queue[index] = next_node
                 if next_node is None:
                     continue
@@ -611,7 +611,7 @@ class MessageSectionConfig(View[excel.MessageSectionConfig]):
         is_sticker = all(item.type == message.ItemType.Sticker for item in nexts)
         if is_sticker:
             _ = wiki.write("|表情")
-        next_confluence = self.find_common_confluence(item)
+        next_confluence = self.__find_confluence(item)
         for index, next_item in enumerate(nexts):
             _ = wiki.write(indent)
             _ = wiki.write(f"|选项{index + 1}=")

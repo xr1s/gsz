@@ -12,7 +12,8 @@ class Sequence(Model):
 
 
 class Act(Model):
-    on_start_sequece: list[Sequence]
+    on_start_sequece: list[Sequence] | None = None
     on_init_sequece: list[Sequence] | None = None
     type: typing.Literal["PerformanceD"] | None = None
     value_source: ValueSource | None = None
+    option_list: list[None] | None = None

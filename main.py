@@ -1,6 +1,5 @@
 import itertools
 import pathlib
-import textwrap
 import typing
 
 import fire
@@ -67,7 +66,7 @@ class Main:
                 print("千面英雄:", wikis[1], end="\n\n")
         else:
             for wiki in wikis:
-                print(textwrap.indent(wiki, "  "), end="\n\n")
+                print(wiki, end="\n\n")
 
         events = self.__game.rogue_hand_book_event_name(title)
         for event in events:
