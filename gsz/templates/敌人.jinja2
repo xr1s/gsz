@@ -17,7 +17,7 @@
 |出现地点=<!-- 出现地点 -->
 |掉落系列素材=<!-- 选填：原核、虚卒、铁卫、古代、永寿、工造、梦境、忆域、眷属、黑潮 -->
 |掉落素材=<!-- 选填：信用点、具体合成素材、具体周本素材等 -->
-|召唤物=${ monster.summons | map(attribute="wiki_name") | join("、") }
+|召唤物=${ monster.summons() | map(attribute="wiki_name") | join("、") }
 
 <%- for damage_type in ["物", "火", "冰", "雷", "风", "量子", "虚数"] %>
 |${damage_type}抗=${damage_type_resistance[damage_type]}

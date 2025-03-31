@@ -149,9 +149,18 @@ class MonsterConfig(View[excel.MonsterConfig]):
     def skills(self) -> collections.abc.Iterable[MonsterSkillConfig]:
         return (MonsterSkillConfig(self._game, skill._excel) for skill in self.__skills)
 
-    def damage_types(self) -> list[Element]:
+    @functools.cached_property
+    def __damage_types(self) -> list[Element]:
         """所有可能的伤害属性，有些敌人可能不同技能有不同的伤害属性"""
-        return list({skill.damage_type for skill in self.__skills if skill.damage_type is not None})
+        dedup_damage_types: set[Element] = set()
+        return [
+            dedup_damage_types.add(skill.damage_type) or skill.damage_type
+            for skill in self.__skills
+            if skill.damage_type is not None and skill.damage_type not in dedup_damage_types
+        ]
+
+    def damage_types(self) -> list[Element]:
+        return list(self.__damage_types)
 
     @functools.cached_property
     def phase(self) -> int:
@@ -161,12 +170,15 @@ class MonsterConfig(View[excel.MonsterConfig]):
     @functools.cached_property
     def __summons(self) -> list[MonsterConfig]:
         """召唤物，不过这大概不完整，目前没找到能完整列出召唤物的手段"""
-        summons: set[str] = set()
+        dedup_summons: set[str] = set()
         return [
-            summons.add(summon.name) or summon
+            dedup_summons.add(summon.name) or summon
             for summon in (self._game.monster_config(custom_value.val) for custom_value in self._excel.custom_values)
-            if summon is not None and summon.name not in summons
+            if summon is not None and summon.name not in dedup_summons
         ]
+
+    def summons(self) -> collections.abc.Iterable[MonsterConfig]:
+        return (MonsterConfig(self._game, summon._excel) for summon in self.__summons)
 
     def weakness(self) -> list[Element]:
         return self._excel.stance_weak_list
