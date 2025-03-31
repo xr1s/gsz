@@ -49,7 +49,7 @@ class Main:
         for miracle in miracles:
             print(miracle.wiki(), end="\n\n")
 
-    def event(self, title: str):
+    def event(self, title: str, debug: bool = False):
         """模拟宇宙事件"""
         assert isinstance(title, str)
         events = self.__game.rogue_tourn_hand_book_event_name(title)
@@ -57,7 +57,8 @@ class Main:
         for event in events:
             for dialogue in event.dialogues():
                 print(dialogue.dialogue_path)
-                wikis.append(dialogue.wiki())
+                print(dialogue.option_path)
+                wikis.append(dialogue.wiki(debug))
         if len(wikis) == 2:
             if wikis[0] == wikis[1]:
                 print("差分宇宙", wikis[0], end="\n\n")
@@ -75,7 +76,8 @@ class Main:
                 if index < len(types):
                     print(types[index].title)
                 print(dialogue.dialogue_path)
-                print(dialogue.wiki(), end="\n\n")
+                print(dialogue.option_path)
+                print(dialogue.wiki(debug), end="\n\n")
 
     def formula(self):
         pass
@@ -132,7 +134,7 @@ class Main:
             print(contacts.wiki(), end="\n\n")
 
     def main(self):
-        pass  # 调试代码可以放这里
+        """调试代码可以放这里"""
 
 
 if __name__ == "__main__":

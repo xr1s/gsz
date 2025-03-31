@@ -68,7 +68,24 @@ class Sequence:
                     for option in task.option_list
                     if option.trigger_custom_string is not None
                 ]
+            if isinstance(task, act.task.WaitDialogueEvent):
+                return [
+                    typing.cast(str, event.success_custom_string or event.failure_custom_string)
+                    for event in task.dialogue_event_list
+                ]
         return []
+
+    @functools.cached_property
+    def is_entrypoint(self) -> bool:
+        return any(isinstance(task, act.task.ShowRogueTalkUI) for task in self._seq.task_list)
+
+    @functools.cached_property
+    def is_leavepoint(self) -> bool:
+        return any(isinstance(task, act.task.WaitPerformanceEnd) for task in self._seq.task_list)
+
+    @functools.cached_property
+    def is_wait_custom_string(self) -> bool:
+        return any(isinstance(task, act.task.WaitCustomString) for task in self._seq.task_list)
 
 
 class Task:
@@ -252,9 +269,14 @@ class Dialogue:
         """找单个节点在列表中的后继节点"""
         if seq.successors is not None:
             return seq.successors
+        if seq.is_leavepoint:
+            return []
         if len(seq.trigger_custom_string) == 0:
             # 如果没有 trigger_custom_string 就直接返回列表中的下一个
-            seq.successors = [] if seq.index + 1 == len(self.__sequences) else [self.__sequences[seq.index + 1]]
+            if seq.index + 1 == len(self.__sequences):
+                return []
+            next_seq = next((seq for seq in self.__sequences[seq.index + 1 :] if not seq.is_wait_custom_string), None)
+            seq.successors = [] if next_seq is None else [next_seq]
         else:
             # 否则根据 trigger_custom_string 在整个列表中寻找匹配的 seq
             seq.successors = [
@@ -413,10 +435,55 @@ class Dialogue:
         if next_seq is not None:
             self.__wiki_iter_seq(wiki, indent, next_seq, confluence)
 
-    def wiki(self) -> str:
+    def __wiki_debug(self):  # noqa: PLR0912
+        for seq in self.__sequences:
+            if not seq.is_entrypoint and not seq.is_leavepoint and not seq.is_wait_custom_string:
+                print(" ", end="")
+            elif seq.is_entrypoint:
+                print(">", end="")  # 进入
+            elif seq.is_leavepoint:
+                print("<", end="")  # 退出
+            elif seq.is_wait_custom_string:
+                print("=", end="")  # 等待
+            print(seq.index)
+            if seq.wait_custom_string != "":
+                print(f"    条件 [{repr(seq.wait_custom_string)}]")
+            print(f"    触发 {seq.trigger_custom_string}")
+            print(f"    后继 {[seq.index for seq in self.__find_successors(seq)]}", end="")
+            confluence = self.__find_confluence(seq)
+            if confluence is not None:
+                print(f" 汇聚 {confluence.index}", end="")
+            print()
+            for task in seq.tasks():
+                for talk in task.talks():
+                    print("   ", f"{talk.name}: {talk.text}")
+                for option in task.rogue_options():
+                    if option.rogue_option_id is not None:
+                        opt = self.__option_dict[option.rogue_option_id]
+                        title = self.__formatter.format(opt.option.title, opt.desc_value)
+                        desc = self.__formatter.format(opt.option.desc, opt.desc_value)
+                        print("   ", f"\033[38;2;242;158;56m{title}\033[39m {desc}", end="")
+                        if option.trigger_custom_string is not None:
+                            next_seq = self.__next_custom_string(option.trigger_custom_string)
+                            if next_seq is not None:
+                                print(f" \033[4;38;2;255;255;0mgoto {next_seq.index}\033[39;24m", end="")
+                        print()
+                    else:
+                        assert option.talk_sentence_id is not None
+                        talk = self._game.talk_sentence_config(option.talk_sentence_id)
+                        assert talk is not None
+                        print("   ", f"{talk.name}| {talk.text}")
+                if task.is_(act.task.TriggerCustomString):
+                    next_seq = self.__next_custom_string(task.trigger_custom_string)
+                    if next_seq is not None:
+                        print(f"    \033[4;38;2;255;255;0mgoto {next_seq.index}\033[39;24m")
+
+    def wiki(self, debug: bool = True) -> str:
         if len(self.__sequences) == 0:
             return ""
+        if debug:
+            self.__wiki_debug()
         wiki = io.StringIO()
-        seq0 = self.__sequences[0]
-        self.__wiki_iter_seq(wiki, "\n  ", seq0, None)
+        entrypoint = next(seq for seq in self.__sequences if seq.is_entrypoint)
+        self.__wiki_iter_seq(wiki, "\n  ", entrypoint, None)
         return wiki.getvalue()
