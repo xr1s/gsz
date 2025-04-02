@@ -21,6 +21,7 @@ class RogueSimpleTalk(Model):
 
 class OptionIconType(enum.Enum):
     AbyssIcon = "AbyssIcon"
+    ChallengeBossIcon = "ChallengeBossIcon"
     ChallengeStoryIcon = "ChallengeStoryIcon"
     ChatBackIcon = "ChatBackIcon"
     ChatContinueIcon = "ChatContinueIcon"

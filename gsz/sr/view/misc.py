@@ -23,6 +23,10 @@ class ExtraEffectConfig(View[excel.ExtraEffectConfig]):
     def desc(self) -> str:
         return self._game.text(self._excel.extra_effect_desc)
 
+    @property
+    def desc_param_list(self) -> tuple[float, ...]:
+        return tuple(param.value for param in self._excel.desc_param_list)
+
 
 class RewardData(View[excel.RewardData]):
     ExcelOutput: typing.Final = excel.RewardData

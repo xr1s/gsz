@@ -349,3 +349,16 @@ class RogueNPC(ModelID):
     @typing_extensions.override
     def id(self) -> int:
         return self.rogue_npc_id
+
+
+class RogueTalkNameConfig(ModelID):
+    talk_name_id: int
+    name: Text
+    sub_name: Text
+    icon_path: str
+    image_id: int
+
+    @property
+    @typing_extensions.override
+    def id(self) -> int:
+        return self.talk_name_id

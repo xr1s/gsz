@@ -1,3 +1,4 @@
+from .act import Act
 from .base import IView
 from .book import BookDisplayType, BookSeriesConfig, BookSeriesWorld, LocalbookConfig
 from .item import ItemConfig, ItemPurpose
@@ -44,6 +45,7 @@ from .rogue import (
     RogueMonster,
     RogueMonsterGroup,
     RogueNPC,
+    RogueTalkNameConfig,
 )
 from .rogue_tourn import (
     RogueTournBuff,
@@ -62,6 +64,8 @@ from .talk import HeartDialTalk, TalkSentenceConfig, VoiceConfig
 from .tutorial import TutorialGuideData, TutorialGuideGroup
 
 __all__ = (
+    # act
+    "Act",
     # book
     "BookDisplayType",
     "BookSeriesConfig",
@@ -118,6 +122,7 @@ __all__ = (
     "RogueMonster",
     "RogueMonsterGroup",
     "RogueNPC",
+    "RogueTalkNameConfig",
     # rogue_tourn
     "RogueTournBuff",
     "RogueTournBuffGroup",

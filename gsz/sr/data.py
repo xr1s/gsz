@@ -828,6 +828,10 @@ class GameData:
     def rogue_npc(self):
         """模拟宇宙事件对应的配置文件"""
 
+    @excel_output(view.RogueTalkNameConfig)
+    def rogue_talk_name_config(self):
+        """模拟宇宙事件对应的配置文件"""
+
     ######## rogue_magic ########
 
     @excel_output(view.RogueMiracle)

@@ -44,6 +44,7 @@ from .rogue import (
     RogueMonster,
     RogueMonsterGroup,
     RogueNPC,
+    RogueTalkNameConfig,
 )
 from .rogue_tourn import (
     RogueTournBuff,
@@ -118,6 +119,7 @@ __all__ = (
     "RogueMonster",
     "RogueMonsterGroup",
     "RogueNPC",
+    "RogueTalkNameConfig",
     # rogue_tourn
     "RogueTournBuff",
     "RogueTournBuffGroup",

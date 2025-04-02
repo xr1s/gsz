@@ -133,6 +133,17 @@ class Main:
                 continue
             print(contacts.wiki(), end="\n\n")
 
+    def rogue_npc(self):
+        for npc in itertools.chain(
+            self.__game.rogue_npc(), self.__game.rogue_tourn_npc(), self.__game.rogue_magic_npc()
+        ):
+            for dialogue in npc.dialogue_list():
+                print(npc.name, dialogue.dialogue_path, end=" ")
+                print(
+                    dialogue.wiki(debug=True),
+                    end="\n\n",
+                )
+
     def main(self):
         """调试代码可以放这里"""
 

@@ -84,8 +84,10 @@ class Sequence:
         return any(isinstance(task, act.task.WaitPerformanceEnd) for task in self._seq.task_list)
 
     @functools.cached_property
-    def is_wait_custom_string(self) -> bool:
-        return any(isinstance(task, act.task.WaitCustomString) for task in self._seq.task_list)
+    def is_wait_event(self) -> bool:
+        return any(
+            isinstance(task, act.task.WaitCustomString | act.task.WaitDialogueEvent) for task in self._seq.task_list
+        )
 
 
 class Task:
@@ -111,7 +113,11 @@ class Task:
     @functools.cached_property
     def __talks(self) -> list[TalkSentenceConfig]:
         if isinstance(
-            self._task, act.task.PlayRogueSimpleTalk | act.task.PlayAndWaitRogueSimpleTalk | act.task.PlayAeonTalk
+            self._task,
+            act.task.PlayAeonTalk  # 游戏中会连续弹出许多概念作为名字
+            | act.task.PlayRogueSimpleTalk
+            | act.task.PlayAndWaitRogueSimpleTalk
+            | act.task.PlayAeonTalk,
         ):
             return list(self._game.talk_sentence_config(talk.talk_sentence_id for talk in self._task.simple_talk_list))
         return []
@@ -188,7 +194,7 @@ class Dialogue:
 
     @functools.cached_property
     def dialogue_path(self) -> pathlib.Path:
-        return self._game.base / self._dialogue.dialogue_path
+        return self._game.base / self._dialogue.dialogue_path.strip()
 
     @functools.cached_property
     def __dialogue(self) -> act.Act:
@@ -275,7 +281,10 @@ class Dialogue:
             # 如果没有 trigger_custom_string 就直接返回列表中的下一个
             if seq.index + 1 == len(self.__sequences):
                 return []
-            next_seq = next((seq for seq in self.__sequences[seq.index + 1 :] if not seq.is_wait_custom_string), None)
+            iter_seq = (
+                seq for seq in self.__sequences[seq.index + 1 :] if not seq.is_wait_event and not seq.is_entrypoint
+            )
+            next_seq = next(iter_seq, None)
             seq.successors = [] if next_seq is None else [next_seq]
         else:
             # 否则根据 trigger_custom_string 在整个列表中寻找匹配的 seq
@@ -315,11 +324,35 @@ class Dialogue:
                     return seq.confluence
         return None
 
+    __AEON_NAMES = {
+        "阿基维利",
+        "纳努克",
+        "岚",
+        "博识尊",
+        "希佩",
+        "Ⅸ",
+        "克里珀",
+        "药师",
+        "奥博洛斯",
+        "阿哈",
+        "浮黎",
+        "伊德莉拉",
+        "塔伊兹育罗斯",
+        "迷思",
+        "互",
+        "末王",
+        "太一",
+        "龙",
+    }
+
     def __write_simple(self, wiki: io.StringIO, indent: str, task: Task):
         for talk in task.talks():
             _ = wiki.write(indent)
             _ = wiki.write("{{事件|")
-            _ = wiki.write(self.__formatter.format(talk.name))
+            name = self.__formatter.format(talk.name)
+            if task.is_(act.task.PlayAeonTalk) or name in self.__AEON_NAMES:
+                _ = wiki.write("星神|")
+            _ = wiki.write(name)
             _ = wiki.write("|")
             _ = wiki.write(self.__formatter.format(talk.text))
             _ = wiki.write("}}")
@@ -411,16 +444,21 @@ class Dialogue:
             return
         for task in seq.tasks():
             if task.is_(
-                act.task.FinishLevelGraph
-                | act.task.ShowRogueTalkBg
-                | act.task.ShowRogueTalkUI
-                | act.task.TriggerCustomString
-                | act.task.WaitCustomString
-                | act.task.WaitPerformanceEnd
+                act.task.AdvNpcFaceToPlayer
+                | act.task.FinishLevelGraph  # 清空选项，一般在选项结束后有
+                | act.task.ShowRogueTalkBg  # 入口
+                | act.task.ShowRogueTalkUI  # 入口
+                | act.task.SwitchUIMenuBGM  # 循环播放 BGM
+                | act.task.TriggerCustomString  # 目前看和改变执行状态有关
+                | act.task.TriggerDialogueEvent  # 怀疑和 WaitDialogueEvent 有什么联动，但是所有文件里的 TriggerDialogueEvent 参数都一样
+                | act.task.TriggerSound  # 播放声音
+                | act.task.TutorialTaskUnlock
+                | act.task.WaitCustomString  # 等待 TriggerCustomString
+                | act.task.WaitPerformanceEnd  # 出口
                 | act.task.WaitRogueSimpleTalkFinish
             ):
                 pass
-            elif task.is_(act.task.PlayRogueSimpleTalk | act.task.PlayAndWaitRogueSimpleTalk):
+            elif task.is_(act.task.PlayAeonTalk | act.task.PlayRogueSimpleTalk | act.task.PlayAndWaitRogueSimpleTalk):
                 self.__write_simple(wiki, indent, task)
             elif task.is_(act.task.PlayRogueOptionTalk):
                 next_confluence = self.__find_confluence(seq)
@@ -437,13 +475,13 @@ class Dialogue:
 
     def __wiki_debug(self):  # noqa: PLR0912
         for seq in self.__sequences:
-            if not seq.is_entrypoint and not seq.is_leavepoint and not seq.is_wait_custom_string:
+            if not seq.is_entrypoint and not seq.is_leavepoint and not seq.is_wait_event:
                 print(" ", end="")
             elif seq.is_entrypoint:
                 print(">", end="")  # 进入
             elif seq.is_leavepoint:
                 print("<", end="")  # 退出
-            elif seq.is_wait_custom_string:
+            elif seq.is_wait_event:
                 print("=", end="")  # 等待
             print(seq.index)
             if seq.wait_custom_string != "":
@@ -456,7 +494,7 @@ class Dialogue:
             print()
             for task in seq.tasks():
                 for talk in task.talks():
-                    print("   ", f"{talk.name}: {talk.text}")
+                    print("   ", f"{{{{事件|{talk.name}|{talk.text}}}}}")
                 for option in task.rogue_options():
                     if option.rogue_option_id is not None:
                         opt = self.__option_dict[option.rogue_option_id]
@@ -477,8 +515,10 @@ class Dialogue:
                     next_seq = self.__next_custom_string(task.trigger_custom_string)
                     if next_seq is not None:
                         print(f"    \033[4;38;2;255;255;0mgoto {next_seq.index}\033[39;24m")
+                if isinstance(task._task, act.task.TriggerDialogueEvent):
+                    print("    trigger dialogue event", task._task.dialogue_event_id)
 
-    def wiki(self, debug: bool = True) -> str:
+    def wiki(self, debug: bool = False) -> str:
         if len(self.__sequences) == 0:
             return ""
         if debug:

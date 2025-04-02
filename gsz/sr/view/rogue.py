@@ -687,6 +687,13 @@ class RogueNPC(View[excel.RogueNPC]):
     ExcelOutput: typing.Final = excel.RogueNPC
 
     @functools.cached_property
+    def name(self) -> str:
+        talk = self._game.rogue_talk_name_config(self._excel.id)
+        if talk is None:
+            return ""
+        return talk.name
+
+    @functools.cached_property
     def __dialogue_list(self) -> list[act.Dialogue]:
         npc_json_path = self._game.base / self._excel.npc_json_path
         npc = act.RogueNPC.model_validate_json(npc_json_path.read_bytes())
@@ -696,3 +703,15 @@ class RogueNPC(View[excel.RogueNPC]):
         from .act import Dialogue
 
         return (Dialogue(self._game, dialogue) for dialogue in self.__dialogue_list)
+
+
+class RogueTalkNameConfig(View[excel.RogueTalkNameConfig]):
+    ExcelOutput: typing.Final = excel.RogueTalkNameConfig
+
+    @functools.cached_property
+    def name(self) -> str:
+        return self._game.text(self._excel.name)
+
+    @functools.cached_property
+    def sub_name(self) -> str:
+        return self._game.text(self._excel.sub_name)
