@@ -89,7 +89,10 @@ class RogueTournBuff(View[excel.RogueTournBuff]):
 
     @functools.cached_property
     def __rogue_tourn_buff_group(self) -> list[RogueTournBuffGroup]:
-        return self._game.rogue_tourn_buff_tag_groups(self.tag)
+        groups = self._game._rogue_tourn_buff_tag_groups.get(self.tag)  # pyright: ignore[reportPrivateUsage]
+        if groups is None:
+            return []
+        return [RogueTournBuffGroup(self._game, group) for group in groups]
 
     def tag_group(self) -> collections.abc.Iterable[RogueTournBuffGroup]:
         return (RogueTournBuffGroup(self._game, group._excel) for group in self.__rogue_tourn_buff_group)
@@ -178,10 +181,10 @@ class RogueTournBuffGroup(View[excel.RogueTournBuffGroup]):
     def __drops(self) -> list[RogueTournBuff]:
         drops: list[RogueTournBuff] = []
         for drop in self.rogue_buff_drop:
-            buff = self._game.rogue_tourn_buff_tag_buff(drop)
+            buff = self._game._rogue_tourn_buff_tag_buff.get(drop)  # pyright: ignore[reportPrivateUsage]
             if buff is None:
                 continue
-            drops.append(buff)
+            drops.append(RogueTournBuff(self._game, buff))
         return drops
 
     def drops(self) -> collections.abc.Iterable[RogueTournBuff]:
@@ -375,7 +378,10 @@ class RogueTournHandbookMiracle(View[excel.RogueTournHandbookMiracle]):
 
     @functools.cached_property
     def __rogue_tourn_miracles(self) -> list[RogueTournMiracle]:
-        return list(self._game.rogue_tourn_handbook_miracle_miracles(self._excel.id))
+        miracles = self._game._rogue_tourn_handbook_miracle_miracles.get(self._excel.id)  # pyright: ignore[reportPrivateUsage]
+        if miracles is None:
+            return []
+        return [RogueTournMiracle(self._game, miracle) for miracle in miracles]
 
     @functools.cached_property
     def __same_name_rogue_tourn_miracles(self) -> list[RogueTournMiracle]:

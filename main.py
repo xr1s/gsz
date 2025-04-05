@@ -1,3 +1,4 @@
+import datetime
 import itertools
 import pathlib
 import typing
@@ -143,6 +144,41 @@ class Main:
                     dialogue.wiki(debug=True),
                     end="\n\n",
                 )
+
+    def challenge(
+        self,
+        type: typing.Literal["memory", "story", "boss"] | None = None,
+        current: bool = False,
+        next: bool = False,
+        date: str | None = None,
+    ):
+        assert isinstance(current, bool)
+        assert isinstance(next, bool)
+        assert type in (None, "memory", "story", "boss")
+        challenges: list[gsz.sr.view.ChallengeGroupConfig] = []
+        if type == "memory" or type is None:
+            challenges.extend(self.__game.challenge_group_config())
+        if type == "story" or type is None:
+            challenges.extend(self.__game.challenge_story_group_config())
+        if type == "boss" or type is None:
+            challenges.extend(self.__game.challenge_boss_group_config())
+        ask_datetime: datetime.datetime | None = None
+        if date is not None:
+            assert isinstance(date, str)
+            assert not current
+            assert not next
+            dt = datetime.datetime.strptime(date, "%Y-%m-%d").date()  # noqa: DTZ007
+            ask_datetime = datetime.datetime.combine(dt, datetime.time(4))
+        if next or current:
+            assert next != current
+            ask_datetime = datetime.datetime.now()  # noqa: DTZ005
+            if next:
+                ask_datetime = ask_datetime + datetime.timedelta(days=14)
+        for challenge in challenges:
+            sched = challenge.schedule()
+            if ask_datetime is not None and (sched is None or not sched.contains(ask_datetime)):
+                continue
+            print(challenge.wiki(), end="\n\n")
 
     def main(self):
         """调试代码可以放这里"""

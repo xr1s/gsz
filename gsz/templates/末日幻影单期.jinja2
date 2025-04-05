@@ -1,0 +1,35 @@
+{{末日幻影单期
+|期数=${ "%03d" | format(challenge.issue) }
+|名称=${ challenge.name }
+|开始时间=${ challenge.schedule().begin_time.strftime("%Y/%m/%d") } 04:00
+|结束时间=${ challenge.schedule().end_time.strftime("%Y/%m/%d") } 03:59
+
+<%- set mazes = challenge.mazes() | list %>
+<%- set maze_buff = mazes[0].maze_buff() %>
+|末法余烬=${ maze_buff.desc | gszformat(maze_buff.param_list) }
+
+<%- set extra = challenge.extra() %>
+<%- set buff_lists = [extra.buffs_1() | list, extra.buffs_2() | list] %>
+<%- for event in [mazes[-1].event_1(), mazes[-1].event_2()] %>
+  <%- set event_loop = loop %>
+  <%- set monster = event.monster_lists()[0][0] %>
+|${"上下"[event_loop.index0]}半名称=${ event.name }
+|${"上下"[event_loop.index0]}半首领=${ "无望冽风的幻灭者•虚妄之母" if monster.name == "无望冽风的幻灭者" else monster.wiki_name }
+
+  <%- for tag in monster.guide().tags() %>
+|${"上下"[event_loop.index0]}半特性${loop.index}类型=${ "固有特性" if loop.index0 < 2 else "难度%d增加" | format(loop.index) }
+|${"上下"[event_loop.index0]}半特性${loop.index}名称=${ tag.name }
+|${"上下"[event_loop.index0]}半特性${loop.index}=${ tag.brief_description | gszformat(tag.skill().param_list or tag.parameter_list) }  %- 很诡异的参数列表数据源，但是不这么写数据有误
+    <%- for effect in tag.effects() -%>
+      <br /><br />'''· ${ effect.name }'''<br />${ effect.desc | gszformat(effect.desc_param_list) }
+    <%- endfor %>
+  <%- endfor %>
+  <%- for buff in buff_lists[event_loop.index0] %>
+|终焉公理${event_loop.index0 * 3 + loop.index}名称=${ buff.name }
+|终焉公理${event_loop.index0 * 3 + loop.index}=${ buff.desc | gszformat(buff.param_list) }
+  <%- endfor %>
+<%- endfor %>
+}}
+<br />
+<br />
+----

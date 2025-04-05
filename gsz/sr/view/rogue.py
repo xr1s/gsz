@@ -61,9 +61,11 @@ class RogueBuff(View[excel.RogueBuff]):
 
     @functools.cached_property
     def __maze_buff(self) -> MazeBuff:
-        maze_buff = self._game.rogue_maze_buff(self._excel.maze_buff_id, self._excel.maze_buff_level)
-        if maze_buff is None:
-            maze_buff = self._game.maze_buff(self._excel.maze_buff_id, self._excel.maze_buff_level)
+        maze_buff = (
+            None
+            or self._game.rogue_maze_buff(self._excel.maze_buff_id, self._excel.maze_buff_level)
+            or self._game.maze_buff(self._excel.maze_buff_id, self._excel.maze_buff_level)
+        )
         assert maze_buff is not None
         return maze_buff
 
@@ -74,7 +76,10 @@ class RogueBuff(View[excel.RogueBuff]):
 
     @functools.cached_property
     def __rogue_buff_group(self) -> list[RogueBuffGroup]:
-        return self._game.rogue_buff_tag_groups(self.tag)
+        groups = self._game._rogue_buff_tag_groups.get(self.tag)  # pyright: ignore[reportPrivateUsage]
+        if groups is None:
+            return []
+        return [RogueBuffGroup(self._game, group) for group in groups]
 
     @functools.cached_property
     def __tag_drops(self) -> list[RogueBuff]:
@@ -192,10 +197,10 @@ class RogueBuffGroup(View[excel.RogueBuffGroup]):
     def __drops(self) -> list[RogueBuff]:
         members: list[RogueBuff] = []
         for member_tag in self.rogue_buff_drop:
-            buff = self._game.rogue_buff_tag_buff(member_tag)
+            buff = self._game._rogue_buff_tag_buff.get(member_tag)  # pyright: ignore[reportPrivateUsage]
             if buff is None:
                 continue
-            members.append(buff)
+            members.append(RogueBuff(self._game, buff))
         return members
 
     def drops(self) -> collections.abc.Iterable[RogueBuff]:
@@ -426,7 +431,10 @@ class RogueHandbookMiracle(View[excel.RogueHandbookMiracle]):
 
     @functools.cached_property
     def __rogue_miracles(self) -> list[RogueMiracle]:
-        return list(self._game.rogue_handbook_miracle_miracles(self._excel.id))
+        miracles = self._game._rogue_handbook_miracle_miracles.get(self._excel.id)  # pyright: ignore[reportPrivateUsage]
+        if miracles is None:
+            return []
+        return [RogueMiracle(self._game, miracle) for miracle in miracles]
 
     def rogue_miracles(self) -> collections.abc.Iterable[RogueMiracle]:
         return (RogueMiracle(self._game, miracle._excel) for miracle in self.__rogue_miracles)

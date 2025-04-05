@@ -1,0 +1,128 @@
+{{虚构叙事单期2
+|期数=${ "%03d" | format(challenge.issue) }
+|名称=${ challenge.name }
+|开始时间=${ challenge.schedule().begin_time.strftime("%Y/%m/%d") } 04:00
+|结束时间=${ challenge.schedule().end_time.strftime("%Y/%m/%d") } 03:59
+
+<%- set extra = challenge.extra() %>
+<%- set sub_maze_buffs = extra.sub_maze_buff() | list %>
+|战意机制名称=${ sub_maze_buffs[0].name }
+|战意机制效果=${ sub_maze_buffs[0].desc | gszformat(sub_maze_buffs[0].param_list) }
+|战熄潮平=${ sub_maze_buffs[1].desc | gszformat(sub_maze_buffs[1].param_list) }
+|战意汹涌=${ sub_maze_buffs[2].desc | gszformat(sub_maze_buffs[2].param_list) }
+
+<%- set CHINESE_DIGIT = "〇一二三四" %>
+<%- for buff in extra.buffs() %>
+|荒腔${loop.index}=${ buff.name }
+|荒腔走板其${CHINESE_DIGIT[loop.index]}=${ buff.desc | gszformat(buff.param_list) }
+  <%- if extra.type == StoryType.Fever %>
+|荒腔走板其${CHINESE_DIGIT[loop.index]}战意机制=${ buff.simple_desc | gszformat(buff.param_list) }
+  <%- endif %>
+<%- endfor %>
+
+<%- for maze in challenge.mazes() %>
+  <%- for event in [maze.event_1(), maze.event_2()]  %>
+    <%- set stage_infinite_group = event.stage_infinite_group() %>
+    <%- set event_loop = loop %>
+    <%- for wave in stage_infinite_group.waves() %>
+|其${CHINESE_DIGIT[maze.floor]}${event_loop.index}队${loop.index}波=${ wave.story_wiki_aggregate() }
+|其${CHINESE_DIGIT[maze.floor]}${event_loop.index}队${loop.index}波特殊敌方=${ wave.story_wiki_elite() }
+    <%- endfor %>
+|其${CHINESE_DIGIT[maze.floor]}${event_loop.index}队敌方上限=${ stage_infinite_group.max_teammate_count() | join("/") }
+|其${CHINESE_DIGIT[maze.floor]}${event_loop.index}队建议属性=${ [maze.damage_type_1, maze.damage_type_2][event_loop.index0]() | reverse | join("、") }
+  <%- endfor %>
+<%- endfor %>
+
+<%- for maze in challenge.mazes() %>
+  <%- for event in [maze.event_1(), maze.event_2()]  %>
+    <%- set event_loop = loop %>
+    <%- for wave in event.stage_infinite_group().waves() %>
+|其${CHINESE_DIGIT[maze.floor]}${event_loop.index}队${loop.index}波攻击增幅=
+        <%- if wave.param_list()[0] != 0.0 -%>
+${ "%g%%" | format(wave.param_list()[0] * 100) }
+        <%- endif %>
+|其${CHINESE_DIGIT[maze.floor]}${event_loop.index}队${loop.index}波生命增幅=
+        <%- if wave.param_list()[1] != 0.0 -%>
+${ "%g%%" | format(wave.param_list()[1] * 100) }
+        <%- endif %>
+    <%- endfor %>
+  <%- endfor %>
+<%- endfor %>
+}}
+{{折叠面板（特殊敌方）|tsdf${ "%03d" | format(challenge.issue) }|
+<%- for monster in special_monsters.values() -%>
+  <%- if monster.is_special() -%>
+{{特殊敌方
+|深渊名=${ challenge.name }
+|层数=${ monster.floors() | join("/") }
+|敌方名称=${ monster.wiki_name }
+
+    <%- set attr_changes = monster.attr_changes_wiki() %>
+    <%- if attr_changes | length != 0 %>
+|是否属性变化=是
+|属性变化=${ attr_changes | join("、") }
+    <%- endif %>
+
+    <%- set resist_less = monster.resist_less_wiki() %>
+    <%- set resist_more = monster.resist_more_wiki() %>
+    <%- set weakness_less = monster.weakness_less_wiki() %>
+    <%- set weakness_more = monster.weakness_more_wiki() %>
+    <%- if resist_less or resist_more or weakness_less or weakness_more %>
+|是否弱点或抗性变化=是
+    <%- endif %>
+
+    <%- if resist_more %>
+|抗性提高=${ resist_more | join("、") }
+    <%- endif %>
+
+    <%- if resist_less %>
+|抗性降低=${ resist_less | join("、") }
+    <%- endif %>
+
+    <%- if weakness_more %>
+|增加弱点=${ weakness_more | join("、") }
+    <%- endif %>
+
+    <%- if weakness_less %>
+|减少弱点=${ weakness_less | join("、") }
+    <%- endif %>
+}}
+  <%- endif %>
+<%- endfor %>
+}}
+<br />
+<br />
+----
+
+{{虚构叙事增援序列
+<%- for maze in challenge.mazes() %>
+  <%- for event in [maze.event_1(), maze.event_2()]  %>
+    <%- set event_loop = loop %>
+    <%- for wave in event.stage_infinite_group().waves() %>
+|其${CHINESE_DIGIT[maze.floor]}${"上下"[event_loop.index0]}半第${loop.index}波=${ (wave.monster_groups() | list)[0].monsters() | map(attribute="wiki_name") | join("、") }
+    <%- endfor %>
+  <%- endfor %>
+<%- endfor %>
+}}
+
+<!-- 精英组别调整系数
+<%- for maze in challenge.mazes() %>
+  ${ "\n" }
+
+  <%- for event in [maze.event_1(), maze.event_2()]  %>
+    <%- set event_loop = loop %>
+    <%- for wave in event.stage_infinite_group().waves() %>
+      <%- set elite_group = (wave.elite_groups() | list)[0] %>
+|其${CHINESE_DIGIT[maze.floor]} ${"上下"[event_loop.index0]}半 ${loop.index}波 ATK = <% if elite_group.attack_ratio != 0.0 %>${ "%g%%" | format(elite_group.attack_ratio * 100) }<% endif %>
+    <%- endfor %>
+  <%- endfor %>
+
+  <%- for event in [maze.event_1(), maze.event_2()]  %>
+    <%- set event_loop = loop %>
+    <%- for wave in event.stage_infinite_group().waves() %>
+      <%- set elite_group = (wave.elite_groups() | list)[0] %>
+|其${CHINESE_DIGIT[maze.floor]} ${"上下"[event_loop.index0]}半 ${loop.index}波 HP  = <% if elite_group.hp_ratio != 0.0 %>${ "%g%%" | format(elite_group.hp_ratio * 100) }<% endif %>
+    <%- endfor %>
+  <%- endfor %>
+<%- endfor %>
+-->

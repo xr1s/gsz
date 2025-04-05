@@ -391,10 +391,115 @@ class GameData:
             variable_start_string="${",
             variable_end_string="}",
             comment_start_string="%",
+            comment_end_string="\n",
             loader=jinja2.FileSystemLoader(templates_path),
         )
         env.filters.update(gszformat=self._mw_formatter.format, gszformat_pretty=self._mw_pretty_formatter.format)
         return env
+
+    ######## book ########
+
+    @excel_output(view.BookDisplayType)
+    def book_display_type(self):
+        """"""
+
+    @excel_output(view.BookSeriesConfig)
+    def book_series_config(self):
+        """阅读物系列"""
+
+    @excel_output_name(view.BookSeriesConfig, book_series_config)
+    def book_series_config_name(self):
+        """阅读物系列"""
+
+    @excel_output(view.BookSeriesWorld)
+    def book_series_world(self):
+        """阅读物所属的世界"""
+
+    @excel_output(view.LocalbookConfig)
+    def localbook_config(self):
+        """每一卷阅读物"""
+
+    @functools.cached_property
+    def _book_series_localbook(self) -> dict[int, list["excel.LocalbookConfig"]]:
+        book_series: dict[int, list[excel.LocalbookConfig]] = {}
+        for book in self.localbook_config():
+            if book.series.id in book_series:
+                book_series[book.series.id].append(book._excel)  # pyright: ignore[reportPrivateUsage]
+            else:
+                book_series[book.series.id] = [book._excel]  # pyright: ignore[reportPrivateUsage]
+        return book_series
+
+    ######## challenge ########
+
+    @excel_output(view.ChallengeGroupConfig)
+    def challenge_group_config(self):
+        """混沌回忆单期"""
+
+    @excel_output(view.ChallengeGroupConfig)
+    def challenge_story_group_config(self):
+        """虚构叙事单期"""
+
+    @excel_output(view.ChallengeGroupConfig)
+    def challenge_boss_group_config(self):
+        """末日幻影单期"""
+
+    @functools.cached_property
+    def _challenge_group_mazes(self) -> dict[int, list["excel.ChallengeMazeConfig"]]:
+        """同属一期逐光捡金的层"""
+        mazes: dict[int, list[excel.ChallengeMazeConfig]] = {}
+        for maze in itertools.chain(
+            self.challenge_maze_config(), self.challenge_story_maze_config(), self.challenge_boss_maze_config()
+        ):
+            model = maze._excel  # pyright: ignore[reportPrivateUsage]
+            if model.group_id in mazes:
+                mazes[model.group_id].append(model)
+            else:
+                mazes[model.group_id] = [model]
+        return mazes
+
+    @excel_output(view.ChallengeGroupExtra)
+    def challenge_maze_group_extra(self):
+        """混沌回忆单期额外数据（如增益列表、图标背景等）"""
+
+    @excel_output(view.ChallengeStoryGroupExtra)
+    def challenge_story_group_extra(self):
+        """虚构叙事单期额外数据（如增益列表、图标背景等）"""
+
+    @excel_output(view.ChallengeBossGroupExtra)
+    def challenge_boss_group_extra(self):
+        """末日幻影单期额外数据（如增益列表、图标背景等）"""
+
+    @excel_output(view.ChallengeMazeConfig)
+    def challenge_maze_config(self):
+        """混沌回忆单层"""
+
+    @excel_output(view.ChallengeMazeConfig)
+    def challenge_story_maze_config(self):
+        """虚构叙事单层"""
+
+    @excel_output(view.ChallengeMazeConfig)
+    def challenge_boss_maze_config(self):
+        """末日幻影单层"""
+
+    @excel_output(view.ChallengeStoryMazeExtra)
+    def challenge_story_maze_extra(self):
+        """虚构叙事单层额外数据（一波敌方数量等）"""
+
+    @excel_output(view.ChallengeBossMazeExtra)
+    def challenge_boss_maze_extra(self):
+        """末日幻影单层（首领敌人）"""
+
+    @excel_output(view.ScheduleData)
+    def schedule_data_challenge_maze(self):
+        """混沌回忆持续期间"""
+
+    @excel_output(view.ScheduleData)
+    def schedule_data_challenge_story(self):
+        """虚构叙事持续期间"""
+
+    @excel_output(view.ScheduleData)
+    def schedule_data_challenge_boss(self):
+        """末日幻影持续期间"""
 
     ######## item ########
 
@@ -479,38 +584,6 @@ class GameData:
         if isinstance(id, collections.abc.Iterable):
             return [next(filter(None, (method(item_id) for method in methods))) for item_id in id]
         return next(filter(None, (method(id) for method in methods)), None)
-
-    ######## book ########
-
-    @excel_output(view.BookDisplayType)
-    def book_display_type(self):
-        """"""
-
-    @excel_output(view.BookSeriesConfig)
-    def book_series_config(self):
-        """阅读物系列"""
-
-    @excel_output_name(view.BookSeriesConfig, book_series_config)
-    def book_series_config_name(self):
-        """阅读物系列"""
-
-    @excel_output(view.BookSeriesWorld)
-    def book_series_world(self):
-        """阅读物所属的世界"""
-
-    @excel_output(view.LocalbookConfig)
-    def localbook_config(self):
-        """每一卷阅读物"""
-
-    @functools.cached_property
-    def _book_series_localbook(self) -> dict[int, list["excel.LocalbookConfig"]]:
-        book_series: dict[int, list[excel.LocalbookConfig]] = {}
-        for book in self.localbook_config():
-            if book.series.id in book_series:
-                book_series[book.series.id].append(book._excel)  # pyright: ignore[reportPrivateUsage]
-            else:
-                book_series[book.series.id] = [book._excel]  # pyright: ignore[reportPrivateUsage]
-        return book_series
 
     ######## message ########
 
@@ -682,6 +755,17 @@ class GameData:
         """敌人模板（不清楚和不带 unique 的什么区别，不过有时候两个都要查）"""
 
     @functools.cached_property
+    def _monster_template_monster(self) -> dict[int, list["excel.MonsterConfig"]]:
+        monster_dict: dict[int, list[excel.MonsterConfig]] = {}
+        for monster in self.monster_config():
+            model = monster._excel  # pyright: ignore[reportPrivateUsage]
+            if model.monster_template_id in monster_dict:
+                monster_dict[model.monster_template_id].append(model)
+            else:
+                monster_dict[model.monster_template_id] = [model]
+        return monster_dict
+
+    @functools.cached_property
     def _monster_template_group(self) -> dict[int, list["excel.MonsterTemplateConfig"]]:
         template_groups: dict[int, list[excel.MonsterTemplateConfig]] = {}
         for template in self.monster_template_config():
@@ -697,6 +781,36 @@ class GameData:
     @excel_output(view.NPCMonsterData)
     def npc_monster_data(self):
         """敌人详情"""
+
+    ######## monster guide ########
+
+    @excel_output(view.MonsterDifficultyGuide)
+    def monster_difficulty_guide(self):
+        """末日幻影首领特性"""
+
+    @excel_output(view.MonsterGuideConfig)
+    def monster_guide_config(self):
+        """末日幻影内置攻略"""
+
+    @excel_output(view.MonsterGuidePhase)
+    def monster_guide_phase(self):
+        """末日幻影应对策略"""
+
+    @excel_output(view.MonsterGuideSkill)
+    def monster_guide_skill(self):
+        """末日幻影应对策略展开详情"""
+
+    @excel_output(view.MonsterGuideSkillText)
+    def monster_guide_skill_text(self):
+        """末日幻影应对策略展开详情文案"""
+
+    @excel_output(view.MonsterGuideTag)
+    def monster_guide_tag(self):
+        """末日幻影首领特性"""
+
+    @excel_output(view.MonsterTextGuide)
+    def monster_text_guide(self):
+        """末日幻影挑战策略"""
 
     ######## rogue ########
 
@@ -717,27 +831,20 @@ class GameData:
         """模拟宇宙祝福组，似乎是按 DLC 分类的"""
 
     @functools.cached_property
-    def __rogue_buff_tag_groups(self) -> collections.defaultdict[int, list["excel.RogueBuffGroup"]]:
+    def _rogue_buff_tag_groups(self) -> collections.defaultdict[int, list["excel.RogueBuffGroup"]]:
         tag_to_group: collections.defaultdict[int, list[excel.RogueBuffGroup]] = collections.defaultdict(list)
         for group in self.rogue_buff_group():
             for tag in group.rogue_buff_drop:
                 tag_to_group[tag].append(group._excel)  # pyright: ignore[reportPrivateUsage]
         return tag_to_group
 
-    def rogue_buff_tag_groups(self, tag: int) -> list[view.RogueBuffGroup]:
-        return [view.RogueBuffGroup(self, group) for group in self.__rogue_buff_tag_groups[tag]]
-
     @functools.cached_property
-    def __rogue_buff_tag_buff(self) -> dict[int, "excel.RogueBuff"]:
+    def _rogue_buff_tag_buff(self) -> dict[int, "excel.RogueBuff"]:
         tag_to_buff: dict[int, excel.RogueBuff] = {}
         for buff in self.rogue_buff():
             assert buff.tag not in tag_to_buff
             tag_to_buff[buff.tag] = buff._excel  # pyright: ignore[reportPrivateUsage]
         return tag_to_buff
-
-    def rogue_buff_tag_buff(self, tag: int) -> view.RogueBuff | None:
-        buff = self.__rogue_buff_tag_buff.get(tag)
-        return None if buff is None else view.RogueBuff(self, buff)
 
     @excel_output(view.RogueBuffType)
     def rogue_buff_type(self):
@@ -776,7 +883,7 @@ class GameData:
         """模拟宇宙图鉴奇物（如「绝对失败处方」、「塔奥牌」等有不同效果的奇物故事等会出现于此）"""
 
     @functools.cached_property
-    def __rogue_handbook_miracle_miracles(self) -> dict[int, list["excel.RogueMiracle"]]:
+    def _rogue_handbook_miracle_miracles(self) -> dict[int, list["excel.RogueMiracle"]]:
         miracles: dict[int, list[excel.RogueMiracle]] = {}
         for miracle in itertools.chain(self.rogue_miracle(), self.rogue_magic_miracle()):
             model = miracle._excel  # pyright: ignore[reportPrivateUsage]
@@ -787,10 +894,6 @@ class GameData:
             else:
                 miracles[model.unlock_handbook_miracle_id] = [model]
         return miracles
-
-    def rogue_handbook_miracle_miracles(self, handbook_miracle_id: int) -> collections.abc.Iterable[view.RogueMiracle]:
-        miracles = self.__rogue_handbook_miracle_miracles.get(handbook_miracle_id, ())
-        return (view.RogueMiracle(self, miracle) for miracle in miracles)
 
     @excel_output(view.RogueHandbookMiracleType)
     def rogue_handbook_miracle_type(self):
@@ -832,7 +935,7 @@ class GameData:
     def rogue_talk_name_config(self):
         """模拟宇宙事件对应的配置文件"""
 
-    ######## rogue_magic ########
+    ######## rogue magic ########
 
     @excel_output(view.RogueMiracle)
     def rogue_magic_miracle(self):
@@ -850,7 +953,7 @@ class GameData:
     def rogue_magic_npc(self):
         """不可知域事件配置"""
 
-    ######## rogue_tourn ########
+    ######## rogue tourn ########
 
     @excel_output_main_sub(view.RogueTournBuff)
     def rogue_tourn_buff(self):
@@ -861,27 +964,24 @@ class GameData:
         """差分宇宙祝福组，似乎是按 TournMode 分类的"""
 
     @functools.cached_property
-    def __rogue_tourn_buff_tag_groups(self) -> dict[int, list["excel.RogueTournBuffGroup"]]:
-        tag_to_group: collections.defaultdict[int, list[excel.RogueTournBuffGroup]] = collections.defaultdict(list)
+    def _rogue_tourn_buff_tag_groups(self) -> dict[int, list["excel.RogueTournBuffGroup"]]:
+        tag_to_group: dict[int, list[excel.RogueTournBuffGroup]] = {}
         for group in self.rogue_tourn_buff_group():
             for tag in group.rogue_buff_drop:
-                tag_to_group[tag].append(group._excel)  # pyright: ignore[reportPrivateUsage]
+                model = group._excel  # pyright: ignore[reportPrivateUsage]
+                if tag in tag_to_group:
+                    tag_to_group[tag].append(model)
+                else:
+                    tag_to_group[tag] = [model]
         return tag_to_group
 
-    def rogue_tourn_buff_tag_groups(self, tag: int) -> list[view.RogueTournBuffGroup]:
-        return [view.RogueTournBuffGroup(self, group) for group in self.__rogue_tourn_buff_tag_groups[tag]]
-
     @functools.cached_property
-    def __rogue_tourn_buff_tag_buff(self) -> dict[int, "excel.RogueTournBuff"]:
+    def _rogue_tourn_buff_tag_buff(self) -> dict[int, "excel.RogueTournBuff"]:
         tag_to_buff: dict[int, excel.RogueTournBuff] = {}
         for buff in self.rogue_tourn_buff():
             assert buff.tag not in tag_to_buff
             tag_to_buff[buff.tag] = buff._excel  # pyright: ignore[reportPrivateUsage]
         return tag_to_buff
-
-    def rogue_tourn_buff_tag_buff(self, tag: int) -> view.RogueTournBuff | None:
-        buff = self.__rogue_tourn_buff_tag_buff.get(tag)
-        return None if buff is None else view.RogueTournBuff(self, buff)
 
     @excel_output_name(view.RogueTournBuff, rogue_tourn_buff)
     def rogue_tourn_buff_name(self):
@@ -916,7 +1016,7 @@ class GameData:
         """差分宇宙图鉴奇物（如「绝对失败处方」、「塔奥牌」等有不同效果的奇物故事等会出现于此）"""
 
     @functools.cached_property
-    def __rogue_tourn_handbook_miracle_miracles(self) -> dict[int, list["excel.RogueTournMiracle"]]:
+    def _rogue_tourn_handbook_miracle_miracles(self) -> dict[int, list["excel.RogueTournMiracle"]]:
         miracles: dict[int, list[excel.RogueTournMiracle]] = {}
         for miracle in self.rogue_tourn_miracle():
             model = miracle._excel  # pyright: ignore[reportPrivateUsage]
@@ -927,12 +1027,6 @@ class GameData:
             else:
                 miracles[model.handbook_miracle_id] = [model]
         return miracles
-
-    def rogue_tourn_handbook_miracle_miracles(
-        self, handbook_miracle_id: int
-    ) -> collections.abc.Iterable[view.RogueTournMiracle]:
-        miracles = self.__rogue_tourn_handbook_miracle_miracles.get(handbook_miracle_id, ())
-        return (view.RogueTournMiracle(self, miracle) for miracle in miracles)
 
     @excel_output(view.RogueTournMiracle)
     def rogue_tourn_miracle(self):
@@ -961,6 +1055,24 @@ class GameData:
     @excel_output(view.RogueTournWeeklyDisplay)
     def rogue_tourn_weekly_display(self):
         """差分宇宙周期演算预设"""
+
+    ######## stage ########
+
+    @excel_output(view.StageConfig)
+    def stage_config(self):
+        """战斗波次信息"""
+
+    @excel_output(view.StageInfiniteGroup)
+    def stage_infinite_group(self):
+        """战斗波次信息（目前已知虚构叙事波次信息在此）"""
+
+    @excel_output(view.StageInfiniteMonsterGroup)
+    def stage_infinite_monster_group(self):
+        """战斗波次信息（目前已知虚构叙事波次信息在此）"""
+
+    @excel_output(view.StageInfiniteWaveConfig)
+    def stage_infinite_wave_config(self):
+        """战斗波次信息（目前已知虚构叙事波次信息在此）"""
 
     ######## talk ########
 

@@ -2,15 +2,15 @@ from __future__ import annotations
 import functools
 import itertools
 import typing
-from typing import TYPE_CHECKING
 
 from .. import excel
 from .base import View
 
-if TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     import collections.abc
 
     from ..excel import Element, monster
+    from .monster_guide import MonsterGuideConfig
 
 NPC_COLLIDE_NAMES = {"可可利亚", "杰帕德", "布洛妮娅", "史瓦罗", "银枝"}
 
@@ -40,11 +40,23 @@ class EliteGroup(View[excel.EliteGroup]):
 
     ExcelOutput: typing.Final = excel.EliteGroup
 
+    @property
+    def attack_ratio(self) -> float:
+        return self._excel.attack_ratio.value
+
+    @property
+    def hp_ratio(self) -> float:
+        return self._excel.hp_ratio.value
+
 
 class HardLevelGroup(View[excel.HardLevelGroup]):
     """敌方属性成长详情"""
 
     ExcelOutput: typing.Final = excel.HardLevelGroup
+
+    @property
+    def level(self) -> int:
+        return self._excel.level
 
     @property
     def hp_ratio(self) -> float:
@@ -76,6 +88,10 @@ class MonsterConfig(View[excel.MonsterConfig]):
 
     ExcelOutput: typing.Final = excel.MonsterConfig
 
+    @property
+    def id(self) -> int:
+        return self._excel.monster_id
+
     @functools.cached_property
     def name(self) -> str:
         return self._game.text(self._excel.monster_name)
@@ -94,7 +110,49 @@ class MonsterConfig(View[excel.MonsterConfig]):
     def template(self) -> MonsterTemplateConfig | None:
         return None if self.__template is None else MonsterTemplateConfig(self._game, self.__template._excel)
 
-    def hp(self, level: int | None = None) -> float:
+    @functools.cached_property
+    def __prototype(self) -> MonsterConfig:
+        if self.__template is None:
+            return self  # 除了全部迭代，正常处理逻辑不会到这个分支，这个分支是处理一些数据错误的
+        if self.__template.group_id is None:
+            template_id = self.__template._excel.monster_template_id
+        else:
+            template_id = self.__template.group_id
+        monsters = self._game._monster_template_monster[template_id]  # pyright: ignore[reportPrivateUsage]
+        return MonsterConfig(self._game, min(monsters, key=lambda monster: monster.monster_id))
+
+    def prototype(self) -> MonsterConfig:
+        return MonsterConfig(self._game, self.__prototype._excel)
+
+    @property
+    def attack_modify_ratio(self) -> float:
+        return self._excel.attack_modify_ratio.value
+
+    @property
+    def defence_modify_ratio(self) -> float:
+        return self._excel.defence_modify_ratio.value
+
+    @property
+    def hp_modify_ratio(self) -> float:
+        return self._excel.hp_modify_ratio.value
+
+    @property
+    def speed_modify_ratio(self) -> typing.Literal[1]:
+        return self._excel.speed_modify_ratio.value
+
+    @property
+    def speed_modify_value(self) -> float:
+        return self._excel.speed_modify_value.value
+
+    @property
+    def stance_modify_value(self) -> int:
+        return self._excel.stance_modify_value.value
+
+    @property
+    def stance_modify_ratio(self) -> typing.Literal[1]:
+        return self._excel.stance_modify_ratio.value
+
+    def hp(self, level: int | HardLevelGroup | None = None) -> float:
         """
         敌人在 level 等级时的生命值上限
         未传入 level 时返回基础生命值
@@ -103,14 +161,18 @@ class MonsterConfig(View[excel.MonsterConfig]):
         """
         if self.__template is None:
             return 0.0
-        if level is None:
-            return self.__template.hp_base * self._excel.hp_modify_ratio.value
-        hard_level_group = self._game.hard_level_group(self._excel.hard_level_group, level)
+        match level:
+            case int():
+                hard_level_group = self._game.hard_level_group(self._excel.hard_level_group, level)
+            case HardLevelGroup():
+                hard_level_group = level
+            case None:
+                return self.__template.hp_base * self._excel.hp_modify_ratio.value
         if hard_level_group is None:
             return 0.0
         return self.__template.hp_base * self._excel.hp_modify_ratio.value * hard_level_group.hp_ratio
 
-    def speed(self, level: int | None = None) -> float:
+    def speed(self, level: int | HardLevelGroup | None = None) -> float:
         """
         敌人在 level 等级时的速度
         未传入 level 时返回基础速度
@@ -122,14 +184,18 @@ class MonsterConfig(View[excel.MonsterConfig]):
         monster_speed_base = (
             self.__template.speed_base * self._excel.speed_modify_ratio.value + self._excel.speed_modify_value.value
         )
-        if level is None:
-            return monster_speed_base
-        hard_level_group = self._game.hard_level_group(self._excel.hard_level_group, level)
+        match level:
+            case int():
+                hard_level_group = self._game.hard_level_group(self._excel.hard_level_group, level)
+            case HardLevelGroup():
+                hard_level_group = level
+            case None:
+                return monster_speed_base
         if hard_level_group is None:
             return 0.0
         return monster_speed_base * hard_level_group.speed_ratio
 
-    def stance(self) -> int:
+    def stance(self, level: int | HardLevelGroup | None = None) -> int:  # noqa: ARG002 # pyright: ignore[reportUnusedParameter]
         """敌方韧性，不随等级变化"""
         if self.__template is None:
             return 0
@@ -162,6 +228,9 @@ class MonsterConfig(View[excel.MonsterConfig]):
     def damage_types(self) -> list[Element]:
         return list(self.__damage_types)
 
+    def damage_type_resistance(self) -> dict[Element, float]:
+        return {damage.damage_type: damage.value.value for damage in self._excel.damage_type_resistance}
+
     @functools.cached_property
     def phase(self) -> int:
         """敌人总共有多少阶段，只能从技能里找最大的那个 phase"""
@@ -181,7 +250,7 @@ class MonsterConfig(View[excel.MonsterConfig]):
         return (MonsterConfig(self._game, summon._excel) for summon in self.__summons)
 
     def weakness(self) -> list[Element]:
-        return self._excel.stance_weak_list
+        return list(self._excel.stance_weak_list)
 
     @property
     def rank(self) -> monster.Rank | None:
@@ -205,6 +274,16 @@ class MonsterConfig(View[excel.MonsterConfig]):
     def threat_count_at_phase(self, phase: int) -> int:
         """在 phase 阶段的大招数，phase 从 1 开始计数"""
         return sum(skill.is_threat for skill in self.skills_at_phase(phase))
+
+    @functools.cached_property
+    def __guide(self) -> MonsterGuideConfig | None:
+        return self._game.monster_guide_config(self._excel.monster_id)
+
+    def guide(self) -> MonsterGuideConfig | None:
+        """末日幻影 Boss 的游戏内置攻略"""
+        from .monster_guide import MonsterGuideConfig
+
+        return None if self.__guide is None else MonsterGuideConfig(self._game, self.__guide._excel)
 
     def wiki(self) -> str:
         damage_type_resistance = {
@@ -275,6 +354,10 @@ class MonsterSkillConfig(View[excel.MonsterSkillConfig]):
 
 class MonsterTemplateConfig(View[excel.MonsterTemplateConfig]):
     ExcelOutput: typing.Final = excel.MonsterTemplateConfig
+
+    @property
+    def id(self) -> int:
+        return self._excel.monster_template_id
 
     @functools.cached_property
     def name(self) -> str:

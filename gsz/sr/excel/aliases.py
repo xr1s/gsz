@@ -1,5 +1,6 @@
 import pydantic
 
+# jq -Cc '.[].AISkillSequence[] | keys[]' MonsterTemplateConfig.json | sort -u
 ID = pydantic.AliasChoices(
     "BMEJEMLFEIO",  # 3.1
     "LDKCGGLDKCK",  # 3.0
@@ -20,6 +21,7 @@ ID = pydantic.AliasChoices(
     "KIFGIAMDGPI",  # 1.0
 )
 
+# jq -Cc '.[].CustomValues[] | keys[]' MonsterConfig.json | sort -u
 KEY = pydantic.AliasChoices(
     "HEIKKHLKMOA",  # 3.1
     "EGIHHBKIHAK",  # 3.0
@@ -40,26 +42,7 @@ KEY = pydantic.AliasChoices(
     "JOAHDHLLMDK",  # 1.0
 )
 
-ROGUE_WEEKLY_TYP = pydantic.AliasChoices(
-    "PICHIHHCOCB",  # 3.1
-    "PGCFPBGPDGG",  # 3.0
-    "MPNJPFDCBDG",  # 2.7
-    "EOMLKKGEAEF",  # 2.6
-    "FGMDOEKGPEE",  # 2.5
-    "EEOLCCFMJFF",  # 2.4
-    "IAGLGKPDLOE",  # 2.3
-)
-
-ROGUE_WEEKLY_VAL = pydantic.AliasChoices(
-    "HMCDHMFHABF",  # 3.1
-    "CPPHDJHHGGN",  # 3.0
-    "ODPKJEJKOIH",  # 2.7
-    "HPPEILAONGE",  # 2.6
-    "NLABNDMDIKM",  # 2.5
-    "DIBKEHHCPAP",  # 2.4
-    "EPBOOFFCKPJ",  # 2.3
-)
-
+# jq -Cc '.[].CustomValues[] | keys[]' MonsterConfig.json | sort -u
 VAL = pydantic.AliasChoices(
     "MBMDOCJIMEJ",  # 3.1
     "CPPHDJHHGGN",  # 3.0
@@ -80,6 +63,29 @@ VAL = pydantic.AliasChoices(
     "LKJLPJMIGNJ",  # 1.0
 )
 
+# jq -Cc '.[].DescParams[] | keys[]' RogueTournWeeklyDisplay.json | sort -u
+ROGUE_WEEKLY_TYP = pydantic.AliasChoices(
+    "PICHIHHCOCB",  # 3.1
+    "PGCFPBGPDGG",  # 3.0
+    "MPNJPFDCBDG",  # 2.7
+    "EOMLKKGEAEF",  # 2.6
+    "FGMDOEKGPEE",  # 2.5
+    "EEOLCCFMJFF",  # 2.4
+    "IAGLGKPDLOE",  # 2.3
+)
+
+# jq -Cc '.[].DescParams[] | keys[]' RogueTournWeeklyDisplay.json | sort -u
+ROGUE_WEEKLY_VAL = pydantic.AliasChoices(
+    "HMCDHMFHABF",  # 3.1
+    "CPPHDJHHGGN",  # 3.0
+    "ODPKJEJKOIH",  # 2.7
+    "HPPEILAONGE",  # 2.6
+    "NLABNDMDIKM",  # 2.5
+    "DIBKEHHCPAP",  # 2.4
+    "EPBOOFFCKPJ",  # 2.3
+)
+
+# jq -Cc '.[] | keys[]' RogueBuffGroup.json | sort -u
 ROGUE_BUFF_GROUP_ID = pydantic.AliasChoices(
     "IDLBMIHBAPB",  # 3.1
     "IKOLKLEFCGO",  # 3.0
@@ -94,6 +100,7 @@ ROGUE_BUFF_GROUP_ID = pydantic.AliasChoices(
     "JHOKDPADHFM",  # 1.6
 )
 
+# jq -Cc '.[] | keys[]' RogueBuffGroup.json | sort -u
 ROGUE_BUFF_DROP = pydantic.AliasChoices(
     "GNGDPDOMDFH",  # 3.1
     "DKLEHCPFLFJ",  # 3.0
@@ -108,6 +115,7 @@ ROGUE_BUFF_DROP = pydantic.AliasChoices(
     "ADJICNNJFEM",  # 1.6
 )
 
+# jq -Cc '.[].UnlockNPCProgressIDList[] | keys[]' RogueHandBookEvent.json | sort -u
 UNLOCK_NPC_ID = pydantic.AliasChoices(
     "MBNKLBEBOHB",  # 3.1
     "HLNMOFDGLAA",  # 3.0
@@ -118,6 +126,7 @@ UNLOCK_NPC_ID = pydantic.AliasChoices(
     "AFFNNEIMKBG",  # 2.3
 )
 
+# jq -Cc '.[].UnlockNPCProgressIDList[] | keys[]' RogueHandBookEvent.json | sort -u
 UNLOCK_PROGRESS = pydantic.AliasChoices(
     "NNDEOKKKKPE",  # 3.1
     "AFMKGEHANLM",  # 3.0
@@ -127,3 +136,12 @@ UNLOCK_PROGRESS = pydantic.AliasChoices(
     "HMGKHONMICH",  # 2.4
     "IMFEHFHGNNI",  # 2.3
 )
+
+# jq -Cc '.[].SubLevelGraphs[] | keys[]' StageConfig.json | sort -u
+STAGE_SUBLEVELGRAPH_DEFAULT_SUB_STAGE = pydantic.AliasChoices("KDPPOPPKFAM")
+
+# jq -Cc '.[].SubLevelGraphs[] | keys[]' StageConfig.json | sort -u
+STAGE_SUBLEVELGRAPH_UNKOWN_1 = pydantic.AliasChoices("PEMNGOFOKLJ")
+
+# jq -Cc '.[].SubLevelGraphs[] | keys[]' StageConfig.json | sort -u
+STAGE_SUBLEVELGRAPH_UNKOWN_2 = pydantic.AliasChoices("DMNAIOFLJNC")

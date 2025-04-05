@@ -1,5 +1,16 @@
 from .base import Element, ModelID, ModelMainSubID, Text, Value
 from .book import BookDisplayType, BookSeriesConfig, BookSeriesWorld, LocalbookConfig
+from .challenge import (
+    ChallengeBossGroupExtra,
+    ChallengeBossMazeExtra,
+    ChallengeGroupConfig,
+    ChallengeGroupExtra,
+    ChallengeMazeConfig,
+    ChallengeStoryGroupExtra,
+    ChallengeStoryMazeExtra,
+    ChallengeTargetConfig,
+    RewardLine,
+)
 from .item import ItemConfig, ItemPurpose
 from .message import (
     EmojiConfig,
@@ -15,7 +26,14 @@ from .message import (
     MessageItemVideo,
     MessageSectionConfig,
 )
-from .misc import ExtraEffectConfig, MazeBuff, RewardData, TextJoinConfig, TextJoinItem
+from .misc import (
+    ExtraEffectConfig,
+    MazeBuff,
+    RewardData,
+    ScheduleData,
+    TextJoinConfig,
+    TextJoinItem,
+)
 from .mission import MainMission, SubMission
 from .monster import (
     EliteGroup,
@@ -25,6 +43,15 @@ from .monster import (
     MonsterSkillConfig,
     MonsterTemplateConfig,
     NPCMonsterData,
+)
+from .monster_guide import (
+    MonsterDifficultyGuide,
+    MonsterGuideConfig,
+    MonsterGuidePhase,
+    MonsterGuideSkill,
+    MonsterGuideSkillText,
+    MonsterGuideTag,
+    MonsterTextGuide,
 )
 from .rogue import (
     RogueBonus,
@@ -59,6 +86,12 @@ from .rogue_tourn import (
     RogueTournWeeklyChallenge,
     RogueTournWeeklyDisplay,
 )
+from .stage import (
+    StageConfig,
+    StageInfiniteGroup,
+    StageInfiniteMonsterGroup,
+    StageInfiniteWaveConfig,
+)
 from .talk import HeartDialTalk, TalkSentenceConfig, VoiceConfig
 from .tutorial import TutorialGuideData, TutorialGuideGroup
 
@@ -68,6 +101,16 @@ __all__ = (
     "BookSeriesConfig",
     "BookSeriesWorld",
     "LocalbookConfig",
+    # challenge
+    "ChallengeBossGroupExtra",
+    "ChallengeBossMazeExtra",
+    "ChallengeGroupConfig",
+    "ChallengeGroupExtra",
+    "ChallengeMazeConfig",
+    "ChallengeStoryGroupExtra",
+    "ChallengeStoryMazeExtra",
+    "ChallengeTargetConfig",
+    "RewardLine",
     # item
     "ItemConfig",
     "ItemPurpose",
@@ -88,6 +131,7 @@ __all__ = (
     "ExtraEffectConfig",
     "MazeBuff",
     "RewardData",
+    "ScheduleData",
     "TextJoinConfig",
     "TextJoinItem",
     # mission
@@ -101,6 +145,14 @@ __all__ = (
     "MonsterSkillConfig",
     "MonsterTemplateConfig",
     "NPCMonsterData",
+    # monster guide
+    "MonsterDifficultyGuide",
+    "MonsterGuideConfig",
+    "MonsterGuidePhase",
+    "MonsterGuideSkill",
+    "MonsterGuideSkillText",
+    "MonsterGuideTag",
+    "MonsterTextGuide",
     # rogue
     "RogueBonus",
     "RogueBuff",
@@ -132,6 +184,11 @@ __all__ = (
     "RogueTournTitanBless",
     "RogueTournWeeklyChallenge",
     "RogueTournWeeklyDisplay",
+    # stage
+    "StageConfig",
+    "StageInfiniteGroup",
+    "StageInfiniteMonsterGroup",
+    "StageInfiniteWaveConfig",
     # talk
     "HeartDialTalk",
     "TalkSentenceConfig",

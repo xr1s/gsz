@@ -6,6 +6,7 @@ from .. import excel
 from .base import View
 
 if typing.TYPE_CHECKING:
+    import datetime
     import collections.abc
     from .item import ItemConfig
 
@@ -71,8 +72,27 @@ class MazeBuff(View[excel.MazeBuff]):
         return self._game.text(self._excel.buff_desc)
 
     @functools.cached_property
+    def simple_desc(self) -> str:
+        return "" if self._excel.buff_simple_desc is None else self._game.text(self._excel.buff_simple_desc)
+
+    @functools.cached_property
     def param_list(self) -> tuple[float, ...]:
         return tuple(param.value for param in self._excel.param_list)
+
+
+class ScheduleData(View[excel.ScheduleData]):
+    ExcelOutput: typing.Final = excel.ScheduleData
+
+    @property
+    def begin_time(self) -> datetime.datetime:
+        return self._excel.begin_time
+
+    @property
+    def end_time(self) -> datetime.datetime:
+        return self._excel.end_time
+
+    def contains(self, datetime: datetime.datetime) -> bool:
+        return self.begin_time <= datetime < self.end_time
 
 
 class TextJoinConfig(View[excel.TextJoinConfig]):

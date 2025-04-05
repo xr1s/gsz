@@ -1,4 +1,5 @@
 import collections.abc
+import datetime
 import enum
 import typing
 
@@ -174,6 +175,17 @@ class MazeBuff(ModelMainSubID):
     @typing_extensions.override
     def sub_id(self) -> int:
         return self.lv
+
+
+class ScheduleData(ModelID):
+    id_: int
+    begin_time: datetime.datetime
+    end_time: datetime.datetime
+
+    @property
+    @typing_extensions.override
+    def id(self) -> int:
+        return self.id_
 
 
 class TextJoinType(enum.Enum):
