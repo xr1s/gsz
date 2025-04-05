@@ -158,7 +158,6 @@ class Option:
     def id(self) -> int:
         return self.__id
 
-    @property
     def option(self) -> RogueDialogueOptionDisplay:
         from .rogue import RogueDialogueOptionDisplay
 
@@ -253,9 +252,9 @@ class Dialogue:
     def __option_dict(self) -> dict[int, Option]:
         return {option.id: option for option in self.__options}
 
-    def option(self) -> collections.abc.Iterable[Option]:
+    def options(self) -> collections.abc.Iterable[Option]:
         return (
-            Option(self._game, option.id, option.option, option.special, list(option.dynamic), option.desc_value)
+            Option(self._game, option.id, option.option(), option.special, list(option.dynamic), option.desc_value)
             for option in self.__options
         )
 
@@ -411,12 +410,13 @@ class Dialogue:
             assert option.rogue_option_id is not None
             opt = self.__option_dict[option.rogue_option_id]
             _ = wiki.write(indent)
-            title = self.__formatter.format(opt.option.title, opt.desc_value)
+            rogue_option = opt.option()
+            title = self.__formatter.format(rogue_option.title, opt.desc_value)
             _ = wiki.write(f"|选项{index + 1}=")
             _ = wiki.write(title)
             _ = wiki.write(indent)
             _ = wiki.write(f"|内容{index + 1}=")
-            _ = wiki.write(self.__formatter.format(opt.option.desc, opt.desc_value))
+            _ = wiki.write(self.__formatter.format(rogue_option.desc, opt.desc_value))
             if opt.special is not None:
                 _ = wiki.write(indent)
                 _ = wiki.write(f"|图标{index + 1}=")
@@ -498,8 +498,9 @@ class Dialogue:
                 for option in task.rogue_options():
                     if option.rogue_option_id is not None:
                         opt = self.__option_dict[option.rogue_option_id]
-                        title = self.__formatter.format(opt.option.title, opt.desc_value)
-                        desc = self.__formatter.format(opt.option.desc, opt.desc_value)
+                        rogue_option = opt.option()
+                        title = self.__formatter.format(rogue_option.title, opt.desc_value)
+                        desc = self.__formatter.format(rogue_option.desc, opt.desc_value)
                         print("   ", f"\033[38;2;242;158;56m{title}\033[39m {desc}", end="")
                         if option.trigger_custom_string is not None:
                             next_seq = self.__next_custom_string(option.trigger_custom_string)
@@ -518,10 +519,14 @@ class Dialogue:
                 if isinstance(task._task, act.task.TriggerDialogueEvent):
                     print("    trigger dialogue event", task._task.dialogue_event_id)
 
+    @functools.cached_property
+    def __need_debug(self) -> bool:
+        return any(task.is_(act.task.WaitDialogueEvent) for seq in self.__sequences for task in seq.tasks())
+
     def wiki(self, debug: bool = False) -> str:
         if len(self.__sequences) == 0:
             return ""
-        if debug:
+        if debug or self.__need_debug:
             self.__wiki_debug()
         wiki = io.StringIO()
         entrypoint = next(seq for seq in self.__sequences if seq.is_entrypoint)

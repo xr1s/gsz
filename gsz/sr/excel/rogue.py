@@ -191,7 +191,9 @@ class RogueEventSpecialOption(ModelID):
 
 
 class RogueHandBookEvent(ModelID):
-    event_handbook_id: int
+    event_handbook_id: typing.Annotated[
+        int, pydantic.Field(validation_alias=pydantic.AliasChoices("EventHandbookID", "EventID"))
+    ]
     unlock_npc_progress_id_list: list[UnlockNPCProgressID]
     event_title: Text
     event_type: Text
@@ -357,6 +359,7 @@ class RogueTalkNameConfig(ModelID):
     sub_name: Text
     icon_path: str
     image_id: int
+    img_path: str | None = None
 
     @property
     @typing_extensions.override

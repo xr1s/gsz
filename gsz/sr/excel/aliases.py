@@ -114,11 +114,16 @@ UNLOCK_NPC_ID = pydantic.AliasChoices(
     "KOPDNGGIFKN",  # 2.7
     "GNBAICOJALE",  # 2.6
     "GFKCKEKCGIB",  # 2.5
+    "FBIOIFGPFHI",  # 2.4
+    "AFFNNEIMKBG",  # 2.3
 )
+
 UNLOCK_PROGRESS = pydantic.AliasChoices(
     "NNDEOKKKKPE",  # 3.1
     "AFMKGEHANLM",  # 3.0
     "FINLPBFNLHP",  # 2.7
     "EJJEHNGJCJH",  # 2.6
     "EEMMLHDLGKP",  # 2.5
+    "HMGKHONMICH",  # 2.4
+    "IMFEHFHGNNI",  # 2.3
 )
