@@ -40,11 +40,11 @@ class State(enum.Enum):
         {TEXTJOIN#编号}
     """
 
-    HashSign = 2
+    HashSign = 10
     """HashSign 表示格式化字符串中的第一个井号字符，表示后面有格式化字符串内容"""
-    ParamNum = 3
+    ParamNum = 11
     """ParamNum 表示格式化字符串井号和左方括号中间的数字，指引用参数列表中的第几个参数"""
-    Specifier = 4
+    Specifier = 12
     """
     Specifier 表示方括号之间的格式化串，可能为
     * 空（不会进入本状态）
@@ -52,32 +52,34 @@ class State(enum.Enum):
     * i 表示整数，可能有千位分隔符
     * m 表示将数字 1,000,000 表示成「一百万」等，各语言对应的缩写形式
     """
-    ParamEnd = 5
+    ParamEnd = 13
     """ParamEnd 表示格式化字符串中的右方括号，需要再读一个字符决定后续走向 Percent 还是 Literal"""
-    Escaping = 6
+    Escaping = 14
     """目前只有 \\n 这一个需要转义的"""
-    TagLKey = 10
+    TagLKey = 20
     """TagLKey 表示类 XML 标识中的标签名，比如 <u> </i> <size=20>，中的 u i size"""
-    TagLVal = 11
+    TagLVal = 21
     """TagLVal 表示类 XML 标识比如 <color=#000000> <size=20> 中的 #000000 20"""
-    TagText = 12
+    TagText = 22
     """TagText 表示标签内部的正文"""
-    TagRBra = 13
+    TagRBra = 23
     """
     TagRBra 表示 TagText 中间出现的 <
 
     注意可能是嵌套的 Tag，比如 <align="right"><i>这里是正文</i></align>
     所以后续可能转移到下一个 TagLVal 中
     """
-    TagSlash = 14
+    TagSlash = 24
     """
     XML Tag 形式的标识，可能有以下标签 <u> <i> <color=#000000> <size=20> <size=+2>
     TagSlash 表示 </i> 的 /
     """
-    VarKey = 20
+    VarKey = 30
     """VarKey 记录比如 {BIRTH} <RUBY_B#注音内容> 中的 BIRTH RUBY_B"""
-    VarVal = 21
+    VarVal = 31
     """VarKey 记录比如 {F#女性开拓者分支} {RUBY_B#注音内容} 中的 女性开拓者分支 注音内容"""
+    AnsiEscape = 40
+    """删除多余的 AnsiSeq"""
 
 
 class InlineBlock(enum.Enum):
@@ -115,8 +117,33 @@ class Formatter:
 
     def __push(self, s: str):
         match self.__syntax:
-            case Syntax.Plain | Syntax.Terminal:
+            case Syntax.Plain:
                 _ = self.__texts[-1].write(s)
+            case Syntax.Terminal:
+                for char in s:
+                    match char:
+                        case (
+                            "Ⅰ"
+                            | "Ⅱ"
+                            | "Ⅲ"
+                            | "Ⅳ"
+                            | "Ⅴ"
+                            | "Ⅵ"
+                            | "Ⅶ"
+                            | "Ⅷ"
+                            | "Ⅸ"
+                            | "Ⅹ"
+                            | "Ⅺ"
+                            | "Ⅻ"
+                            | "Ⅼ"
+                            | "Ⅽ"
+                            | "Ⅾ"
+                            | "Ⅿ"
+                        ):
+                            _ = self.__texts[-1].write(char)
+                            _ = self.__texts[-1].write(" ")
+                        case _:
+                            _ = self.__texts[-1].write(char)
             case Syntax.MediaWiki | Syntax.MediaWikiPretty:
                 for char in s:
                     match char:
@@ -157,6 +184,8 @@ class Formatter:
             case "\xa0":
                 self.__display_block_afterward()
                 self.__push(" ")
+            case "\x1b" if self.__syntax == Syntax.Plain:
+                self.__states.append(State.AnsiEscape)
             case _:
                 self.__display_block_afterward()
                 self.__push(char)
@@ -328,6 +357,10 @@ class Formatter:
             return
         _ = self.__vals[-1].write(char)
 
+    def __feed_ansi_seq(self, char: str) -> None:
+        if char == "m":
+            _ = self.__states.pop()
+
     @staticmethod
     def __do_format(specifier: str, param: float | str, percent: bool = False) -> str:
         if percent:
@@ -486,7 +519,9 @@ class Formatter:
         文本宽度计算是老大难问题，和字符类型、终端配置、字体有关
         """
         text = Formatter.__plain_formatter().format(text)
-        return sum(2 if unicodedata.east_asian_width(char) in ("A", "F", "N", "W") else 1 for char in text)
+        return sum(
+            2 if unicodedata.east_asian_width(char) in "AFNW" or char in "ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅪⅫⅬⅭⅮⅯ" else 1 for char in text
+        )
 
     def __flush_tag_terminal(self, tag: str, val: str, text: str):  # noqa: PLR0912, PLR0915
         """简陋的高亮实现，用来调试输出美观"""
@@ -708,6 +743,8 @@ class Formatter:
                 self.__feed_var_key(char)
             case State.VarVal:
                 self.__feed_var_val(char)
+            case State.AnsiEscape:
+                self.__feed_ansi_seq(char)
 
     def __flush(self) -> None:
         while len(self.__states) != 0:
@@ -721,6 +758,8 @@ class Formatter:
                     self.__flush_tag()
                 case State.VarKey | State.VarVal:
                     self.__flush_var()
+                case State.AnsiEscape:
+                    _ = self.__states.pop()
 
     def format(
         self,
