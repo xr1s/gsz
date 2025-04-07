@@ -14,8 +14,8 @@
 |模拟宇宙强化效果=${ rogue_upgrade.desc | gszformat(rogue_upgrade.param_list) }
 <%- endif %>
 
-<%- if tourn_upgrade is not none %>
-|差分宇宙效果=${ tourn_upgrade.desc | gszformat(tourn_upgrade.param_list) }
+<%- if tourn_degrade is not none %>
+|差分宇宙效果=${ tourn_degrade.desc | gszformat(tourn_degrade.param_list) }
 <%- endif %>
 
 <%- if tourn_upgrade is not none %>
