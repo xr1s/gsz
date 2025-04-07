@@ -337,7 +337,7 @@ class Formatter:
                 case int():
                     return str(param)
                 case float():
-                    return str(param) if param.is_integer() else str(param).rstrip("0").rstrip(".")
+                    return str(int(param)) if param.is_integer() else str(param).rstrip("0").rstrip(".")
                 case str():
                     return param
         if specifier.startswith("f"):
