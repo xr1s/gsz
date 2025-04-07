@@ -11,7 +11,7 @@ from .challenge import (
     ChallengeTargetConfig,
     RewardLine,
 )
-from .item import ItemConfig, ItemPurpose
+from .item import ItemConfig, ItemCureInfoData, ItemPurpose, ItemUseData
 from .message import (
     EmojiConfig,
     EmojiGroup,
@@ -113,7 +113,9 @@ __all__ = (
     "RewardLine",
     # item
     "ItemConfig",
+    "ItemCureInfoData",
     "ItemPurpose",
+    "ItemUseData",
     # message
     "EmojiConfig",
     "EmojiGroup",

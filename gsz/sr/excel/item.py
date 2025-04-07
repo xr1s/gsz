@@ -326,6 +326,18 @@ class ItemConfig(ModelID):
         return self.id_
 
 
+class ItemCureInfoData(ModelID):
+    id_: int
+    cure_info_title: Text
+    cure_info_desc: Text
+    img_path: str
+
+    @property
+    @typing_extensions.override
+    def id(self) -> int:
+        return self.id_
+
+
 class ItemPurpose(ModelID):
     id_: int
     purpose_text: Text
@@ -334,3 +346,15 @@ class ItemPurpose(ModelID):
     @typing_extensions.override
     def id(self) -> int:
         return self.id_
+
+
+class ItemUseData(ModelID):
+    use_data_id: int
+    use_param: list[int]
+    use_multiple_max: int
+    is_auto_use: bool = False
+
+    @property
+    @typing_extensions.override
+    def id(self) -> int:
+        return self.use_data_id

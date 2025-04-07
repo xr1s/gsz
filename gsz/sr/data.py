@@ -551,9 +551,20 @@ class GameData:
     def item_player_card(self):
         """用户头像（时装、大月卡、活动、成就等头像）"""
 
+    @excel_output(view.ItemCureInfoData)
+    def item_cure_info_data(self):
+        """道具可阅读内容"""
+
     @excel_output(view.ItemPurpose)
     def item_purpose(self):
-        """道具目的"""
+        """
+        道具子类型，展示在背包右上道具大图标的左上角
+        和道具 SubType 高度相关
+        """
+
+    @excel_output(view.ItemUseData)
+    def item_use_data(self):
+        """道具使用奖励"""
 
     @typing.overload
     def item_config_all(self) -> collections.abc.Iterable[view.ItemConfig]: ...
