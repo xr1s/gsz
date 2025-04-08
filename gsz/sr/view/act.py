@@ -1,7 +1,10 @@
 from __future__ import annotations
+import abc
 import functools
 import io
 import typing
+
+import typing_extensions
 
 from .. import act
 
@@ -10,12 +13,188 @@ if typing.TYPE_CHECKING:
     import pathlib
     import types
 
+    from ...format import Formatter
     from ..data import GameData
     from .rogue import RogueDialogueDynamicDisplay, RogueDialogueOptionDisplay, RogueEventSpecialOption
     from .talk import TalkSentenceConfig
 
 
-class Act:
+class __RogueDialogue(abc.ABC):
+    @functools.cached_property
+    @abc.abstractmethod
+    def _formatter(self) -> Formatter: ...
+
+    @functools.cached_property
+    @abc.abstractmethod
+    def _sequences(self) -> list[Sequence]: ...
+
+    @abc.abstractmethod
+    def _talk_sentence_config(self, talk_sentence_id: int) -> TalkSentenceConfig: ...
+
+    def _find_successors(self, seq: Sequence) -> list[Sequence]:
+        """找单个节点在列表中的后继节点"""
+        if seq.successors is not None:
+            return seq.successors
+        if seq.is_leavepoint:
+            return []
+        if len(seq.trigger_custom_string) == 0:
+            # 如果没有 trigger_custom_string 就直接返回列表中的下一个
+            if seq.index + 1 == len(self._sequences):
+                return []
+            iter_seq = (
+                seq for seq in self._sequences[seq.index + 1 :] if not seq.is_wait_event and not seq.is_entrypoint
+            )
+            next_seq = next(iter_seq, None)
+            seq.successors = [] if next_seq is None else [next_seq]
+        else:
+            # 否则根据 trigger_custom_string 在整个列表中寻找匹配的 seq
+            seq.successors = [
+                sequence for sequence in self._sequences if sequence.wait_custom_string in seq.trigger_custom_string
+            ]
+        return seq.successors
+
+    def _find_confluence(self, seq: Sequence) -> Sequence | None:
+        """如果节点是选项节点，找后继汇合的点，否则就是下一个节点"""
+        if seq.confluence is not None:
+            return seq.confluence
+        successors = self._find_successors(seq)
+        if len(successors) == 0:
+            return None  # 无后继直接退出
+        if len(successors) == 1:
+            seq.confluence = successors[0]  # 只有一个后继直接返回
+            return seq.confluence
+        if all(node.index == successors[0].index for node in successors[1:]):
+            seq.confluence = successors[0]  # 全等后继直接返回
+            return seq.confluence
+        visit: list[int] = [0 for _ in self._sequences]
+        for node in successors:
+            visit[node.index] = 1
+        queue: list[Sequence | None] = list(successors)
+        while any(node is not None for node in queue):
+            for index, node in enumerate(queue):
+                if node is None:
+                    continue
+                next_node = self._find_confluence(node)
+                queue[index] = next_node
+                if next_node is None:
+                    continue
+                visit[next_node.index] += 1
+                if visit[next_node.index] == len(queue):
+                    seq.confluence = next_node
+                    return seq.confluence
+        return None
+
+    def _next_custom_string(self, custom_string: str) -> Sequence | None:
+        return next((seq for seq in self._sequences if seq.wait_custom_string == custom_string), None)
+
+    __AEON_NAMES = {
+        "阿基维利",
+        "纳努克",
+        "岚",
+        "博识尊",
+        "希佩",
+        "Ⅸ",
+        "克里珀",
+        "药师",
+        "奥博洛斯",
+        "阿哈",
+        "浮黎",
+        "伊德莉拉",
+        "塔伊兹育罗斯",
+        "迷思",
+        "互",
+        "末王",
+        "太一",
+        "龙",
+    }
+
+    def _write_simple(self, wiki: io.StringIO, indent: str, task: Task):
+        for talk in task.talks():
+            _ = wiki.write(indent)
+            _ = wiki.write("{{事件|")
+            name = self._formatter.format(talk.name)
+            if task.is_(act.task.PlayAeonTalk) or name in self.__AEON_NAMES:
+                _ = wiki.write("星神|")
+            _ = wiki.write(name)
+            _ = wiki.write("|")
+            _ = wiki.write(self._formatter.format(talk.text))
+            _ = wiki.write("}}")
+
+    def _write_dialogue_option(
+        self, wiki: io.StringIO, indent: str, options: list[act.talk.RogueOptionTalk], confluence: Sequence | None
+    ):
+        _ = wiki.write(indent)
+        _ = wiki.write("{{剧情选项")
+        if all(option.trigger_custom_string == options[0].trigger_custom_string for option in options[1:]):
+            # 选项的后继全部相同，压成一行即可
+            for index, option in enumerate(options):
+                assert option.talk_sentence_id is not None
+                _ = wiki.write(f"|选项{index + 1}=")
+                talk = self._talk_sentence_config(option.talk_sentence_id)
+                _ = wiki.write(self._formatter.format(talk.text))
+            _ = wiki.write("}}")
+            return
+        for index, option in enumerate(options):
+            assert option.talk_sentence_id is not None
+            _ = wiki.write(indent)
+            _ = wiki.write(f"|选项{index + 1}=")
+            talk = self._talk_sentence_config(option.talk_sentence_id)
+            _ = wiki.write(self._formatter.format(talk.text))
+            if option.trigger_custom_string is None or option.trigger_custom_string == "":
+                continue
+            seq = self._next_custom_string(option.trigger_custom_string)
+            if seq is None:
+                continue
+            if confluence is not None and seq.index != confluence.index:
+                _ = wiki.write(indent)
+                _ = wiki.write(f"|剧情{index + 1}=")
+                self._wiki_iter_seq(wiki, indent + "  ", seq, confluence)
+        _ = wiki.write(indent)
+        _ = wiki.write("}}")
+
+    def _write_option(self, wiki: io.StringIO, indent: str, task: Task, confluence: Sequence | None):
+        options = list(task.rogue_options())
+        if len(options) == 0:
+            return
+        self._write_dialogue_option(wiki, indent, options, confluence)
+
+    def _wiki_iter_seq(self, wiki: io.StringIO, indent: str, seq: Sequence, confluence: Sequence | None):
+        if confluence is not None and seq.index == confluence.index:
+            return
+        for task in seq.tasks():
+            if task.is_(
+                act.task.AdvNpcFaceToPlayer
+                | act.task.FinishLevelGraph  # 清空选项，一般在选项结束后有
+                | act.task.SetAsRogueDialogue
+                | act.task.ShowRogueTalkBg  # 入口
+                | act.task.ShowRogueTalkUI  # 入口
+                | act.task.SwitchUIMenuBGM  # 循环播放 BGM
+                | act.task.TriggerCustomString  # 目前看和改变执行状态有关
+                | act.task.TriggerDialogueEvent  # 怀疑和 WaitDialogueEvent 有什么联动，但是所有文件里的 TriggerDialogueEvent 参数都一样
+                | act.task.TriggerSound  # 播放声音
+                | act.task.TutorialTaskUnlock
+                | act.task.WaitCustomString  # 等待 TriggerCustomString
+                | act.task.WaitPerformanceEnd  # 出口
+                | act.task.WaitRogueSimpleTalkFinish
+            ):
+                pass
+            elif task.is_(act.task.PlayAeonTalk | act.task.PlayRogueSimpleTalk | act.task.PlayAndWaitRogueSimpleTalk):
+                self._write_simple(wiki, indent, task)
+            elif task.is_(act.task.PlayRogueOptionTalk):
+                next_confluence = self._find_confluence(seq)
+                self._write_option(wiki, indent, task, next_confluence)
+            elif task.is_(act.task.WaitDialogueEvent):
+                # TODO: 很重要，但是没搞懂机制
+                # 感觉是先随机在几个 SuccessCustomString 里随机选一个，然后开始后续剧情
+                pass
+            else:
+                raise ValueError(f"unknown task type {type(task._task)}")  # pyright: ignore[reportPrivateUsage]
+        next_seq = self._find_confluence(seq)
+        if next_seq is not None:
+            self._wiki_iter_seq(wiki, indent, next_seq, confluence)
+
+
+class Act(__RogueDialogue):
     def __init__(self, game: GameData, excel: pathlib.Path | act.Act):
         self._game: GameData = game
         self._act: act.Act = (
@@ -37,6 +216,34 @@ class Act:
         if self._act.on_start_sequece is None:
             return ()
         return (Sequence(self._game, seq, index) for index, seq in enumerate(self._act.on_start_sequece))
+
+    @functools.cached_property
+    @typing_extensions.override
+    def _formatter(self):
+        from ...format import Formatter, Syntax
+
+        return Formatter(syntax=Syntax.MediaWiki, game=self._game, percent_as_plain=True)
+
+    @functools.cached_property
+    @typing_extensions.override
+    def _sequences(self) -> list[Sequence]:
+        if self._act.on_start_sequece is None:
+            return []
+        return [Sequence(self._game, seq, index) for index, seq in enumerate(self._act.on_start_sequece)]
+
+    @typing_extensions.override
+    def _talk_sentence_config(self, talk_sentence_id: int) -> TalkSentenceConfig:
+        talk_sentence = self._game.talk_sentence_config(talk_sentence_id)
+        assert talk_sentence is not None
+        return talk_sentence
+
+    def wiki(self) -> str:
+        if len(self._sequences) == 0:
+            return ""
+        wiki = io.StringIO()
+        entrypoint = next(seq for seq in self._sequences if seq.is_entrypoint)
+        self._wiki_iter_seq(wiki, "\n  ", entrypoint, None)
+        return wiki.getvalue()
 
 
 class Sequence:
@@ -182,7 +389,7 @@ class Option:
         return self.__desc_value
 
 
-class Dialogue:
+class Dialogue(__RogueDialogue):
     def __init__(self, game: GameData, excel: act.Dialogue):
         self._game: GameData = game
         self._dialogue: act.Dialogue = excel
@@ -259,147 +466,33 @@ class Dialogue:
         )
 
     @functools.cached_property
-    def __sequences(self) -> list[Sequence]:
-        if self.__dialogue.on_start_sequece is None:
-            return []
-        return [Sequence(self._game, seq, index) for index, seq in enumerate(self.__dialogue.on_start_sequece)]
-
-    @functools.cached_property
-    def __formatter(self):
+    @typing_extensions.override
+    def _formatter(self):
         from ...format import Formatter, Syntax
 
         return Formatter(syntax=Syntax.MediaWiki, game=self._game, percent_as_plain=True)
 
-    def __find_successors(self, seq: Sequence) -> list[Sequence]:
-        """找单个节点在列表中的后继节点"""
-        if seq.successors is not None:
-            return seq.successors
-        if seq.is_leavepoint:
+    @functools.cached_property
+    @typing_extensions.override
+    def _sequences(self) -> list[Sequence]:
+        if self.__dialogue.on_start_sequece is None:
             return []
-        if len(seq.trigger_custom_string) == 0:
-            # 如果没有 trigger_custom_string 就直接返回列表中的下一个
-            if seq.index + 1 == len(self.__sequences):
-                return []
-            iter_seq = (
-                seq for seq in self.__sequences[seq.index + 1 :] if not seq.is_wait_event and not seq.is_entrypoint
-            )
-            next_seq = next(iter_seq, None)
-            seq.successors = [] if next_seq is None else [next_seq]
-        else:
-            # 否则根据 trigger_custom_string 在整个列表中寻找匹配的 seq
-            seq.successors = [
-                sequence for sequence in self.__sequences if sequence.wait_custom_string in seq.trigger_custom_string
-            ]
-        return seq.successors
+        return [Sequence(self._game, seq, index) for index, seq in enumerate(self.__dialogue.on_start_sequece)]
 
-    def __find_confluence(self, seq: Sequence) -> Sequence | None:
-        """如果节点是选项节点，找后继汇合的点，否则就是下一个节点"""
-        if seq.confluence is not None:
-            return seq.confluence
-        successors = self.__find_successors(seq)
-        if len(successors) == 0:
-            return None  # 无后继直接退出
-        if len(successors) == 1:
-            seq.confluence = successors[0]  # 只有一个后继直接返回
-            return seq.confluence
-        if all(node.index == successors[0].index for node in successors[1:]):
-            seq.confluence = successors[0]  # 全等后继直接返回
-            return seq.confluence
-        visit: list[int] = [0 for _ in self.__sequences]
-        for node in successors:
-            visit[node.index] = 1
-        queue: list[Sequence | None] = list(successors)
-        while any(node is not None for node in queue):
-            for index, node in enumerate(queue):
-                if node is None:
-                    continue
-                next_node = self.__find_confluence(node)
-                queue[index] = next_node
-                if next_node is None:
-                    continue
-                visit[next_node.index] += 1
-                if visit[next_node.index] == len(queue):
-                    seq.confluence = next_node
-                    return seq.confluence
-        return None
+    @typing_extensions.override
+    def _talk_sentence_config(self, talk_sentence_id: int) -> TalkSentenceConfig:
+        talk_sentence = self._game.talk_sentence_config(talk_sentence_id)
+        assert talk_sentence is not None
+        return talk_sentence
 
-    __AEON_NAMES = {
-        "阿基维利",
-        "纳努克",
-        "岚",
-        "博识尊",
-        "希佩",
-        "Ⅸ",
-        "克里珀",
-        "药师",
-        "奥博洛斯",
-        "阿哈",
-        "浮黎",
-        "伊德莉拉",
-        "塔伊兹育罗斯",
-        "迷思",
-        "互",
-        "末王",
-        "太一",
-        "龙",
-    }
-
-    def __write_simple(self, wiki: io.StringIO, indent: str, task: Task):
-        for talk in task.talks():
-            _ = wiki.write(indent)
-            _ = wiki.write("{{事件|")
-            name = self.__formatter.format(talk.name)
-            if task.is_(act.task.PlayAeonTalk) or name in self.__AEON_NAMES:
-                _ = wiki.write("星神|")
-            _ = wiki.write(name)
-            _ = wiki.write("|")
-            _ = wiki.write(self.__formatter.format(talk.text))
-            _ = wiki.write("}}")
-
-    def __next_custom_string(self, custom_string: str) -> Sequence | None:
-        return next((seq for seq in self.__sequences if seq.wait_custom_string == custom_string), None)
-
-    def __write_dialogue_option(
-        self, wiki: io.StringIO, indent: str, options: list[act.talk.RogueOptionTalk], confluence: Sequence | None
-    ):
-        _ = wiki.write(indent)
-        _ = wiki.write("{{剧情选项")
-        if all(option.trigger_custom_string == options[0].trigger_custom_string for option in options[1:]):
-            # 选项的后继全部相同，压成一行即可
-            for index, option in enumerate(options):
-                assert option.talk_sentence_id is not None
-                _ = wiki.write(f"|选项{index + 1}=")
-                talk = self._game.talk_sentence_config(option.talk_sentence_id)
-                assert talk is not None
-                _ = wiki.write(self.__formatter.format(talk.text))
-            _ = wiki.write("}}")
-            return
-        for index, option in enumerate(options):
-            assert option.talk_sentence_id is not None
-            _ = wiki.write(indent)
-            _ = wiki.write(f"|选项{index + 1}=")
-            talk = self._game.talk_sentence_config(option.talk_sentence_id)
-            assert talk is not None
-            _ = wiki.write(self.__formatter.format(talk.text))
-            if option.trigger_custom_string is None or option.trigger_custom_string == "":
-                continue
-            seq = self.__next_custom_string(option.trigger_custom_string)
-            if seq is None:
-                continue
-            if confluence is not None and seq.index != confluence.index:
-                _ = wiki.write(indent)
-                _ = wiki.write(f"|剧情{index + 1}=")
-                self.__wiki_iter_seq(wiki, indent + "  ", seq, confluence)
-        _ = wiki.write(indent)
-        _ = wiki.write("}}")
-
-    def __write_option(self, wiki: io.StringIO, indent: str, task: Task, confluence: Sequence | None):
+    @typing_extensions.override
+    def _write_option(self, wiki: io.StringIO, indent: str, task: Task, confluence: Sequence | None):
         options = list(task.rogue_options())
         if len(options) == 0:
             return
         is_rogue_option = any(option.rogue_option_id is not None for option in options)
         if not is_rogue_option:
-            self.__write_dialogue_option(wiki, indent, options, confluence)
+            self._write_dialogue_option(wiki, indent, options, confluence)
             return
         _ = wiki.write(indent)
         _ = wiki.write("{{剧情选项|选项1=选择}}")
@@ -411,12 +504,12 @@ class Dialogue:
             opt = self.__option_dict[option.rogue_option_id]
             _ = wiki.write(indent)
             rogue_option = opt.option()
-            title = self.__formatter.format(rogue_option.title, opt.desc_value)
+            title = self._formatter.format(rogue_option.title, opt.desc_value)
             _ = wiki.write(f"|选项{index + 1}=")
             _ = wiki.write(title)
             _ = wiki.write(indent)
             _ = wiki.write(f"|内容{index + 1}=")
-            _ = wiki.write(self.__formatter.format(rogue_option.desc, opt.desc_value))
+            _ = wiki.write(self._formatter.format(rogue_option.desc, opt.desc_value))
             if opt.special is not None:
                 _ = wiki.write(indent)
                 _ = wiki.write(f"|图标{index + 1}=")
@@ -426,7 +519,7 @@ class Dialogue:
             _ = wiki.write(indent)
             _ = wiki.write(f"|效果{index + 1}=")
             if option.trigger_custom_string is not None and option.trigger_custom_string != "":
-                seq = self.__next_custom_string(option.trigger_custom_string)
+                seq = self._next_custom_string(option.trigger_custom_string)
                 if seq is not None and confluence is not None and seq.index != confluence.index:
                     _ = wiki.write(indent)
                     _ = wiki.write(f"|剧情{index + 1}=")
@@ -435,46 +528,12 @@ class Dialogue:
                     _ = wiki.write("{{事件|你|")
                     _ = wiki.write(title)
                     _ = wiki.write("}}")
-                    self.__wiki_iter_seq(wiki, indent + "  ", seq, confluence)
+                    self._wiki_iter_seq(wiki, indent + "  ", seq, confluence)
         _ = wiki.write(indent)
         _ = wiki.write("}}")
 
-    def __wiki_iter_seq(self, wiki: io.StringIO, indent: str, seq: Sequence, confluence: Sequence | None):
-        if confluence is not None and seq.index == confluence.index:
-            return
-        for task in seq.tasks():
-            if task.is_(
-                act.task.AdvNpcFaceToPlayer
-                | act.task.FinishLevelGraph  # 清空选项，一般在选项结束后有
-                | act.task.ShowRogueTalkBg  # 入口
-                | act.task.ShowRogueTalkUI  # 入口
-                | act.task.SwitchUIMenuBGM  # 循环播放 BGM
-                | act.task.TriggerCustomString  # 目前看和改变执行状态有关
-                | act.task.TriggerDialogueEvent  # 怀疑和 WaitDialogueEvent 有什么联动，但是所有文件里的 TriggerDialogueEvent 参数都一样
-                | act.task.TriggerSound  # 播放声音
-                | act.task.TutorialTaskUnlock
-                | act.task.WaitCustomString  # 等待 TriggerCustomString
-                | act.task.WaitPerformanceEnd  # 出口
-                | act.task.WaitRogueSimpleTalkFinish
-            ):
-                pass
-            elif task.is_(act.task.PlayAeonTalk | act.task.PlayRogueSimpleTalk | act.task.PlayAndWaitRogueSimpleTalk):
-                self.__write_simple(wiki, indent, task)
-            elif task.is_(act.task.PlayRogueOptionTalk):
-                next_confluence = self.__find_confluence(seq)
-                self.__write_option(wiki, indent, task, next_confluence)
-            elif task.is_(act.task.WaitDialogueEvent):
-                # TODO: 很重要，但是没搞懂机制
-                # 感觉是先随机在几个 SuccessCustomString 里随机选一个，然后开始后续剧情
-                pass
-            else:
-                raise ValueError(f"unknown task type {type(task._task)}")  # pyright: ignore[reportPrivateUsage]
-        next_seq = self.__find_confluence(seq)
-        if next_seq is not None:
-            self.__wiki_iter_seq(wiki, indent, next_seq, confluence)
-
     def __wiki_debug(self):  # noqa: PLR0912
-        for seq in self.__sequences:
+        for seq in self._sequences:
             if not seq.is_entrypoint and not seq.is_leavepoint and not seq.is_wait_event:
                 print(" ", end="")
             elif seq.is_entrypoint:
@@ -487,8 +546,8 @@ class Dialogue:
             if seq.wait_custom_string != "":
                 print(f"    条件 [{repr(seq.wait_custom_string)}]")
             print(f"    触发 {seq.trigger_custom_string}")
-            print(f"    后继 {[seq.index for seq in self.__find_successors(seq)]}", end="")
-            confluence = self.__find_confluence(seq)
+            print(f"    后继 {[seq.index for seq in self._find_successors(seq)]}", end="")
+            confluence = self._find_confluence(seq)
             if confluence is not None:
                 print(f" 汇聚 {confluence.index}", end="")
             print()
@@ -499,11 +558,11 @@ class Dialogue:
                     if option.rogue_option_id is not None:
                         opt = self.__option_dict[option.rogue_option_id]
                         rogue_option = opt.option()
-                        title = self.__formatter.format(rogue_option.title, opt.desc_value)
-                        desc = self.__formatter.format(rogue_option.desc, opt.desc_value)
+                        title = self._formatter.format(rogue_option.title, opt.desc_value)
+                        desc = self._formatter.format(rogue_option.desc, opt.desc_value)
                         print("   ", f"\033[38;2;242;158;56m{title}\033[39m {desc}", end="")
                         if option.trigger_custom_string is not None:
-                            next_seq = self.__next_custom_string(option.trigger_custom_string)
+                            next_seq = self._next_custom_string(option.trigger_custom_string)
                             if next_seq is not None:
                                 print(f" \033[4;38;2;255;255;0mgoto {next_seq.index}\033[39;24m", end="")
                         print()
@@ -513,7 +572,7 @@ class Dialogue:
                         assert talk is not None
                         print("   ", f"{talk.name}| {talk.text}")
                 if task.is_(act.task.TriggerCustomString):
-                    next_seq = self.__next_custom_string(task.trigger_custom_string)
+                    next_seq = self._next_custom_string(task.trigger_custom_string)
                     if next_seq is not None:
                         print(f"    \033[4;38;2;255;255;0mgoto {next_seq.index}\033[39;24m")
                 if isinstance(task._task, act.task.TriggerDialogueEvent):
@@ -521,14 +580,14 @@ class Dialogue:
 
     @functools.cached_property
     def __need_debug(self) -> bool:
-        return any(task.is_(act.task.WaitDialogueEvent) for seq in self.__sequences for task in seq.tasks())
+        return any(task.is_(act.task.WaitDialogueEvent) for seq in self._sequences for task in seq.tasks())
 
     def wiki(self, debug: bool = False) -> str:
-        if len(self.__sequences) == 0:
+        if len(self._sequences) == 0:
             return ""
         if debug or self.__need_debug:
             self.__wiki_debug()
         wiki = io.StringIO()
-        entrypoint = next(seq for seq in self.__sequences if seq.is_entrypoint)
-        self.__wiki_iter_seq(wiki, "\n  ", entrypoint, None)
+        entrypoint = next(seq for seq in self._sequences if seq.is_entrypoint)
+        self._wiki_iter_seq(wiki, "\n  ", entrypoint, None)
         return wiki.getvalue()

@@ -216,7 +216,7 @@ class RogueTournFormula(View[excel.RogueTournFormula]):
 
     @property
     def name(self) -> str:
-        return self.maze_buff.name
+        return self.__maze_buff.name
 
     @functools.cached_property
     def wiki_name(self) -> str:
@@ -230,7 +230,7 @@ class RogueTournFormula(View[excel.RogueTournFormula]):
     @property
     def desc(self) -> str:
         """效果"""
-        return self.maze_buff.desc
+        return self.__maze_buff.desc
 
     @property
     def category(self) -> rogue_tourn.FormulaCategory:
@@ -239,7 +239,7 @@ class RogueTournFormula(View[excel.RogueTournFormula]):
 
     @property
     def param_list(self) -> tuple[float, ...]:
-        return self.maze_buff.param_list
+        return self.__maze_buff.param_list
 
     @property
     def mode(self) -> rogue_tourn.Mode | None:
@@ -248,6 +248,34 @@ class RogueTournFormula(View[excel.RogueTournFormula]):
         None 应该是测试数据，观察到 None 里有一些重复的数据
         """
         return self._excel.tourn_mode
+
+    @functools.cached_property
+    def __main_buff_type(self) -> RogueTournBuffType:
+        buff_type = self._game.rogue_tourn_buff_type(self._excel.main_buff_type_id)
+        assert buff_type is not None
+        return buff_type
+
+    @property
+    def main_buff_num(self) -> int:
+        return self._excel.main_buff_num
+
+    def main_buff_type(self) -> RogueTournBuffType:
+        return RogueTournBuffType(self._game, self.__main_buff_type._excel)
+
+    @functools.cached_property
+    def __sub_buff_type(self) -> RogueTournBuffType | None:
+        if self._excel.sub_buff_type_id is None:
+            return None
+        buff_type = self._game.rogue_tourn_buff_type(self._excel.sub_buff_type_id)
+        assert buff_type is not None
+        return buff_type
+
+    def sub_buff_type(self) -> RogueTournBuffType | None:
+        return None if self.__sub_buff_type is None else RogueTournBuffType(self._game, self.__sub_buff_type._excel)
+
+    @property
+    def sub_buff_num(self) -> int | None:
+        return self._excel.sub_buff_num
 
     @functools.cached_property
     def __rogue_tourn_formula_display(self) -> RogueTournFormulaDisplay:
@@ -261,7 +289,6 @@ class RogueTournFormula(View[excel.RogueTournFormula]):
 
     @functools.cached_property
     def __story(self) -> Act | None:
-        """推演"""
         from .act import Act
 
         if self._game.base.joinpath(self._excel.formula_story_json).is_file():
@@ -270,16 +297,31 @@ class RogueTournFormula(View[excel.RogueTournFormula]):
 
     def story(self) -> Act | None:
         """推演"""
-        return self.__story
+        from .act import Act
+
+        return None if self.__story is None else Act(self._game, self.__story._act)  # pyright: ignore[reportPrivateUsage]
 
     @functools.cached_property
+    def __maze_buff(self) -> MazeBuff:
+        maze_buff = self._game.rogue_maze_buff(self._excel.maze_buff_id, 1)
+        assert maze_buff is not None
+        return maze_buff
+
     def maze_buff(self) -> MazeBuff:
-        maze_buff = self._game.rogue_maze_buff(self._excel.maze_buff_id)
-        return next(iter(maze_buff))
+        from .misc import MazeBuff
+
+        return MazeBuff(self._game, self.__maze_buff._excel)
+
+    def wiki(self) -> str:
+        return self._game._template_environment.get_template("差分宇宙方程.jinja2").render(formula=self)  # pyright: ignore[reportPrivateUsage]
 
 
 class RogueTournFormulaDisplay(View[excel.RogueTournFormulaDisplay]):
     ExcelOutput: typing.Final = excel.RogueTournFormulaDisplay
+
+    @functools.cached_property
+    def story(self) -> str:
+        return self._game.text(self._excel.formula_story)
 
 
 class RogueTournHandBookEvent(View[excel.RogueTournHandBookEvent]):

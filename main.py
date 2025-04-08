@@ -85,7 +85,8 @@ class Main:
                 print(dialogue.wiki(debug), end="\n\n")
 
     def formula(self):
-        pass
+        for formula in self.__game.rogue_tourn_formula():
+            print(formula.wiki(), end="\n\n")
 
     def rogue_buff(self):
         dedup_buff_names = set[str]()

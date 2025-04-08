@@ -1,0 +1,26 @@
+{{差分宇宙方程
+|名称=${ formula.wiki_name }
+|稀有度=${ formula.category }
+|命途1=${ formula.main_buff_type().name }
+|命途1需求=${ formula.main_buff_num }
+
+<%- set sub_buff_type = formula.sub_buff_type() %>
+<%- if sub_buff_type is not none %>
+|命途2=${ sub_buff_type.name }
+|命途2需求=${ formula.sub_buff_num }
+<%- endif %>
+|实装版本=
+|差分宇宙=${ formula.mode or "" }
+
+<%- set maze_buff = formula.maze_buff() %>
+|效果=${ maze_buff.desc | gszformat(maze_buff.param_list) }
+
+<%- set display = formula.display() %>
+|演绎=
+${ display.story | gszformat_pretty }
+
+<%- set story = formula.story() %>
+<%- if story is not none %>
+|推演=${ story.wiki() }
+<%- endif %>
+}}
