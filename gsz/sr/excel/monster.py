@@ -141,7 +141,7 @@ class MonsterConfig(ModelID):
     speed_modify_value: Value[float] = Value[float](value=0)  # 仅出现在 3.1
     stance_modify_value: Value[int] = Value[int](value=0)  # 仅出现在 3.1
     skill_list: list[int]
-    summon_id_list: list[None] | None = None  # 目前只有空
+    summon_id_list: list[int] | None = None  # 仅出现于 3.1 版本及之后；3.1 版本均为空，3.2 起出现数据
     custom_values: list[CustomValue]
     dynamic_values: list[None]  # 目前只有空 []
     debuff_resist: list[DebuffResist]

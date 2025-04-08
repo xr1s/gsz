@@ -51,6 +51,7 @@ class DataKey(enum.Enum):
     DeferCreateTrialPlayer = "_DeferCreateTrialPlayer"
     EnsureTeamAliveKey = "_EnsureTeamAliveKey"
     IsEliteBattle = "_IsEliteBattle"
+    Load3DTextFromFloor = "_Load3DTextFromFloor"
     MainMonster = "_MainMonster"
     SpecialBattleStartCamera = "_SpecialBattleStartCamera"
     StageBannedAvatarID = "_StageBannedAvatarID"

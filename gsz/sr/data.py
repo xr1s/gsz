@@ -1,3 +1,4 @@
+from __future__ import annotations
 import collections
 import collections.abc
 import enum
@@ -34,15 +35,15 @@ class GameDataFunction(typing.Protocol[T_co]):
     __name__: str
 
     @typing.overload
-    def __get__(self, instance: "GameData", owner: type["GameData"]) -> GameDataMethod[T_co]: ...
+    def __get__(self, instance: GameData, owner: type[GameData]) -> GameDataMethod[T_co]: ...
     @typing.overload
-    def __get__(self, instance: None, owner: type["GameData"]) -> "GameDataFunction[T_co]": ...
+    def __get__(self, instance: None, owner: type[GameData]) -> GameDataFunction[T_co]: ...
     @typing.overload
-    def __call__(self, game: "GameData") -> collections.abc.Iterable[T_co]: ...
+    def __call__(self, game: GameData) -> collections.abc.Iterable[T_co]: ...
     @typing.overload
-    def __call__(self, game: "GameData", id: int) -> T_co | None: ...
+    def __call__(self, game: GameData, id: int) -> T_co | None: ...
     @typing.overload
-    def __call__(self, game: "GameData", id: collections.abc.Iterable[int]) -> collections.abc.Iterable[T_co]: ...
+    def __call__(self, game: GameData, id: collections.abc.Iterable[int]) -> collections.abc.Iterable[T_co]: ...
 
 
 ABBR_WORDS = {"npc"}
@@ -99,13 +100,13 @@ class excel_output(typing.Generic[V]):
             self.__file_names = (file_name_generator(method.__name__),)
 
         @typing.overload
-        def fn(game: "GameData") -> collections.abc.Iterable[V]: ...
+        def fn(game: GameData) -> collections.abc.Iterable[V]: ...
         @typing.overload
-        def fn(game: "GameData", id: int) -> V | None: ...
+        def fn(game: GameData, id: int) -> V | None: ...
         @typing.overload
-        def fn(game: "GameData", id: collections.abc.Iterable[int]) -> collections.abc.Iterable[V]: ...
+        def fn(game: GameData, id: collections.abc.Iterable[int]) -> collections.abc.Iterable[V]: ...
         def fn(
-            game: "GameData", id: int | collections.abc.Iterable[int] | None = None
+            game: GameData, id: int | collections.abc.Iterable[int] | None = None
         ) -> V | collections.abc.Iterable[V] | None:
             if self.__excel_output is None:
                 path = game.base / "ExcelOutput"
@@ -155,15 +156,15 @@ class GameDataMainSubFunction(typing.Protocol[T_co]):
     __name__: str
 
     @typing.overload
-    def __get__(self, instance: "GameData", owner: type["GameData"]) -> GameDataMainSubMethod[T_co]: ...
+    def __get__(self, instance: GameData, owner: type[GameData]) -> GameDataMainSubMethod[T_co]: ...
     @typing.overload
-    def __get__(self, instance: None, owner: type["GameData"]) -> "GameDataMainSubFunction[T_co]": ...
+    def __get__(self, instance: None, owner: type[GameData]) -> GameDataMainSubFunction[T_co]: ...
     @typing.overload
-    def __call__(self, game: "GameData") -> collections.abc.Iterable[T_co]: ...
+    def __call__(self, game: GameData) -> collections.abc.Iterable[T_co]: ...
     @typing.overload
-    def __call__(self, game: "GameData", main_id: int) -> collections.abc.Iterable[T_co]: ...
+    def __call__(self, game: GameData, main_id: int) -> collections.abc.Iterable[T_co]: ...
     @typing.overload
-    def __call__(self, game: "GameData", main_id: int, sub_id: int) -> T_co | None: ...
+    def __call__(self, game: GameData, main_id: int, sub_id: int) -> T_co | None: ...
 
 
 MSV = typing.TypeVar("MSV", bound="view.IView[excel.ModelMainSubID]")
@@ -220,13 +221,13 @@ class excel_output_main_sub(typing.Generic[MSV]):
             self.__file_names = (file_name_generator(method.__name__),)
 
         @typing.overload
-        def fn(game: "GameData") -> collections.abc.Iterable[MSV]: ...
+        def fn(game: GameData) -> collections.abc.Iterable[MSV]: ...
         @typing.overload
-        def fn(game: "GameData", main_id: int) -> collections.abc.Iterable[MSV]: ...
+        def fn(game: GameData, main_id: int) -> collections.abc.Iterable[MSV]: ...
         @typing.overload
-        def fn(game: "GameData", main_id: int, sub_id: int) -> MSV | None: ...
+        def fn(game: GameData, main_id: int, sub_id: int) -> MSV | None: ...
         def fn(
-            game: "GameData", main_id: int | None = None, sub_id: int | None = None
+            game: GameData, main_id: int | None = None, sub_id: int | None = None
         ) -> MSV | collections.abc.Iterable[MSV] | None:
             if self.__excel_output is None:
                 path = game.base / "ExcelOutput"
@@ -279,7 +280,7 @@ NE_co = typing.TypeVar("NE_co", bound="excel.ModelID | excel.ModelMainSubID", co
 class PropertyName(typing.Protocol[NE_co]):
     _excel: NE_co
 
-    def __init__(self, game: "GameData", excel: NE_co): ...
+    def __init__(self, game: GameData, excel: NE_co): ...
 
     @property
     def name(self) -> str: ...
@@ -288,7 +289,7 @@ class PropertyName(typing.Protocol[NE_co]):
 class CachedPropertyName(typing.Protocol[NE_co]):
     _excel: NE_co
 
-    def __init__(self, game: "GameData", excel: NE_co): ...
+    def __init__(self, game: GameData, excel: NE_co): ...
 
     @functools.cached_property
     def name(self) -> str: ...
@@ -306,8 +307,8 @@ class excel_output_name(typing.Generic[NV]):
         self.__method = method
         self.__excel_output: dict[str, list[excel.ModelID | excel.ModelMainSubID]] | None = None
 
-    def __call__(self, _method: typing.Callable[..., None]) -> typing.Callable[["GameData", str], list[NV]]:
-        def fn(game: "GameData", name: str) -> list[NV]:
+    def __call__(self, _method: typing.Callable[..., None]) -> typing.Callable[[GameData, str], list[NV]]:
+        def fn(game: GameData, name: str) -> list[NV]:
             if self.__excel_output is None:
                 self.__excel_output = {}
                 for view in self.__method(game):
@@ -366,7 +367,7 @@ class GameData:
         text_map = text_map_path.read_bytes()
         self.__text_map = pydantic.TypeAdapter(dict[int, str]).validate_json(text_map)
 
-    def text(self, text: "Text") -> str:
+    def text(self, text: Text) -> str:
         return self.__text_map.get(text.hash, "")
 
     @functools.cached_property
@@ -420,7 +421,7 @@ class GameData:
         """每一卷阅读物"""
 
     @functools.cached_property
-    def _book_series_localbook(self) -> dict[int, list["excel.LocalbookConfig"]]:
+    def _book_series_localbook(self) -> dict[int, list[excel.LocalbookConfig]]:
         book_series: dict[int, list[excel.LocalbookConfig]] = {}
         for book in self.localbook_config():
             if book.series.id in book_series:
@@ -444,7 +445,7 @@ class GameData:
         """末日幻影单期"""
 
     @functools.cached_property
-    def _challenge_group_mazes(self) -> dict[int, list["excel.ChallengeMazeConfig"]]:
+    def _challenge_group_mazes(self) -> dict[int, list[excel.ChallengeMazeConfig]]:
         """同属一期逐光捡金的层"""
         mazes: dict[int, list[excel.ChallengeMazeConfig]] = {}
         for maze in itertools.chain(
@@ -647,7 +648,7 @@ class GameData:
         """一次聊天"""
 
     @functools.cached_property
-    def _message_section_config_items(self) -> dict[int, list["excel.MessageItemConfig"]]:
+    def _message_section_config_items(self) -> dict[int, list[excel.MessageItemConfig]]:
         items: dict[int, list[excel.MessageItemConfig]] = {}
         for item in self.message_item_config():
             if item.section_id is None:
@@ -660,7 +661,7 @@ class GameData:
         return items
 
     @functools.cached_property
-    def _message_contact_sections(self) -> dict[int, list["excel.MessageSectionConfig"]]:
+    def _message_contact_sections(self) -> dict[int, list[excel.MessageSectionConfig]]:
         result: dict[int, list[excel.MessageSectionConfig]] = {}
         for group in self.message_group_config():
             model = group._excel  # pyright: ignore[reportPrivateUsage]
@@ -675,7 +676,7 @@ class GameData:
         return result
 
     @functools.cached_property
-    def _message_section_contacts(self) -> dict[int, "excel.MessageContactsConfig"]:
+    def _message_section_contacts(self) -> dict[int, excel.MessageContactsConfig]:
         result: dict[int, excel.MessageContactsConfig] = {}
         for group in self.message_group_config():
             model = group._excel  # pyright: ignore[reportPrivateUsage]
@@ -753,6 +754,20 @@ class GameData:
     def monster_config_name(self):
         """敌人详情"""
 
+    @functools.cached_property
+    def _monster_config_summoners(self) -> dict[int, list[excel.MonsterConfig]]:
+        summoners: dict[int, list[excel.MonsterConfig]] = {}
+        for monster in self.monster_config():
+            model = monster._excel  # pyright: ignore[reportPrivateUsage]
+            if model.summon_id_list is None:
+                continue
+            for summon in model.summon_id_list:
+                if summon in summoners:
+                    summoners[summon].append(model)
+                else:
+                    summoners[summon] = [model]
+        return summoners
+
     @excel_output(view.MonsterSkillConfig)
     def monster_skill_config(self):
         """敌人技能"""
@@ -766,7 +781,7 @@ class GameData:
         """敌人模板（不清楚和不带 unique 的什么区别，不过有时候两个都要查）"""
 
     @functools.cached_property
-    def _monster_template_monster(self) -> dict[int, list["excel.MonsterConfig"]]:
+    def _monster_template_monster(self) -> dict[int, list[excel.MonsterConfig]]:
         monster_dict: dict[int, list[excel.MonsterConfig]] = {}
         for monster in self.monster_config():
             model = monster._excel  # pyright: ignore[reportPrivateUsage]
@@ -777,7 +792,7 @@ class GameData:
         return monster_dict
 
     @functools.cached_property
-    def _monster_template_group(self) -> dict[int, list["excel.MonsterTemplateConfig"]]:
+    def _monster_template_group(self) -> dict[int, list[excel.MonsterTemplateConfig]]:
         template_groups: dict[int, list[excel.MonsterTemplateConfig]] = {}
         for template in self.monster_template_config():
             group_id = template.group_id
@@ -842,7 +857,7 @@ class GameData:
         """模拟宇宙祝福组，似乎是按 DLC 分类的"""
 
     @functools.cached_property
-    def _rogue_buff_tag_groups(self) -> collections.defaultdict[int, list["excel.RogueBuffGroup"]]:
+    def _rogue_buff_tag_groups(self) -> collections.defaultdict[int, list[excel.RogueBuffGroup]]:
         tag_to_group: collections.defaultdict[int, list[excel.RogueBuffGroup]] = collections.defaultdict(list)
         for group in self.rogue_buff_group():
             for tag in group.rogue_buff_drop:
@@ -850,7 +865,7 @@ class GameData:
         return tag_to_group
 
     @functools.cached_property
-    def _rogue_buff_tag_buff(self) -> dict[int, "excel.RogueBuff"]:
+    def _rogue_buff_tag_buff(self) -> dict[int, excel.RogueBuff]:
         tag_to_buff: dict[int, excel.RogueBuff] = {}
         for buff in self.rogue_buff():
             assert buff.tag not in tag_to_buff
@@ -894,7 +909,7 @@ class GameData:
         """模拟宇宙图鉴奇物（如「绝对失败处方」、「塔奥牌」等有不同效果的奇物故事等会出现于此）"""
 
     @functools.cached_property
-    def _rogue_handbook_miracle_miracles(self) -> dict[int, list["excel.RogueMiracle"]]:
+    def _rogue_handbook_miracle_miracles(self) -> dict[int, list[excel.RogueMiracle]]:
         miracles: dict[int, list[excel.RogueMiracle]] = {}
         for miracle in itertools.chain(self.rogue_miracle(), self.rogue_magic_miracle()):
             model = miracle._excel  # pyright: ignore[reportPrivateUsage]
@@ -975,7 +990,7 @@ class GameData:
         """差分宇宙祝福组，似乎是按 TournMode 分类的"""
 
     @functools.cached_property
-    def _rogue_tourn_buff_tag_groups(self) -> dict[int, list["excel.RogueTournBuffGroup"]]:
+    def _rogue_tourn_buff_tag_groups(self) -> dict[int, list[excel.RogueTournBuffGroup]]:
         tag_to_group: dict[int, list[excel.RogueTournBuffGroup]] = {}
         for group in self.rogue_tourn_buff_group():
             for tag in group.rogue_buff_drop:
@@ -987,7 +1002,7 @@ class GameData:
         return tag_to_group
 
     @functools.cached_property
-    def _rogue_tourn_buff_tag_buff(self) -> dict[int, "excel.RogueTournBuff"]:
+    def _rogue_tourn_buff_tag_buff(self) -> dict[int, excel.RogueTournBuff]:
         tag_to_buff: dict[int, excel.RogueTournBuff] = {}
         for buff in self.rogue_tourn_buff():
             assert buff.tag not in tag_to_buff
@@ -1027,7 +1042,7 @@ class GameData:
         """差分宇宙图鉴奇物（如「绝对失败处方」、「塔奥牌」等有不同效果的奇物故事等会出现于此）"""
 
     @functools.cached_property
-    def _rogue_tourn_handbook_miracle_miracles(self) -> dict[int, list["excel.RogueTournMiracle"]]:
+    def _rogue_tourn_handbook_miracle_miracles(self) -> dict[int, list[excel.RogueTournMiracle]]:
         miracles: dict[int, list[excel.RogueTournMiracle]] = {}
         for miracle in self.rogue_tourn_miracle():
             model = miracle._excel  # pyright: ignore[reportPrivateUsage]

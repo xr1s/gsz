@@ -29,12 +29,16 @@ class Main:
         self.__formatter = gsz.format.Formatter(game=self.__game, syntax=gsz.format.Syntax.Terminal)
 
     def monster(self, name: str | None = None):
-        if name is not None:
-            assert isinstance(name, str)
-            for monster in self.__game.monster_config_name(name):
-                print(monster.wiki(), end="\n\n")
-            return
-        for monster in self.__game.monster_config():
+        monster_name_dedup = set[str]()
+        prototypes = [monster.prototype() for monster in self.__game.monster_config()]
+        prototypes = [
+            monster_name_dedup.add(prototype.name) or prototype
+            for prototype in prototypes
+            if prototype.name not in monster_name_dedup
+        ]
+        for monster in prototypes:
+            if name is not None and monster.name != name:
+                continue
             print(monster.wiki(), end="\n\n")
 
     def miracle(self):
@@ -170,10 +174,9 @@ class Main:
             dt = datetime.datetime.strptime(date, "%Y-%m-%d").date()  # noqa: DTZ007
             ask_datetime = datetime.datetime.combine(dt, datetime.time(4))
         if next or current:
-            assert next != current
+            assert current != next  # != 是异或，这里意思为 current 或 next 只有一个可以为 True
             ask_datetime = datetime.datetime.now()  # noqa: DTZ005
-            if next:
-                ask_datetime = ask_datetime + datetime.timedelta(days=14)
+            ask_datetime = ask_datetime + datetime.timedelta(days=42 if next else 0)
         for challenge in challenges:
             sched = challenge.schedule()
             if ask_datetime is not None and (sched is None or not sched.contains(ask_datetime)):

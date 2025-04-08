@@ -4,12 +4,13 @@ import itertools
 import typing
 
 from .. import excel
+from ..excel import monster
 from .base import View
 
 if typing.TYPE_CHECKING:
     import collections.abc
 
-    from ..excel import Element, monster
+    from ..excel import Element
     from .monster_guide import MonsterGuideConfig
 
 NPC_COLLIDE_NAMES = {"可可利亚", "杰帕德", "布洛妮娅", "史瓦罗", "银枝"}
@@ -111,17 +112,40 @@ class MonsterConfig(View[excel.MonsterConfig]):
         return None if self.__template is None else MonsterTemplateConfig(self._game, self.__template._excel)
 
     @functools.cached_property
+    def wiki_rank(self) -> str:  # noqa: PLR0911
+        """无法判断是否为末日幻影首领，需要填写的时候注意"""
+        if self.__template is None:
+            return ""
+        match self.__template.rank:
+            case monster.Rank.BigBoss:
+                return "周本Boss"
+            case monster.Rank.Elite:
+                if self.name.endswith("（错误）"):
+                    return "模拟宇宙精英"
+                return "强敌"
+            case monster.Rank.LittleBoss:
+                if self.name.endswith("（完整）"):
+                    return "模拟宇宙首领"
+                return "剧情Boss"
+            case monster.Rank.Minion | monster.Rank.MinionLv2:
+                if self.__template.group_id is None and "扑满" not in self.name and self.name != "虚构集合体":
+                    return "召唤物"
+                return "普通"
+
+    @functools.cached_property
     def __prototype(self) -> MonsterConfig:
         if self.__template is None:
             return self  # 除了全部迭代，正常处理逻辑不会到这个分支，这个分支是处理一些数据错误的
-        if self.__template.group_id is None:
-            template_id = self.__template._excel.monster_template_id
-        else:
-            template_id = self.__template.group_id
+        # 不能用 template_group_id 算原型，否则「（完整）」、「（错误）」等也会被归为一类
+        template_id = self.__template._excel.monster_template_id
         monsters = self._game._monster_template_monster[template_id]  # pyright: ignore[reportPrivateUsage]
         return MonsterConfig(self._game, min(monsters, key=lambda monster: monster.monster_id))
 
     def prototype(self) -> MonsterConfig:
+        """
+        同类怪物原型
+        这里的原型不包括同名怪物的（完整）、（错误）版本
+        """
         return MonsterConfig(self._game, self.__prototype._excel)
 
     @property
@@ -238,13 +262,23 @@ class MonsterConfig(View[excel.MonsterConfig]):
 
     @functools.cached_property
     def __summons(self) -> list[MonsterConfig]:
-        """召唤物，不过这大概不完整，目前没找到能完整列出召唤物的手段"""
-        dedup_summons: set[str] = set()
-        return [
-            dedup_summons.add(summon.name) or summon
-            for summon in (self._game.monster_config(custom_value.val) for custom_value in self._excel.custom_values)
-            if summon is not None and summon.name not in dedup_summons
-        ]
+        """召唤物"""
+        dedup_summons = set[str]()
+        if len(self._game._monster_config_summoners) == 0:  # pyright: ignore[reportPrivateUsage]
+            # 兼容 3.1 及之前的版本数据，这之前要不是 None 要不是 [] 空列表
+            summons = (self._game.monster_config(custom_value.val) for custom_value in self._excel.custom_values)
+            return [
+                dedup_summons.add(summon.name) or summon
+                for summon in summons
+                if summon is not None and summon.name not in dedup_summons
+            ]
+        assert self._excel.summon_id_list is not None
+        summons = self._game.monster_config(
+            summon_id
+            for summon_id in self._excel.summon_id_list
+            if summon_id != 101202112  # 疑似缺数据
+        )
+        return [dedup_summons.add(summon.name) or summon for summon in summons if summon.name not in dedup_summons]
 
     def summons(self) -> collections.abc.Iterable[MonsterConfig]:
         return (MonsterConfig(self._game, summon._excel) for summon in self.__summons)
@@ -395,25 +429,6 @@ class MonsterTemplateConfig(View[excel.MonsterTemplateConfig]):
     @property
     def rank(self) -> monster.Rank:
         return self._excel.rank
-
-    @functools.cached_property
-    def wiki_rank(self) -> str:  # noqa: PLR0911
-        """无法判断是否为末日幻影首领，需要填写的时候注意"""
-        match self._excel.rank:
-            case self._excel.rank.BigBoss:
-                return "周本Boss"
-            case self._excel.rank.Elite:
-                if self.name.endswith("（错误）"):
-                    return "模拟宇宙精英"
-                return "强敌"
-            case self._excel.rank.LittleBoss:
-                if self.name.endswith("（完整）"):
-                    return "模拟宇宙首领"
-                return "剧情Boss"
-            case self._excel.rank.Minion | self._excel.rank.MinionLv2:
-                if self._excel.template_group_id is None:
-                    return "召唤物"
-                return "普通"
 
     @functools.cached_property
     def __camp(self) -> MonsterCamp | None:
