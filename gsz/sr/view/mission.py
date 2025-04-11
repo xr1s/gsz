@@ -22,9 +22,9 @@ class SubMission(View[excel.SubMission]):
     ExcelOutput: typing.Final = excel.SubMission
 
     @functools.cached_property
-    def description(self) -> str:
-        return self._game.text(self._excel.descrption_text)
+    def description(self) -> str | None:
+        return None if self._excel.descrption_text is None else self._game.text(self._excel.descrption_text)
 
     @functools.cached_property
-    def target(self) -> str:
-        return self._game.text(self._excel.target_text)
+    def target(self) -> str | None:
+        return None if self._excel.target_text is None else self._game.text(self._excel.target_text)

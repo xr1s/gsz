@@ -1,3 +1,4 @@
+from .avatar import AvatarConfig
 from .base import Element, ModelID, ModelMainSubID, ModelStringID, Text, Value
 from .book import BookDisplayType, BookSeriesConfig, BookSeriesWorld, LocalbookConfig
 from .challenge import (
@@ -53,6 +54,22 @@ from .monster_guide import (
     MonsterGuideTag,
     MonsterTextGuide,
 )
+from .planet_fes import (
+    PlanetFesAvatar,
+    PlanetFesAvatarEvent,
+    PlanetFesAvatarEventOption,
+    PlanetFesAvatarLevel,
+    PlanetFesAvatarRarity,
+    PlanetFesBuff,
+    PlanetFesBuffType,
+    PlanetFesCard,
+    PlanetFesCardTheme,
+    PlanetFesFinishway,
+    PlanetFesGameReward,
+    PlanetFesGameRewardPool,
+    PlanetFesLandType,
+    PlanetFesQuest,
+)
 from .rogue import (
     RogueBonus,
     RogueBuff,
@@ -96,6 +113,8 @@ from .talk import HeartDialTalk, TalkSentenceConfig, VoiceConfig
 from .tutorial import TutorialGuideData, TutorialGuideGroup
 
 __all__ = (
+    # avatar
+    "AvatarConfig",
     # book
     "BookDisplayType",
     "BookSeriesConfig",
@@ -155,6 +174,21 @@ __all__ = (
     "MonsterGuideSkillText",
     "MonsterGuideTag",
     "MonsterTextGuide",
+    # planet fes
+    "PlanetFesAvatar",
+    "PlanetFesAvatarEvent",
+    "PlanetFesAvatarEventOption",
+    "PlanetFesAvatarLevel",
+    "PlanetFesAvatarRarity",
+    "PlanetFesBuff",
+    "PlanetFesBuffType",
+    "PlanetFesCard",
+    "PlanetFesCardTheme",
+    "PlanetFesFinishway",
+    "PlanetFesGameReward",
+    "PlanetFesGameRewardPool",
+    "PlanetFesLandType",
+    "PlanetFesQuest",
     # rogue
     "RogueBonus",
     "RogueBuff",

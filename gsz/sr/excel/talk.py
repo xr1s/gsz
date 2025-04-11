@@ -20,14 +20,14 @@ class HeartDialTalk(ModelID):
 
 
 class TalkSentenceConfig(ModelID):
-    talk_sentence_id: int | None = None
+    talk_sentence_id: int = 0
     talk_sentence_text: Text | None = None
     textmap_talk_sentence_name: Text | None = None
     voice_id: int | None = None
 
     @property
     @typing_extensions.override
-    def id(self) -> int | None:
+    def id(self) -> int:
         return self.talk_sentence_id
 
 

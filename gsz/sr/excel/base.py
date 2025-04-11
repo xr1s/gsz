@@ -42,7 +42,7 @@ class Element(enum.Enum):
                 return "风"
 
 
-ABBR_WORDS = {"ai", "bg", "hp", "id", "npc", "sp"}
+ABBR_WORDS = {"ai", "bg", "hp", "id", "npc", "sp", "ui"}
 
 
 def alias_generator(field_name: str) -> str:

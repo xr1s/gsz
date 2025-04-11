@@ -204,8 +204,8 @@ class SubMissionV10(Model):
 
 class SubMission(SubMissionV10, ModelID):
     sub_mission_id: int
-    target_text: Text
-    descrption_text: Text
+    target_text: Text | None = None
+    descrption_text: Text | None = None
 
     @property
     @typing_extensions.override

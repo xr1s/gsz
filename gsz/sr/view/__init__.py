@@ -1,4 +1,5 @@
 from .act import Act
+from .avatar import AvatarConfig
 from .base import IView
 from .book import BookDisplayType, BookSeriesConfig, BookSeriesWorld, LocalbookConfig
 from .challenge import (
@@ -54,6 +55,22 @@ from .monster_guide import (
     MonsterGuideTag,
     MonsterTextGuide,
 )
+from .planet_fes import (
+    PlanetFesAvatar,
+    PlanetFesAvatarEvent,
+    PlanetFesAvatarEventOption,
+    PlanetFesAvatarLevel,
+    PlanetFesAvatarRarity,
+    PlanetFesBuff,
+    PlanetFesBuffType,
+    PlanetFesCard,
+    PlanetFesCardTheme,
+    PlanetFesFinishway,
+    PlanetFesGameReward,
+    PlanetFesGameRewardPool,
+    PlanetFesLandType,
+    PlanetFesQuest,
+)
 from .rogue import (
     RogueBonus,
     RogueBuff,
@@ -99,6 +116,8 @@ from .tutorial import TutorialGuideData, TutorialGuideGroup
 __all__ = (
     # act
     "Act",
+    # avatar
+    "AvatarConfig",
     # challenge
     "ChallengeBossGroupExtra",
     "ChallengeBossMazeExtra",
@@ -158,6 +177,21 @@ __all__ = (
     # mission
     "MainMission",
     "SubMission",
+    # planet fes
+    "PlanetFesAvatar",
+    "PlanetFesAvatarEvent",
+    "PlanetFesAvatarEventOption",
+    "PlanetFesAvatarLevel",
+    "PlanetFesAvatarRarity",
+    "PlanetFesBuff",
+    "PlanetFesBuffType",
+    "PlanetFesCard",
+    "PlanetFesCardTheme",
+    "PlanetFesFinishway",
+    "PlanetFesGameReward",
+    "PlanetFesGameRewardPool",
+    "PlanetFesLandType",
+    "PlanetFesQuest",
     # rogue
     "RogueBonus",
     "RogueBuff",

@@ -492,6 +492,12 @@ class GameData:
         env.filters.update(gszformat=self._mw_formatter.format, gszformat_pretty=self._mw_pretty_formatter.format)
         return env
 
+    ######## avatar ########
+
+    @excel_output(view.AvatarConfig)
+    def avatar_config(self):
+        """角色"""
+
     ######## book ########
 
     @excel_output(view.BookDisplayType)
@@ -931,6 +937,68 @@ class GameData:
     @excel_output(view.MonsterTextGuide)
     def monster_text_guide(self):
         """末日幻影挑战策略"""
+
+    ######## planet fes ########
+
+    @excel_output(view.PlanetFesAvatar)
+    def planet_fes_avatar(self):
+        """3.2 二周年庆活动助理"""
+
+    @excel_output(view.PlanetFesBuff)
+    def planet_fes_avatar_buff(self):
+        """3.2 二周年庆活动助理特质"""
+
+    @excel_output(view.PlanetFesAvatarEvent)
+    def planet_fes_avatar_event(self):
+        """3.2 二周年庆活动访客事件"""
+
+    @excel_output(view.PlanetFesAvatarEventOption)
+    def planet_fes_avatar_event_option(self):
+        """3.2 二周年庆活动访客事件选项"""
+
+    @excel_output(view.PlanetFesAvatarLevel)
+    def planet_fes_avatar_level(self):
+        """3.2 二周年庆活动助理等级升级需要金币和升级后收入金币"""
+
+    @excel_output(view.PlanetFesAvatarRarity)
+    def planet_fes_avatar_rarity(self):
+        """3.2 二周年庆活动助理工作技巧"""
+
+    @excel_output(view.PlanetFesBuff)
+    def planet_fes_buff(self):
+        """3.2 二周年庆活动增益"""
+
+    @excel_output_string(view.PlanetFesBuffType)
+    def planet_fes_buff_type(self):
+        """3.2 二周年庆活动增益类型（和描述）"""
+
+    @excel_output(view.PlanetFesCard)
+    def planet_fes_card(self):
+        """3.2 二周年庆活动回忆卡"""
+
+    @excel_output(view.PlanetFesCardTheme)
+    def planet_fes_card_theme(self):
+        """3.2 二周年庆活动回忆卡主题（阵营）"""
+
+    @excel_output(view.PlanetFesFinishway)
+    def planet_fes_finishway(self):
+        """3.2 二周年庆活动参数列表"""
+
+    @excel_output(view.PlanetFesGameReward)
+    def planet_fes_game_reward(self):
+        """3.2 二周年庆活动访客事件奖励"""
+
+    @excel_output_main_sub(view.PlanetFesGameRewardPool)
+    def planet_fes_game_reward_pool(self):
+        """3.2 二周年庆活动访客事件奖励池"""
+
+    @excel_output_string(view.PlanetFesLandType)
+    def planet_fes_land_type(self):
+        """3.2 二周年庆活动地块类型"""
+
+    @excel_output(view.PlanetFesQuest)
+    def planet_fes_quest(self):
+        """3.2 二周年庆活动任务"""
 
     ######## rogue ########
 

@@ -1,13 +1,14 @@
 import datetime
 import itertools
 import pathlib
+import textwrap
 import typing
 
 import fire
 
 import gsz.format
 import gsz.sr
-from gsz.sr.excel import Text, item
+import gsz.sr.excel
 import gsz.sr.view
 
 
@@ -19,7 +20,8 @@ def confirm_excel_objects_validate_no_error(game: gsz.sr.GameData):
             continue
         if val.endswith("_name"):
             continue
-        print(val, getattr(game, val)())
+        print(val)
+        getattr(game, val)()
 
 
 @typing.final
@@ -119,7 +121,7 @@ class Main:
             print(series.wiki(), end="\n\n")
 
     def text(self, *hashes: int):
-        print("\n".join(self.__game.text(Text(hash=hash)) for hash in hashes))
+        print("\n".join(self.__game.text(gsz.sr.excel.Text(hash=hash)) for hash in hashes))
 
     def talk(self, *ids: int):
         for id in ids:
@@ -186,54 +188,109 @@ class Main:
                 continue
             print(challenge.wiki(), end="\n\n")
 
+    def planet_fes(self, q: typing.Literal["avatar", "achievement", "task", "event", "card"]):  # noqa: PLR0912, PLR0915
+        assert q in ("avatar", "achievement", "task", "event", "card")
+        formatter = gsz.format.Formatter(game=self.__game, syntax=gsz.format.Syntax.MediaWiki, percent_as_plain=True)
+        match q:
+            case "avatar":
+                avatars = sorted(self.__game.planet_fes_avatar(), key=lambda avatar: (-avatar.rarity_value, -avatar.id))
+                for avatar in avatars:
+                    rarity = avatar.rarity()
+                    skills_1 = list(avatar.skills_1())
+                    skill_descriptions: list[str] = [formatter.format(skills_1[0].description, skills_1[0].params)]
+                    skills_2 = list(avatar.skills_2())
+                    if len(skills_2) != 0:
+                        skill_descriptions.append(formatter.format(skills_2[0].description, skills_2[0].params))
+                    skill_description = "".join("\n* " + description for description in skill_descriptions)
+                    detail = textwrap.dedent(f"""\
+                        {{{{:「星铁☆WORLD」/助理|{avatar.name}|
+                        |工作技巧={rarity.name}
+                        |工作展区={avatar.planet_type}
+                        |介绍=
+                        |助理特质={textwrap.indent(skill_description, "                    ")}
+                        }}}}""")
+                    print(detail, end="\n\n")
+            case "achievement":
+                print('{| id="achievement" class="wikitable"')
+                print("! 成就 !! 等级 !! 描述 !! 奖励")
+                counter = 0
+                for quest in self.__game.planet_fes_quest():
+                    if quest.type is gsz.sr.excel.planet_fes.QuestType.Task:
+                        continue
+                    counter = counter % 5 + 1
+                    print("|-")
+                    print("|", quest.name, "||", counter, end=" ")
+                    print("||", formatter.format(quest.description, quest.finishway().params()), end=" ")
+                    print("||", "、".join(f"{{{{图标|{item.name}|{num}}}}}" for item, num in quest.reward_items()))
+                print("|}")
+            case "card":
+                for theme in self.__game.planet_fes_card_theme():
+                    cards = list(theme.cards())
+                    cards.sort(key=lambda card: -card.rarity)
+                    for card in cards:
+                        match card.rarity:
+                            case 1:
+                                rarity = "{{颜色|c1eeff|普通}}"
+                            case 2:
+                                rarity = "{{颜色|f4e7a8|稀有}}"
+                        print(
+                            f"|-\n| [[文件:星铁☆WORLD-回忆卡-{card.name}.png|256px]] || {card.name} || {theme.name} || {rarity} || ",
+                            end="",
+                        )
+                        buffs = list(card.buffs())
+                        assert len(buffs) == 1
+                        print(formatter.format(buffs[0].description, buffs[0].params), end=" ")
+                        print(f"|| {formatter.format(card.description)} <!-- {card._excel.pic_path} -->")
+            case "task":
+                for quest in self.__game.planet_fes_quest():
+                    if quest.type is gsz.sr.excel.planet_fes.QuestType.Achievement:
+                        continue
+                    finishway = quest.finishway()
+                    print("|-")
+                    print("|", formatter.format(quest.description, finishway.params()), end="")
+                    comment = finishway.comment()
+                    if comment is not None:
+                        print(f'<p style="color: #cbcbcb">※ {comment}</p>', end="")
+                    print(" ", end="")
+                    print("||", "、".join(f"{{{{图标|{item.name}|{num}}}}}" for item, num in quest.reward_items()))
+            case "event":
+                header = textwrap.dedent("""\
+                    {| id="event" class="wikitable" style="width: 100%"
+                    ! style="width: 0%"  | 角色
+                    ! style="width: 20%" | 事件描述
+                    ! style="width: 6%"  | 选择
+                    ! style="width: 10%" | 选择描述
+                    ! style="width: 4%"  | 稀有度<br>概率
+                    ! style="width: 6%"  | 分支
+                    ! style="width: 10%" | 分支描述
+                    ! style="width: 5%"  | 奖励""")
+                print(header)
+                for e in self.__game.planet_fes_avatar_event():
+                    rowspan = sum(max(1, sum(1 for _ in option.next_options())) for option in e.options())
+                    character = e.avatar()
+                    character_icon = "" if character is None else f"{{{{图标|大|{character.name}}}}}"
+                    print(f'|- class="sep"\n| rowspan="{rowspan}" | {character_icon}')
+                    print(f'| rowspan="{rowspan}" | {formatter.format(e.event_content)}')
+                    for option_index, option in enumerate(e.options()):
+                        if option_index != 0:
+                            print("|-")
+                        rowspan = max(1, sum(1 for _ in option.next_options()))
+                        print(f'| rowspan="{rowspan}" | {formatter.format(option.event_content)}')  # 选项
+                        print(f'| rowspan="{rowspan}" | {formatter.format(option.option_bubble_talk)}')  # 选项剧情
+                        rolls = list(option.next_options())
+                        for roll_index, roll in enumerate(rolls):
+                            if roll_index != 0:
+                                print("|-")
+                            assert roll.reward_pool_id is not None
+                            rarity = ["", "SSS", "SS", "S", "A", "B"][roll.reward_pool_id]
+                            possibility = [30, 30, 40] if len(rolls) == 3 else [40, 60]
+                            print(f'| class="mid" | {rarity}<br>{possibility[roll_index]}%', end=" ")
+                            print("||", formatter.format(roll.event_content), end=" ")  # 骰子结果
+                            print("||", formatter.format(roll.option_bubble_talk), "||", end="\n")  # 骰子剧情
+                print("|}")
+
     def main(self):
         """调试代码可以放这里"""
-        confirm_excel_objects_validate_no_error(self.__game)
-        # for avatar in reversed(list(self.__game.planet_fes_avatar())):
-        #     rarity = avatar.rarity()
-        #     for skill in avatar.skills_1():
-        #         print(skill._excel)
-        #     # print(f"{{{{:「星铁☆WORLD」/助理|{avatar.name}|工作技巧={rarity.name}|工作展区={avatar.planet_type}|}}}}")
-        # return
-        # for quest in self.__game.planet_fes_quest():
-        #     print(
-        #         quest.name,
-        #         self.__formatter.format(quest.description, quest.finishway().params()),
-        #         print("、".join(f"{item.name}: {num}" for item, num in quest.reward_items())),
-        #     )
-        # return
-
-        # # for pool in self.__game.planet_fes_game_reward_pool():
-        # #     print(pool._excel.reward_pool_id)
-        # #     rewards = list(pool.rewards())
-        # #     if len(rewards) == 0:
-        # #         continue
-        # #     for reward in rewards:
-        # #         print(reward._excel.id, reward._excel)
-        # #         if reward.gold_num is not None:
-        # #             print("    ", "金币", "x", reward.gold_num)
-        # #         for item, num in reward.items():
-        # #             print("    ", item.name, "x", num)
-        # # return
-
-        # for event in self.__game.planet_fes_avatar_event():
-        #     print(self.__formatter.format(event.event_content))
-        #     for option in event.options():
-        #         print("   *", self.__formatter.format(option.event_content))
-        #         for result in option.next_options():
-        #             print("    ", self.__formatter.format(result.event_content))
-        #             reward = result.reward()
-        #             if reward is not None:
-        #                 if reward.gold_num is not None:
-        #                     print("       >", reward.gold_num, "金币")
-        #                 if len(items := list(reward.items())) != 0:
-        #                     print("       >", "、".join(f"{item.name}：{num}" for item, num in items))
-        #             # reward_pool = result.reward_pool()
-        #             # if reward_pool is not None:
-        #             #     for index, reward in enumerate(reward_pool.rewards()):
-        #             #         print(
-        #             #             f"      {index + 1} ", "、".join(f"{item.name}：{num}" for item, num in reward.items())
-        #             #         )
 
 
 if __name__ == "__main__":

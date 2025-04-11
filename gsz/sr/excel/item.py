@@ -37,12 +37,12 @@ class MainType(enum.Enum):
 class SubType(enum.Enum):
     AetherSkill = "AetherSkill"
     """
-    以太战线技能芯片
+    1.4 新增，以太战线技能芯片
     对应 ItemMainType 为 Material
     """
     AetherSpirit = "AetherSpirit"
     """
-    以太战线宠物
+    1.4 新增，以太战线宠物
     对应 ItemMainType 为 Material
     """
     AvatarCard = "AvatarCard"
@@ -53,7 +53,7 @@ class SubType(enum.Enum):
     """
     AvatarSkin = "AvatarSkin"
     """
-    角色皮肤
+    3.0 新增，角色皮肤
     仅出现在 ItemConfigAvatarSkin.json 中
     """
     Book = "Book"
@@ -70,7 +70,7 @@ class SubType(enum.Enum):
     """
     ChessRogueDiceSurface = "ChessRogueDiceSurface"
     """
-    黄金与机械骰面
+    1.6 新增，黄金与机械骰面
     对应 ItemMainType 为 Usable
     对应 UseMethod 为 AutoConversionItem 自动转换
     """
@@ -80,11 +80,11 @@ class SubType(enum.Enum):
     """光锥, 仅出现在 ItemConfigEquipment.json 中"""
     FightFestSkill = "FightFestSkill"
     """
-    星天演武仪典技能和饮料
+    2.5 新增，星天演武仪典技能和饮料
     对应 ItemMainType 为 Material
     """
     FindChest = "FindChest"
-    """3.0 新增寻宝道具"""
+    """3.0 新增，寻找宝箱用的道具"""
     Food = "Food"
     """
     食品
@@ -125,31 +125,48 @@ class SubType(enum.Enum):
     """任务道具, ItemMainType 为 Mission 的都在这里"""
     MuseumExhibit = "MuseumExhibit"
     """
-    冬城博物馆活动的展览品
+    1.1 新增，冬城博物馆活动的展览品
     对应 ItemMainType 为 Material
     """
     MuseumStuff = "MuseumStuff"
     """
-    冬城博物馆活动的员工
+    1.1 新增，冬城博物馆活动的员工
     对应 ItemMainType 为 Material
     """
     MusicAlbum = "MusicAlbum"
     """碟片（音乐专辑）"""
     NormalPet = "NormalPet"
     """
-    随宠
+    2.5 新增，随宠
     对应 ItemMainType 为 Pet
     """
     PamSkin = "PamSkin"
     """
-    帕姆皮肤，派对车厢皮肤
+    2.7 新增，帕姆皮肤，派对车厢皮肤
     对应的 ItemMainType 为 Usable
+    """
+    PersonalCard = "PersonalCard"
+    """
+    3.2 新增，角色名片
+    对应 ItemMainType 为 Usable
+    对应 UseMethod 为 AutoConversionItem 自动转换
+    """
+    PhoneCase = "PhoneCase"
+    """
+    3.2 新增，手机壳
+    对应 ItemMainType 为 Usabe
+    对应 UseMethod 为 AutoConversionItem 自动转换
     """
     PhoneTheme = "PhoneTheme"
     """
-    手机主题
+    手机桌面主题
     对应 ItemMainType 为 Usable
     对应 UseMethod 为 AutoConversionItem 自动转换
+    """
+    PlanetFesItem = "PlanetFesItem"
+    """
+    3.2 新增，周年庆活动相关道具
+    对应 ItemMainType 为 Material
     """
     Relic = "Relic"
     """遗器"""
@@ -168,10 +185,12 @@ class SubType(enum.Enum):
     RogueMedal = "RogueMedal"
     """差分宇宙概率艺术馆展品"""
     TrainPartyDiyMaterial = "TrainPartyDiyMaterial"
-    """开拓者房间装饰品（宇宙家装指南活动）"""
+    """
+    2.7 新增，开拓者房间装饰品（宇宙家装指南活动）
+    """
     TravelBrochurePaster = "TravelBrochurePaster"
     """
-    匹诺康尼梦境护照上的贴纸
+    2.0 新增，匹诺康尼梦境护照上的贴纸
     对应 ItemMainType 是 Usable
     """
     Virtual = "Virtual"
@@ -217,6 +236,8 @@ class UseMethod(enum.Enum):
     """68 月卡"""
     BPUpgradeFrom68To128 = "BPUpgradeFrom68To128"
     """68 月卡升级 128 月卡道具"""
+    ClientGoto = "ClientGoto"
+    """3.2 新增，旅伴金灵、旅伴银灵、光锥碎忆"""
     ExternalSystemFoodBenefit = "ExternalSystemFoodBenefit"
     """
     食物效果, 往往是战斗增益或减益.
@@ -282,7 +303,7 @@ class SellType(enum.Enum):
     Sell = "Sell"
 
 
-class ItemList(Model):
+class List(Model):
     """用于展示一整排物品，比如掉落物等"""
 
     item_id: int
@@ -314,7 +335,7 @@ class ItemConfig(ModelID):
     use_data_id: int | None = None  # 2.5 及之前，可能因为值全部和 id 一样，所以后面删掉了
     custom_data_list: list[int]
     is_sellable: bool = False  # 仅出现于 2.4 之前
-    return_item_id_list: list[ItemList]
+    return_item_id_list: list[List]
     """道具拆分效果，比如光锥、遗器"""
     item_group: int | None = None
     sell_type: SellType | None = None
