@@ -1,11 +1,11 @@
 import typing
 
-from ..excel import ModelID, ModelMainSubID
+from ..excel import ModelID, ModelMainSubID, ModelStringID
 
 if typing.TYPE_CHECKING:
     from ..data import GameData
 
-E_co = typing.TypeVar("E_co", bound=ModelID | ModelMainSubID, covariant=True)
+E_co = typing.TypeVar("E_co", bound=ModelID | ModelStringID | ModelMainSubID, covariant=True)
 
 
 class IView(typing.Protocol[E_co]):  # pyright: ignore[reportInvalidTypeVarUse]

@@ -7,7 +7,7 @@ import fire
 
 import gsz.format
 import gsz.sr
-from gsz.sr.excel import Text
+from gsz.sr.excel import Text, item
 import gsz.sr.view
 
 
@@ -16,6 +16,8 @@ def confirm_excel_objects_validate_no_error(game: gsz.sr.GameData):
         if val in ("_GameData__text_map", "text", "base"):
             continue
         if val.startswith("_"):
+            continue
+        if val.endswith("_name"):
             continue
         print(val, getattr(game, val)())
 
@@ -186,6 +188,52 @@ class Main:
 
     def main(self):
         """调试代码可以放这里"""
+        confirm_excel_objects_validate_no_error(self.__game)
+        # for avatar in reversed(list(self.__game.planet_fes_avatar())):
+        #     rarity = avatar.rarity()
+        #     for skill in avatar.skills_1():
+        #         print(skill._excel)
+        #     # print(f"{{{{:「星铁☆WORLD」/助理|{avatar.name}|工作技巧={rarity.name}|工作展区={avatar.planet_type}|}}}}")
+        # return
+        # for quest in self.__game.planet_fes_quest():
+        #     print(
+        #         quest.name,
+        #         self.__formatter.format(quest.description, quest.finishway().params()),
+        #         print("、".join(f"{item.name}: {num}" for item, num in quest.reward_items())),
+        #     )
+        # return
+
+        # # for pool in self.__game.planet_fes_game_reward_pool():
+        # #     print(pool._excel.reward_pool_id)
+        # #     rewards = list(pool.rewards())
+        # #     if len(rewards) == 0:
+        # #         continue
+        # #     for reward in rewards:
+        # #         print(reward._excel.id, reward._excel)
+        # #         if reward.gold_num is not None:
+        # #             print("    ", "金币", "x", reward.gold_num)
+        # #         for item, num in reward.items():
+        # #             print("    ", item.name, "x", num)
+        # # return
+
+        # for event in self.__game.planet_fes_avatar_event():
+        #     print(self.__formatter.format(event.event_content))
+        #     for option in event.options():
+        #         print("   *", self.__formatter.format(option.event_content))
+        #         for result in option.next_options():
+        #             print("    ", self.__formatter.format(result.event_content))
+        #             reward = result.reward()
+        #             if reward is not None:
+        #                 if reward.gold_num is not None:
+        #                     print("       >", reward.gold_num, "金币")
+        #                 if len(items := list(reward.items())) != 0:
+        #                     print("       >", "、".join(f"{item.name}：{num}" for item, num in items))
+        #             # reward_pool = result.reward_pool()
+        #             # if reward_pool is not None:
+        #             #     for index, reward in enumerate(reward_pool.rewards()):
+        #             #         print(
+        #             #             f"      {index + 1} ", "、".join(f"{item.name}：{num}" for item, num in reward.items())
+        #             #         )
 
 
 if __name__ == "__main__":

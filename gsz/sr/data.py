@@ -93,7 +93,7 @@ class excel_output(typing.Generic[V]):
     def __init__(self, typ: type[V], *file_names: str):
         self.__type = typ
         self.__file_names: tuple[str, ...] = file_names
-        self.__excel_output: dict[int | None, excel.ModelID] | None = None
+        self.__excel_output: dict[int, excel.ModelID] | None = None
 
     def __call__(self, method: typing.Callable[..., None]) -> GameDataFunction[V]:
         if len(self.__file_names) == 0:
@@ -128,7 +128,7 @@ class excel_output(typing.Generic[V]):
                     excel_list = ExcelOutputList.validate_python(excels)
                     self.__excel_output = {config.id: config for config in excel_list if config is not None}
                 except pydantic.ValidationError as exc:
-                    ExcelOutputDict = pydantic.TypeAdapter(dict[int | None, self.__type.ExcelOutput])
+                    ExcelOutputDict = pydantic.TypeAdapter(dict[int, self.__type.ExcelOutput])
                     try:
                         self.__excel_output = ExcelOutputDict.validate_python(excels)
                     except pydantic.ValidationError as former_structure_exc:
@@ -137,6 +137,100 @@ class excel_output(typing.Generic[V]):
                 return (self.__type(game, excel) for excel in self.__excel_output.values())
             if isinstance(id, collections.abc.Iterable):
                 return (self.__type(game, self.__excel_output[k]) for k in id)
+            excel = self.__excel_output.get(id)
+            return None if excel is None else self.__type(game, excel)
+
+        return fn
+
+
+class GameDataStringMethod(typing.Protocol[T_co]):
+    @typing.overload
+    def __call__(self) -> collections.abc.Iterable[T_co]: ...
+    @typing.overload
+    def __call__(self, id: str) -> T_co | None: ...
+
+
+class GameDataStringFunction(typing.Protocol[T_co]):
+    __name__: str
+
+    @typing.overload
+    def __get__(self, instance: GameData, owner: type[GameData]) -> GameDataStringMethod[T_co]: ...
+    @typing.overload
+    def __get__(self, instance: None, owner: type[GameData]) -> GameDataStringFunction[T_co]: ...
+    @typing.overload
+    def __call__(self, game: GameData) -> collections.abc.Iterable[T_co]: ...
+    @typing.overload
+    def __call__(self, game: GameData, id: str) -> T_co | None: ...
+
+
+VS = typing.TypeVar("VS", bound="view.IView[excel.ModelStringID]")
+
+
+class excel_output_string(typing.Generic[VS]):
+    """
+    装饰器，接受参数为 View 类型
+    View 类型中需要通过 ExcelOutput 类变量绑定映射数据结构类型
+
+    装饰器会通过传入方法名找到数据目录中对应的文件名
+    如果没找到，使用 *file_names 参数列表
+    自动处理文件中的数据结构并且缓存，之后调用方法会返回完整列表、或通过 ID 返回对应结构
+
+    具体的结构是一个巨大的 JSON Array
+    Array 中的每一项都是一个 Object，包含需要的数据
+    每个 Object 都会有一个唯一的 ID 字段（字段名未必就是 ID）
+
+    举例来说
+    ```json
+    [
+        {"ID": 1001, "Attr": ""},
+        {"ID": 1002, "Attr": ""},
+        {"ID": 1010, "Attr": ""},
+        {"ID": 1011, "Attr": ""}
+    ]
+    ```
+
+    2.3 及之前，结构是
+    ```json
+    {
+        "1001": {"ID": 1001, "Attr": ""},
+        "1002": {"ID": 1002, "Attr": ""},
+        "1010": {"ID": 1010, "Attr": ""},
+        "1011": {"ID": 1011, "Attr": ""}
+    }
+    ```
+    """
+
+    def __init__(self, typ: type[VS], *file_names: str):
+        self.__type = typ
+        self.__file_names: tuple[str, ...] = file_names
+        self.__excel_output: dict[str, excel.ModelStringID] | None = None
+
+    def __call__(self, method: typing.Callable[..., None]) -> GameDataStringFunction[VS]:
+        if len(self.__file_names) == 0:
+            self.__file_names = (file_name_generator(method.__name__),)
+
+        @typing.overload
+        def fn(game: GameData) -> collections.abc.Iterable[VS]: ...
+        @typing.overload
+        def fn(game: GameData, id: str) -> VS | None: ...
+        def fn(game: GameData, id: str | None = None) -> VS | collections.abc.Iterable[VS] | None:
+            if self.__excel_output is None:
+                path = game.base / "ExcelOutput"
+                file_names = iter(self.__file_names)
+                file_path = path / (next(file_names) + ".json")
+                try:
+                    while not file_path.exists():
+                        file_path = path / (next(file_names) + ".json")
+                except StopIteration:
+                    self.__excel_output = {}
+                    return None
+                finally:
+                    del self.__file_names  # 清理一下方便 GC
+                ExcelOutputList = pydantic.TypeAdapter(list[self.__type.ExcelOutput])
+                excels = json.loads(file_path.read_bytes())
+                self.__excel_output = {config.id: config for config in ExcelOutputList.validate_python(excels)}
+            if id is None:
+                return (self.__type(game, excel) for excel in self.__excel_output.values())
             excel = self.__excel_output.get(id)
             return None if excel is None else self.__type(game, excel)
 
@@ -240,7 +334,7 @@ class excel_output_main_sub(typing.Generic[MSV]):
                     self.__excel_output = {}
                     return iter(()) if main_id is None or sub_id is None else None
                 finally:
-                    self.__file_names = ()  # 清理一下方便 GC
+                    del self.__file_names  # 清理一下方便 GC
                 ExcelOutputList = pydantic.TypeAdapter(list[self.__type.ExcelOutput | None])
                 excels = json.loads(file_path.read_bytes())
                 try:

@@ -1,4 +1,4 @@
-from .base import Element, ModelID, ModelMainSubID, Text, Value
+from .base import Element, ModelID, ModelMainSubID, ModelStringID, Text, Value
 from .book import BookDisplayType, BookSeriesConfig, BookSeriesWorld, LocalbookConfig
 from .challenge import (
     ChallengeBossGroupExtra,
@@ -205,4 +205,5 @@ __all__ = (
     # interfaces
     "ModelID",
     "ModelMainSubID",
+    "ModelStringID",
 )

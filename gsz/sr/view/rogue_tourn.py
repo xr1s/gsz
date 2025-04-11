@@ -53,6 +53,10 @@ class RogueTournBuff(View[excel.RogueTournBuff]):
         return self._excel.rogue_buff_category
 
     @property
+    def is_in_handbook(self) -> bool:
+        return self._excel.is_in_handbook
+
+    @property
     def tag(self) -> int:
         return self._excel.rogue_buff_tag
 
