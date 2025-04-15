@@ -118,7 +118,7 @@ class MonsterConfig(View[excel.MonsterConfig]):
             return ""
         match self.__template.rank:
             case monster.Rank.BigBoss:
-                return "周本Boss"
+                return "周本BOSS"
             case monster.Rank.Elite:
                 if self.name.endswith("（错误）"):
                     return "模拟宇宙精英"
@@ -126,7 +126,7 @@ class MonsterConfig(View[excel.MonsterConfig]):
             case monster.Rank.LittleBoss:
                 if self.name.endswith("（完整）"):
                     return "模拟宇宙首领"
-                return "剧情Boss"
+                return "剧情BOSS"
             case monster.Rank.Minion | monster.Rank.MinionLv2:
                 if self.__template.group_id is None and "扑满" not in self.name and self.name != "虚构集合体":
                     return "召唤物"
