@@ -1,9 +1,9 @@
 import typing
 
-from .base import Model
+from .base import BaseModel
 
 
-class Dialogue(Model):
+class Dialogue(BaseModel):
     dialogue_progress: int | None = None
     unlock_id: int | None = None
     talk_name_id: int | None = None
@@ -11,6 +11,6 @@ class Dialogue(Model):
     option_path: str | None = None
 
 
-class RogueNPC(Model):
+class RogueNPC(BaseModel):
     dialogue_type: typing.Literal["Event", "Story"]
     dialogue_list: list[Dialogue]

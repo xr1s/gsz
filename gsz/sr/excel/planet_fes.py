@@ -344,7 +344,7 @@ class QuestType(enum.Enum):
 class PlanetFesQuest(ModelID):
     id_: int
     quest_type: QuestType
-    reward_item_list: list[item.List]
+    reward_item_list: list[item.Pair]
     finishway_id: int
     name: Text | None = None
     description: Text

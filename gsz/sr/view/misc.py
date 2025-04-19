@@ -31,27 +31,12 @@ class ExtraEffectConfig(View[excel.ExtraEffectConfig]):
         return tuple(param.value for param in self._excel.desc_param_list)
 
 
-class RewardData(View[excel.RewardData]):
-    ExcelOutput: typing.Final = excel.RewardData
+class LoopCGConfig(View[excel.LoopCGConfig]):
+    ExcelOutput: typing.Final = excel.LoopCGConfig
 
-    @functools.cached_property
-    def __items(self) -> list[ItemConfig | None]:
-        if self._excel.item_id is None:
-            return []
-        items: list[ItemConfig | None] = []
-        for item_id in self._excel.item_id:
-            if item_id is None:
-                items.append(None)
-                continue
-            item = self._game.item_config_all(item_id)
-            assert item is not None
-            items.append(item)
-        return items
-
-    def items(self) -> collections.abc.Iterable[ItemConfig | None]:
-        from .item import ItemConfig
-
-        return (None if item is None else ItemConfig(self._game, item._excel) for item in self.__items)
+    @property
+    def path(self) -> str:
+        return self._excel.video_path
 
 
 class MazeBuff(View[excel.MazeBuff]):
@@ -80,6 +65,29 @@ class MazeBuff(View[excel.MazeBuff]):
     @functools.cached_property
     def param_list(self) -> tuple[float, ...]:
         return tuple(param.value for param in self._excel.param_list)
+
+
+class RewardData(View[excel.RewardData]):
+    ExcelOutput: typing.Final = excel.RewardData
+
+    @functools.cached_property
+    def __items(self) -> list[ItemConfig | None]:
+        if self._excel.item_id is None:
+            return []
+        items: list[ItemConfig | None] = []
+        for item_id in self._excel.item_id:
+            if item_id is None:
+                items.append(None)
+                continue
+            item = self._game.item_config_all(item_id)
+            assert item is not None
+            items.append(item)
+        return items
+
+    def items(self) -> collections.abc.Iterable[ItemConfig | None]:
+        from .item import ItemConfig
+
+        return (None if item is None else ItemConfig(self._game, item._excel) for item in self.__items)
 
 
 class ScheduleData(View[excel.ScheduleData]):

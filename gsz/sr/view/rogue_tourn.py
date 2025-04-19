@@ -12,7 +12,7 @@ from .base import View
 if typing.TYPE_CHECKING:
     import collections.abc
 
-    from .act import Act, Dialogue
+    from .. import act
     from .misc import MazeBuff
     from .rogue import (
         RogueBonus,
@@ -293,16 +293,16 @@ class RogueTournFormula(View[excel.RogueTournFormula]):
         return RogueTournFormulaDisplay(self._game, self.__rogue_tourn_formula_display._excel)
 
     @functools.cached_property
-    def __story(self) -> Act | None:
-        from .act import Act
+    def __story(self) -> act.Act | None:
+        from ..act import Act
 
         if self._game.base.joinpath(self._excel.formula_story_json).is_file():
             return Act(self._game, self._excel.formula_story_json)
         return None
 
-    def story(self) -> Act | None:
+    def story(self) -> act.Act | None:
         """推演"""
-        from .act import Act
+        from ..act import Act
 
         return None if self.__story is None else Act(self._game, self.__story._act)  # pyright: ignore[reportPrivateUsage]
 
@@ -355,8 +355,8 @@ class RogueTournHandBookEvent(View[excel.RogueTournHandBookEvent]):
         return (RogueNPC(self._game, npc._excel) for npc in self.__npcs)
 
     @functools.cached_property
-    def __dialogues(self) -> list[Dialogue]:
-        dialogues: list[Dialogue] = []
+    def __dialogues(self) -> list[act.Dialogue]:
+        dialogues: list[act.Dialogue] = []
         for prog_id, npc in zip(self._excel.unlock_npc_progress_id_list, self.__npcs, strict=True):
             dialogue = next(
                 dialogue for dialogue in npc.dialogue_list() if dialogue.progress == prog_id.unlock_progress
@@ -364,8 +364,8 @@ class RogueTournHandBookEvent(View[excel.RogueTournHandBookEvent]):
             dialogues.append(dialogue)
         return dialogues
 
-    def dialogues(self) -> collections.abc.Iterable[Dialogue]:
-        from .act import Dialogue
+    def dialogues(self) -> collections.abc.Iterable[act.Dialogue]:
+        from ..act import Dialogue
 
         return (Dialogue(self._game, dialogue._dialogue) for dialogue in self.__dialogues)  # pyright: ignore[reportPrivateUsage]
 

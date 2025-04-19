@@ -303,7 +303,7 @@ class SellType(enum.Enum):
     Sell = "Sell"
 
 
-class List(Model):
+class Pair(Model):
     """用于展示一整排物品，比如掉落物等"""
 
     item_id: int
@@ -335,7 +335,7 @@ class ItemConfig(ModelID):
     use_data_id: int | None = None  # 2.5 及之前，可能因为值全部和 id 一样，所以后面删掉了
     custom_data_list: list[int]
     is_sellable: bool = False  # 仅出现于 2.4 之前
-    return_item_id_list: list[List]
+    return_item_id_list: list[Pair]
     """道具拆分效果，比如光锥、遗器"""
     item_group: int | None = None
     sell_type: SellType | None = None

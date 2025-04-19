@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import functools
+import io
 import typing
 
 from .. import excel
@@ -100,6 +101,17 @@ class ItemCureInfoData(View[excel.ItemCureInfoData]):
     @property
     def img_path(self) -> str:
         return self._excel.img_path
+
+    def wiki(self) -> str:
+        wiki = io.StringIO()
+        _ = wiki.write("<!-- 剧情 -->\n{{书籍/分卷|\n名称=")
+        _ = wiki.write(self.title)
+        _ = wiki.write("\n|卷数=1\n|实装版本=\n|获取方式=\n|内容=\n")
+        if self.img_path != "":
+            _ = wiki.write(f"<!-- {self.img_path} -->\n")
+        _ = wiki.write(self._game._mw_pretty_formatter.format(self.desc))  # pyright: ignore[reportPrivateUsage]
+        _ = wiki.write("\n}}")
+        return wiki.getvalue()
 
 
 class ItemPurpose(View[excel.ItemPurpose]):

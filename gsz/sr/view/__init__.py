@@ -1,4 +1,3 @@
-from .act import Act
 from .avatar import AvatarConfig
 from .base import IView
 from .book import BookDisplayType, BookSeriesConfig, BookSeriesWorld, LocalbookConfig
@@ -30,6 +29,7 @@ from .message import (
 )
 from .misc import (
     ExtraEffectConfig,
+    LoopCGConfig,
     MazeBuff,
     RewardData,
     ScheduleData,
@@ -55,6 +55,7 @@ from .monster_guide import (
     MonsterGuideTag,
     MonsterTextGuide,
 )
+from .performance import Performance
 from .planet_fes import (
     PlanetFesAvatar,
     PlanetFesAvatarEvent,
@@ -114,8 +115,6 @@ from .talk import HeartDialTalk, TalkSentenceConfig, VoiceConfig
 from .tutorial import TutorialGuideData, TutorialGuideGroup
 
 __all__ = (
-    # act
-    "Act",
     # avatar
     "AvatarConfig",
     # challenge
@@ -169,6 +168,7 @@ __all__ = (
     "MonsterTextGuide",
     # misc
     "ExtraEffectConfig",
+    "LoopCGConfig",
     "MazeBuff",
     "RewardData",
     "ScheduleData",
@@ -177,6 +177,8 @@ __all__ = (
     # mission
     "MainMission",
     "SubMission",
+    # performance
+    "Performance",
     # planet fes
     "PlanetFesAvatar",
     "PlanetFesAvatarEvent",

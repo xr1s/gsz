@@ -1,7 +1,6 @@
-from . import talk
-from .act import Act, Sequence
-from .dialogue import Dialogue, RogueNPC
-from .option import Opt
-from .task import Task
+from . import model as actmodel
+from .act import Act
+from .rogue import Dialogue
+from .wiki import WikiStyle
 
-__all__ = ("Act", "Dialogue", "Opt", "RogueNPC", "Sequence", "Task", "talk")
+__all__ = ("actmodel", "Act", "Dialogue", "WikiStyle")

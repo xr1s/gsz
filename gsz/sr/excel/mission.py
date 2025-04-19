@@ -74,8 +74,9 @@ class Param(Model):
     value: int | None = None
 
 
-class AudioEmotionState(enum.Enum):
+class EmotionState(enum.Enum):
     No = ""
+    BgmD1 = "State_BGM_D7"
     BgmE1 = "State_Bgm_E1"
     BgmE2 = "State_Bgm_E2"
     BgmE3 = "State_Bgm_E3"
@@ -83,16 +84,24 @@ class AudioEmotionState(enum.Enum):
     BgmE5 = "State_Bgm_E5"
     BgmE6 = "State_Bgm_E6"
     BgmE7 = "State_Bgm_E7"
+    BgmE8 = "State_Bgm_E8"
+    BgmE9 = "State_Bgm_E9"
+    BgmED = "State_Bgm_E_D"
     BgmEnding = "State_Bgm_Ending"
-    Eslience = "State_Eslience"
+    Esilence = "State_Esilence"
     Hollowing = "State_Hollowing"
     HollowingD = "State_Hollowing_D"
+    Investigate = "State_Investigate"
     Joyful = "State_Joyful"
+    Mysterious = "State_Mysterious"
     Nervous = "State_Nervous"
     Relaxing = "State_Relaxing"
+    ServantMini = "State_ServantMini"
     Severe = "State_Severe"
     Sorrow = "State_Sorrow"
+    Suspense = "State_Suspense"
     Tense = "State_Tense"
+    Warm = "State_Warm"
 
 
 class SubType(enum.Enum):
@@ -130,7 +139,7 @@ class MainMission(ModelID):
     mission_advance: typing.Literal[1] | None = None
     reward_id: int | None = None
     display_reward_id: int | None = None
-    audio_emotion_state: AudioEmotionState | None = None  # 仅在 1.4 及之前出现
+    audio_emotion_state: EmotionState | None = None  # 仅在 1.4 及之前出现
     mission_pack: int | None = None
     chapter_id: int | None = None
     sub_reward_list: list[int]
@@ -194,7 +203,7 @@ class SubMissionV10(Model):
     finish_actor_type: FinishActorType | None = None
     finish_actor_para: str | None = None
     froce_map_hint: bool = False
-    audio_emotion_state: AudioEmotionState | None = None
+    audio_emotion_state: EmotionState | None = None
     process_group: int | None = None
     sort_id: int | None = None
     sub_custom_value_list: list[int] | None = None

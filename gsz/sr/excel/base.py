@@ -42,6 +42,25 @@ class Element(enum.Enum):
                 return "风"
 
 
+class Path(enum.Enum):
+    Knight = "Knight"
+    """存护"""
+    Mage = "Mage"
+    """智识"""
+    Memory = "Memory"
+    """记忆"""
+    Priest = "Priest"
+    """丰饶"""
+    Rogue = "Rogue"
+    """巡猎"""
+    Shaman = "Shaman"
+    """同谐"""
+    Warlock = "Warlock"
+    """虚无"""
+    Warrior = "Warrior"
+    """毁灭"""
+
+
 ABBR_WORDS = {"ai", "bg", "hp", "id", "npc", "sp", "ui"}
 
 

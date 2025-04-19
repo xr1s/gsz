@@ -6,31 +6,12 @@ import pydantic
 import typing_extensions
 
 from . import item
-from .base import Element, ModelID, Text, Value
+from .base import Element, ModelID, Path, Text, Value
 
 
 class Rarity(enum.Enum):
     Type4 = "CombatPowerAvatarRarityType4"
     Type5 = "CombatPowerAvatarRarityType5"
-
-
-class Path(enum.Enum):
-    Knight = "Knight"
-    """存护"""
-    Mage = "Mage"
-    """智识"""
-    Memory = "Memory"
-    """记忆"""
-    Priest = "Priest"
-    """丰饶"""
-    Rogue = "Rogue"
-    """巡猎"""
-    Shaman = "Shaman"
-    """同谐"""
-    Warlock = "Warlock"
-    """虚无"""
-    Warrior = "Warrior"
-    """毁灭"""
 
 
 class AvatarConfig(ModelID):
@@ -47,7 +28,7 @@ class AvatarConfig(ModelID):
     max_promotion: typing.Literal[6]
     max_rank: typing.Literal[6]
     rank_id_list: list[int]
-    reward_list: list[item.List]
+    reward_list: list[item.Pair]
     skill_list: list[int]
     avatar_base_type: Path
     default_avatar_model_path: str

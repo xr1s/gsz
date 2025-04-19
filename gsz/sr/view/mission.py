@@ -21,6 +21,10 @@ class MainMission(View[excel.MainMission]):
 class SubMission(View[excel.SubMission]):
     ExcelOutput: typing.Final = excel.SubMission
 
+    @property
+    def id(self) -> int:
+        return self._excel.id
+
     @functools.cached_property
     def description(self) -> str | None:
         return None if self._excel.descrption_text is None else self._game.text(self._excel.descrption_text)

@@ -4,14 +4,15 @@ import functools
 import itertools
 import typing
 
-from .. import act, excel
+from .. import excel
 from ..excel import rogue
 from .base import View
 
 if typing.TYPE_CHECKING:
     import collections.abc
 
-    from .act import Dialogue
+    from .. import act
+    from ..act import actmodel
     from .misc import MazeBuff, RewardData
     from .monster import NPCMonsterData
     from .rogue_tourn import RogueTournBuff, RogueTournHandbookMiracle, RogueTournMiracle
@@ -321,8 +322,8 @@ class RogueHandBookEvent(View[excel.RogueHandBookEvent]):
         return (RogueNPC(self._game, npc._excel) for npc in self.__npcs)
 
     @functools.cached_property
-    def __dialogues(self) -> list[Dialogue]:
-        dialogues: list[Dialogue] = []
+    def __dialogues(self) -> list[act.Dialogue]:
+        dialogues: list[act.Dialogue] = []
         for prog_id, npc in zip(self._excel.unlock_npc_progress_id_list, self.__npcs, strict=True):
             dialogue = next(
                 dialogue for dialogue in npc.dialogue_list() if dialogue.progress == prog_id.unlock_progress
@@ -330,8 +331,8 @@ class RogueHandBookEvent(View[excel.RogueHandBookEvent]):
             dialogues.append(dialogue)
         return dialogues
 
-    def dialogues(self) -> collections.abc.Iterable[Dialogue]:
-        from .act import Dialogue
+    def dialogues(self) -> collections.abc.Iterable[act.Dialogue]:
+        from ..act import Dialogue
 
         return (Dialogue(self._game, dialogue._dialogue) for dialogue in self.__dialogues)  # pyright: ignore[reportPrivateUsage]
 
@@ -703,13 +704,15 @@ class RogueNPC(View[excel.RogueNPC]):
         return talk.name
 
     @functools.cached_property
-    def __dialogue_list(self) -> list[act.Dialogue]:
+    def __dialogue_list(self) -> list[actmodel.Dialogue]:
+        from ..act import actmodel
+
         npc_json_path = self._game.base / self._excel.npc_json_path
-        npc = act.RogueNPC.model_validate_json(npc_json_path.read_bytes())
+        npc = actmodel.RogueNPC.model_validate_json(npc_json_path.read_bytes())
         return npc.dialogue_list
 
-    def dialogue_list(self) -> collections.abc.Iterable[Dialogue]:
-        from .act import Dialogue
+    def dialogue_list(self) -> collections.abc.Iterable[act.Dialogue]:
+        from ..act import Dialogue
 
         return (Dialogue(self._game, dialogue) for dialogue in self.__dialogue_list)
 

@@ -1,21 +1,52 @@
-from .base import Model
+from __future__ import annotations
+
+import typing
+
+if typing.TYPE_CHECKING:
+    from ..data import GameData
+    from ..view.rogue import RogueDialogueDynamicDisplay, RogueDialogueOptionDisplay, RogueEventSpecialOption
 
 
-class OptionDynamic(Model):
-    display_id: int
+class Option:
+    def __init__(
+        self,
+        game: GameData,
+        option_id: int,
+        option: RogueDialogueOptionDisplay,
+        special: RogueEventSpecialOption | None,
+        dynamic: list[RogueDialogueDynamicDisplay],
+        desc_value: list[int | str],
+    ):
+        self._game: GameData = game
+        self.__id = option_id
+        self.__option = option
+        self.__special = special
+        self.__dynamic = dynamic
+        self.__desc_value = desc_value
 
+    @property
+    def id(self) -> int:
+        return self.__id
 
-class Option(Model):
-    option_id: int
-    display_id: int
-    special_option_id: int | None = None
-    """带图标的选项，比如阮梅特殊选项、寰宇蝗灾中的命途选项凡此种种"""
-    dynamic_map: dict[int, OptionDynamic] | None = None
-    desc_value: int | None = None
-    desc_value2: int | None = None
-    desc_value3: int | None = None
-    desc_value4: int | None = None
+    def option(self) -> RogueDialogueOptionDisplay:
+        from ..view import RogueDialogueOptionDisplay
 
+        return RogueDialogueOptionDisplay(self._game, self.__option._excel)  # pyright: ignore[reportPrivateUsage]
 
-class Opt(Model):
-    option_list: list[Option]
+    @property
+    def special(self) -> RogueEventSpecialOption | None:
+        if self.__special is None:
+            return None
+        from ..view import RogueEventSpecialOption
+
+        return RogueEventSpecialOption(self._game, self.__special._excel)  # pyright: ignore[reportPrivateUsage]
+
+    @property
+    def dynamic(self) -> list[RogueDialogueDynamicDisplay]:
+        from ..view import RogueDialogueDynamicDisplay
+
+        return [RogueDialogueDynamicDisplay(self._game, dynamic._excel) for dynamic in self.__dynamic]  # pyright: ignore[reportPrivateUsage]
+
+    @property
+    def desc_value(self) -> list[int | str]:
+        return self.__desc_value

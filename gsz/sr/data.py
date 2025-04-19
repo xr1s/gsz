@@ -47,7 +47,7 @@ class GameDataFunction(typing.Protocol[T_co]):
     def __call__(self, game: GameData, id: collections.abc.Iterable[int]) -> collections.abc.Iterable[T_co]: ...
 
 
-ABBR_WORDS = {"npc"}
+ABBR_WORDS = {"npc", "cg"}
 
 
 def file_name_generator(method_name: str) -> str:
@@ -798,13 +798,17 @@ class GameData:
     def _extra_effect_config_names(self) -> set[str]:
         return {effect.name for effect in self.extra_effect_config()}
 
-    @excel_output(view.RewardData)
-    def reward_data(self):
-        """奖励"""
+    @excel_output(view.LoopCGConfig)
+    def loop_cg_config(self):
+        """剧情视频"""
 
     @excel_output_main_sub(view.MazeBuff)
     def maze_buff(self):
         """战斗助益（或增益），模拟宇宙祝福和逐光捡金效果都引用此"""
+
+    @excel_output(view.RewardData)
+    def reward_data(self):
+        """奖励"""
 
     @excel_output(view.TextJoinConfig)
     def text_join_config(self):
@@ -938,6 +942,36 @@ class GameData:
     @excel_output(view.MonsterTextGuide)
     def monster_text_guide(self):
         """末日幻影挑战策略"""
+
+    ######## performance ########
+
+    @excel_output(view.Performance)
+    def performance_a(self):
+        """剧情演出"""
+
+    @excel_output(view.Performance)
+    def performance_c(self):
+        """剧情演出"""
+
+    @excel_output(view.Performance)
+    def performance_cg(self):
+        """剧情演出"""
+
+    @excel_output(view.Performance)
+    def performance_d(self):
+        """剧情演出"""
+
+    @excel_output(view.Performance, "PerformanceDS")
+    def performance_ds(self):
+        """剧情演出"""
+
+    @excel_output(view.Performance)
+    def performance_e(self):
+        """剧情演出"""
+
+    @excel_output(view.Performance)
+    def performance_video(self):
+        """剧情演出"""
 
     ######## planet fes ########
 

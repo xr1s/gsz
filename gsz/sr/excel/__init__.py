@@ -1,5 +1,5 @@
 from .avatar import AvatarConfig
-from .base import Element, ModelID, ModelMainSubID, ModelStringID, Text, Value
+from .base import Element, ModelID, ModelMainSubID, ModelStringID, Path, Text, Value
 from .book import BookDisplayType, BookSeriesConfig, BookSeriesWorld, LocalbookConfig
 from .challenge import (
     ChallengeBossGroupExtra,
@@ -29,6 +29,7 @@ from .message import (
 )
 from .misc import (
     ExtraEffectConfig,
+    LoopCGConfig,
     MazeBuff,
     RewardData,
     ScheduleData,
@@ -54,6 +55,7 @@ from .monster_guide import (
     MonsterGuideTag,
     MonsterTextGuide,
 )
+from .performance import Performance
 from .planet_fes import (
     PlanetFesAvatar,
     PlanetFesAvatarEvent,
@@ -151,6 +153,7 @@ __all__ = (
     # misc
     "ExtraEffectConfig",
     "MazeBuff",
+    "LoopCGConfig",
     "RewardData",
     "ScheduleData",
     "TextJoinConfig",
@@ -174,6 +177,8 @@ __all__ = (
     "MonsterGuideSkillText",
     "MonsterGuideTag",
     "MonsterTextGuide",
+    # performance
+    "Performance",
     # planet fes
     "PlanetFesAvatar",
     "PlanetFesAvatarEvent",
@@ -234,6 +239,7 @@ __all__ = (
     "TutorialGuideGroup",
     # common
     "Element",
+    "Path",
     "Text",
     "Value",
     # interfaces
