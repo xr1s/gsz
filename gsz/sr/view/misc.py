@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import functools
 import typing
 
@@ -6,8 +7,9 @@ from .. import excel
 from .base import View
 
 if typing.TYPE_CHECKING:
-    import datetime
     import collections.abc
+    import datetime
+
     from .item import ItemConfig
 
 

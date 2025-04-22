@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import functools
 import typing
 
@@ -9,7 +10,7 @@ from .base import View
 if typing.TYPE_CHECKING:
     import collections.abc
 
-    from .monster import EliteGroup, MonsterConfig, HardLevelGroup
+    from .monster import EliteGroup, HardLevelGroup, MonsterConfig
 
 
 class StageConfig(View[excel.StageConfig]):

@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import collections
 import collections.abc
 import enum
@@ -11,8 +12,8 @@ import typing
 import jinja2
 import pydantic
 
-from . import view
 from ..format import Formatter, Syntax
+from . import view
 
 if typing.TYPE_CHECKING:
     from . import excel

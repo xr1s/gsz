@@ -3,9 +3,10 @@ import typing
 
 import pydantic
 
-from . import performance, predicate, talk
 from ..excel import Value
-from .base import Model as BaseModel, get_discriminator
+from . import performance, predicate, talk
+from .base import Model as BaseModel
+from .base import get_discriminator
 
 
 class Model(BaseModel):

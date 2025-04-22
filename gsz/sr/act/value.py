@@ -2,8 +2,8 @@ import typing
 
 import pydantic
 
-from .base import get_discriminator
 from .base import Model as BaseModel
+from .base import get_discriminator
 from .task import Model
 
 

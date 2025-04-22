@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import functools
 import typing
 
@@ -9,8 +10,8 @@ from .base import View
 if typing.TYPE_CHECKING:
     import collections.abc
 
-    from .misc import ScheduleData, MazeBuff
-    from .monster import MonsterConfig, HardLevelGroup, MonsterTemplateConfig
+    from .misc import MazeBuff, ScheduleData
+    from .monster import HardLevelGroup, MonsterConfig, MonsterTemplateConfig
     from .stage import StageConfig
 
 
