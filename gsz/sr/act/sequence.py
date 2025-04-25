@@ -14,9 +14,9 @@ if typing.TYPE_CHECKING:
 
 
 class Sequence:
-    def __init__(self, game: GameData, excel: model.Sequence, index: int):
+    def __init__(self, game: GameData, seq: model.Sequence, index: int):
         self._game: GameData = game
-        self._seq: model.Sequence = excel
+        self._seq: model.Sequence = seq
         self.successors: list[Sequence] | None = None
         self.confluence: Sequence | None = None
         self.index: int = index

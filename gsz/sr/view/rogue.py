@@ -12,7 +12,6 @@ if typing.TYPE_CHECKING:
     import collections.abc
 
     from .. import act
-    from ..act import actmodel
     from .misc import MazeBuff, RewardData
     from .monster import NPCMonsterData
     from .rogue_tourn import RogueTournBuff, RogueTournHandbookMiracle, RogueTournMiracle
@@ -704,11 +703,11 @@ class RogueNPC(View[excel.RogueNPC]):
         return talk.name
 
     @functools.cached_property
-    def __dialogue_list(self) -> list[actmodel.Dialogue]:
-        from ..act import actmodel
+    def __dialogue_list(self) -> list[act.model.Dialogue]:
+        from .. import act
 
         npc_json_path = self._game.base / self._excel.npc_json_path
-        npc = actmodel.RogueNPC.model_validate_json(npc_json_path.read_bytes())
+        npc = act.model.RogueNPC.model_validate_json(npc_json_path.read_bytes())
         return npc.dialogue_list
 
     def dialogue_list(self) -> collections.abc.Iterable[act.Dialogue]:

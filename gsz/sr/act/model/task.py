@@ -7,11 +7,11 @@ import pydantic
 
 from ... import excel
 from ...excel import Text, Value
-from . import camera, performance, predicate, select_mission_item, talk, value
+from . import camera, input, mission, performance, predicate, select_mission_item, talk, target, value
 from .base import Axis, BaseModel, Custom, Dynamic, Empty, FixedValue, Model, get_discriminator
 from .target import Target
 
-sys.setrecursionlimit(1300)
+sys.setrecursionlimit(2500)
 
 
 class ActiveTemplateVirtualCamera(Model):
@@ -30,8 +30,8 @@ class ActiveVirtualCamera(Model):
     class DynamicParams(BaseModel):
         orbital_transposer_bias: bool = False
 
-    area_name: str
-    anchor_name: str
+    area_name: str | None = None
+    anchor_name: str | None = None
     level_area_camera_key: Value[str] | Custom | None = None
     is_entry_point_camera: bool = False
     is_active: bool = False
@@ -43,7 +43,7 @@ class ActiveVirtualCamera(Model):
     look_at_target_attach_point: camera.AttachPoint | None = None
     select_follow_target_type: typing.Literal["Target"] | None = None
     select_look_at_target_type: typing.Literal["Target"] | None = None
-    look_at_target: Target | None = None
+    look_at_target: target.Target | None = None
     wait_blend_finish: bool = False
     blend_config: camera.BlendConfig | None = None
     override_blend_curve_name: Value[str] | None = None
@@ -101,6 +101,10 @@ class AddStreamingSource(Model):
     streaming_source: StreamingSource
 
 
+class AddTrialPlayer(Model):
+    pass
+
+
 class AdvAINavigateTo(Model):
     class Mode(enum.Enum):
         Anchor = "Anchor"
@@ -111,23 +115,23 @@ class AdvAINavigateTo(Model):
         Run = "Run"
         Walk = "Walk"
 
-    target_type: Target
+    target_type: target.Target
     mode: Mode | None = None
     motion_flag: MotionFlag
-    navigate_target: Target | None = None
+    navigate_target: target.Target | None = None
     level_area_key: Custom | None = None
     navigate_position: Axis | None = None
     wait_finish: bool = False
 
 
 class AdvCharacterDisableHitBox(Model):
-    target_type: Target
+    target_type: target.Target
     affect_main_collider: bool = False
     enable: bool = True
 
 
 class AdvClientChangePropState(Model):
-    target_type: Target
+    target_type: target.Target
     from_state: predicate.PropState | None = None
     to_state: predicate.PropState | None = None
     can_change_server_prop: bool = False
@@ -165,12 +169,12 @@ class AdvEnablePropDialogMode(Model):
     enable_prop_camera: bool = True
     lock_player_control: bool = False
     is_immediately_succ: bool = False
-    target_type: Target
+    target_type: target.Target
 
 
 class AdvEntityFaceTo(Model):
-    source_type: Target
-    target_type: Target | None = None
+    source_type: target.Target
+    target_type: target.Target | None = None
     enable_steer: bool = False
     look_at_point: camera.AttachPoint | None = None
     steer_immediately: bool = False
@@ -183,14 +187,14 @@ class AdvEntityFaceTo(Model):
 
 
 class AdvEntityFaceToPoint(Model):
-    source_type: Target
+    source_type: target.Target
     group_id: typing.Annotated[int, pydantic.Field(alias="GroupId")]
     point_id: int
 
 
 class AdvEntityStopLookAt(Model):
-    source_type: Target
-    target_type: Target | None = None
+    source_type: target.Target
+    target_type: target.Target | None = None
     stop_immediately: bool = False
     task_enabled: bool = True
 
@@ -218,7 +222,7 @@ class AdventureCameraLookAtSimple(Model):
     look_at_group_id: FixedValue[int] | None = None
     look_at_id: FixedValue[int] | None = None
     reset: bool = False
-    look_at_target: Target | None = None
+    look_at_target: target.Target | None = None
     look_at_target_area_name: Value[str] | None = None
     look_at_target_anchor_name: Value[str] | None = None
     cut_in: bool = False
@@ -236,8 +240,17 @@ class AdventureCameraLookAtSimple(Model):
     task_enabled: bool = True
 
 
+class AdventureForbidAttackTriggerBattle(Model):
+    is_forbid: bool = False
+
+
 class AdventureShowReading(Model):
     book_id: FixedValue[int]
+
+
+class AdvHideMazeBtn(Model):
+    skill_type: typing.Literal["MazeSkill"] | None = None
+    is_hide: bool = True
 
 
 class AdvNpcFaceTo(Model):
@@ -255,8 +268,8 @@ class AdvNpcFaceToPlayer(Model):
     duration: int | None = None
     player_in_group_id: int | None = None
     player_in_group_npc_id: int | None = None
-    target_npc_type: Target | None = None
-    target_player_type: Target | None = None
+    target_npc_type: target.Target | None = None
+    target_player_type: target.Target | None = None
     try_face_to_face: bool = True
     only_player_face_to_npc: bool = False
     npc_look_at_player: bool = True
@@ -270,12 +283,20 @@ class AdvNpcFaceToPlayer(Model):
     task_enabled: bool = True
 
 
+class AdvSetAIFollow(Model):
+    fetch_target: typing.Literal[True]
+    target_type: target.Target
+    fetch_follow_target: typing.Literal[True]
+    follow_target_type: target.Target
+    prefer_slot_i_ds: list[int]
+
+
 class AdvSpecialVisionProtect(Model):
     pass
 
 
 class AnimSetParameter(Model):
-    target_type: Target | None = None
+    target_type: target.Target | None = None
     animator_path: str | None = None
     parameter_name: str
     parameter_type: typing.Literal["Bool", "Int", "Trigger"]
@@ -300,8 +321,18 @@ class BattlePlayVideo(Model):
     start_black: excel.performance.BlackType
 
 
+class BlockInputController(Model):
+    enable: bool = False
+    action_name_list: list[input.ActionName]
+    task_enabled: bool = True
+
+
 class ByHeroGender(Model):
     gender: predicate.Gender
+
+
+class CacheUI(Model):
+    prefab_paths: list[str]
 
 
 class CalculateMissionCustomValue(Model):
@@ -309,10 +340,10 @@ class CalculateMissionCustomValue(Model):
         type: typing.Literal["CustomValue"] | None = None
         direct_value: int | None = None
         main_mission_id: int | None = None
-        mission_custom_value: predicate.MissionCustomValue | None = None
+        mission_custom_value: mission.MissionCustomValue | None = None
 
     target_submission_id: int
-    target_mission_custom_value: predicate.MissionCustomValue
+    target_mission_custom_value: mission.MissionCustomValue
     value_a: Value
     value_b: Value
 
@@ -326,12 +357,32 @@ class CaptureNPCToCharacter(Model):
     group_npc_id: FixedValue[int] | Dynamic | None = None
     character_unique_name: Value[str] | None = None
     release_if_performance_end: bool = True
-    target_type: Target | None = None
+    target_type: target.Target | None = None
     task_enabled: bool = True
+
+
+class ChangeDynamicOptionalBlock(Model):
+    block_key: str
 
 
 class ChangeHeartDialModelByScript(Model):
     script_id: FixedValue[int]
+
+
+class ChangeHeroType(Model):
+    pass
+
+
+class ChangePropState(Model):
+    pass
+
+
+class ChangeTeamLeader(Model):
+    pass
+
+
+class ChangeTrackingMission(Model):
+    tracking_main_mission_id: int
 
 
 class ChangeTrackVirtualCameraFollowAndAim(Model):
@@ -384,14 +435,14 @@ class CharacterSteerTo(Model):
 
 class CharacterStopFreeStyle(Model):
     character_unique_name: str | None = None
-    target_type: Target | None = None
+    target_type: target.Target | None = None
     normalized_transition_duration: float | None = None
     task_enabled: bool = True
 
 
 class CharacterTriggerAnimState(Model):
     character_unique_name: Value[str] | Custom
-    target_alias: Target | None = None
+    target_alias: target.Target | None = None
     force_start: bool = False
     anim_state_name: str
     normalized_time_start: float | None = None
@@ -402,7 +453,7 @@ class CharacterTriggerAnimState(Model):
 
 class CharacterTriggerFreeStyle(Model):
     character_unique_name: str | None = None
-    target_alias: Target | None = None
+    target_alias: target.Target | None = None
     disable_anim_event: bool = False
     force_start: bool = True
     story_avatar_id: str
@@ -414,12 +465,23 @@ class CharacterTriggerFreeStyle(Model):
 
 
 class CharacterTriggerFreeStyleGraph(Model):
-    target_alias: Target
+    target_alias: target.Target
     graph_name: Value[str]
+
+
+class CheckMainMissionFinishedInCurrentVersion(Model):
+    main_mission_id: int
+    on_current_version_finished_task: list["Task"]
+    on_not_current_version_finished_task: list["Task"]
 
 
 class ClearDialogCamera(Model):
     pass
+
+
+class ClearNpcDistanceTrigger(Model):
+    group_id: int
+    group_npc_id: int
 
 
 class ClearTalkUI(Model):
@@ -431,13 +493,29 @@ class ClientFinishMission(Model):
     submission_id: int | None = None
 
 
+class ClosePage(Model):
+    page_names: list[str]
+    page_root_names: list[None]
+    is_silent_exit: bool = True
+
+
 class CollectDataConditions(Model):
     task_id_list: list[int] | None = None
     main_mission_id_list: list[int] | None = None
     performance_id_list: list[int]
-    performance_idds_list: typing.Annotated[list[int] | None, pydantic.Field(alias="PerformanceIDDsList")] = None
+    performance_idds_list: typing.Annotated[
+        list[Value[typing.Literal["E"]]] | None, pydantic.Field(alias="PerformanceIDDsList")
+    ] = None
     custom_value_main_mission_id_list: list[int] | None = None
     task_enabled: bool = True
+
+
+class ConsumeMissionItem(Model):
+    sub_mission_id: int
+    is_auto_consume: bool = False
+    is_show_consume_finish_tips: bool = False
+    desc: Text | None = None
+    simple_talk: Empty | None = None
 
 
 class ConsumeMissionItemPerformance(Model):
@@ -516,6 +594,11 @@ class CreateAirline(Model):
     prefab_path: str
 
 
+class CreateLevelAreas(Model):
+    asset_path: Value[pathlib.Path]
+    task_enabled: bool = True
+
+
 class CreateNPC(Model):
     group_id: FixedValue[int] | Dynamic | None = None
     group_npc_id: FixedValue[int] | Dynamic | None = None
@@ -528,18 +611,17 @@ class CreatePhoneOnCharacter(Model):
     is_destroy: bool = False
     group_id: int | None = None
     group_npc_id: int | None = None
-    target_type: Target | None = None
+    target_type: target.Target | None = None
 
 
 class CreateProp(Model):
     group_id: FixedValue[int]
     group_prop_id: FixedValue[int]
-    create_list: list[performance.Create] | None = None
+    create_list: list[performance.GroupEntityInfo] | None = None
 
 
-class CreateLevelAreas(Model):
-    asset_path: Value[pathlib.Path]
-    task_enabled: bool = True
+class CreateTrialPlayer(Model):
+    pass
 
 
 class DebateInitialize(Model):
@@ -573,24 +655,32 @@ class DebateShowToast(Model):
     toast_type: typing.Literal["Failure", "Success"]
 
 
+class DestroyCurvePropGroupPuzzle(Model):
+    unique_name: Value[str]
+
+
 class DestroyNPC(Model):
     group_id: int | None = None
     group_npc_id: int | None = None
     hide: bool = False
-    target_type: Target | None = None
+    target_type: target.Target | None = None
     destroy_list: list[performance.GroupEntityInfo] | None = None
 
 
 class DestroyProp(Model):
-    target_type: Target
-    id: FixedValue[int]
-    group_id: FixedValue[int]
+    target_type: target.Target
+    id: FixedValue[int] | None = None
+    group_id: FixedValue[int] | None = None
     destroy_list: list[performance.GroupEntityInfo] | None = None
     task_enabled: bool = True
 
 
+class DestroyTrialPlayer(Model):
+    pass
+
+
 class EnableBillboard(Model):
-    target_type: Target
+    target_type: target.Target
     enable: bool = False
 
 
@@ -598,10 +688,14 @@ class EnableNPCMonsterAI(Model):
     enable: bool = False
     group_id: int | None = None
     group_monster_ids: typing.Annotated[list[int], pydantic.Field(alias="GroupMonsterIDs")]
-    target_type: Target | None = None
+    target_type: target.Target | None = None
     unique_names: list[None]
     reset_state_on_disable: bool = True
     task_enabled: bool = True
+
+
+class EnablePerformanceMode(Model):
+    enable: bool = False
 
 
 class EndDialogueEntityInteract(Model):
@@ -612,8 +706,26 @@ class EndPerformance(Model):
     pass
 
 
+class EndPropInteract(Model):
+    task_enabled: bool = True
+
+
+class EnterFlipperLightDeviceControl(Model):
+    target_device: target.Target
+
+
+class EnterMap(Model):
+    entrance_id: int | None = None
+    group_id: int | None = None
+    anchor_id: int | None = None
+
+
 class EnterMapByCondition(Model):
     entrance_id: FixedValue[int]
+
+
+class ExitTransitionLoadingUI(Model):
+    pass
 
 
 class FinishLevelGraph(Model):
@@ -633,7 +745,12 @@ class FinishRogueAeonTalk(Model):
 
 
 class ForceSetDialogCamera(Model):
-    target_type: Target
+    target_type: target.Target
+
+
+class GuessTheSilhouetteResult(Model):
+    silhouette_id: int
+    is_executing: typing.Literal[True]
 
 
 class HeliobusSNSQuickPost(Model):
@@ -655,19 +772,32 @@ class HideAllEntity(Model):
 
 
 class HideEntity(Model):
-    target: Target
+    target: target.Target
     is_hide: bool = False
     task_enabled: bool = True
 
 
 class HideEntityV2(Model):
-    target: Target
+    target: target.Target
     is_hide: bool = False
 
 
 class HideSummonUnit(Model):
-    summon_unit: Target
+    summon_unit: target.Target
     hide: bool = True
+
+
+class HideTopPage(Model):
+    hide: bool = False
+
+
+class HideWaypointByProp(Model):
+    target_type: target.Target | None = None
+    use_owner_entity: bool = False
+    group_id: FixedValue[int] | None = None
+    instance_id: FixedValue[int] | None = None
+    prop_key: Custom | None = None
+    on_name_board: bool = False
 
 
 class LensDistortionCurveEffect(Model):
@@ -714,8 +844,20 @@ class LevelPerformanceInitialize(Model):
     audio_state_list: list[None] | None = None
 
 
+class LockCurrentTeleportAction(Model):
+    pass
+
+
+class LockPhotoIdentifyHint(Model):
+    pass
+
+
 class LockPlayerControl(Model):
     lock_camera_control: bool = True
+
+
+class LockTeamLeader(Model):
+    pass
 
 
 class NpcPossession(Model):
@@ -729,8 +871,27 @@ class NpcPossession(Model):
     group_npc_id: FixedValue[int] | None = None
     npc_unique_name: str | None = None
     possession_info: PossessionInfo
-    target_type: Target | None = None
+    target_type: target.Target | None = None
     is_delete: bool = False
+
+
+class NpcSetupTrigger(Model):
+    target_type: target.Target
+    trigger_id: int
+    disable_after_triggered: bool = False
+    range: float | None = None
+    on_trigger_enter: list["Task"] | None = None
+    on_trigger_exit: list["Task"] | None = None
+    target_types: list[str] | None = None
+
+
+class NpcToPlayerDistanceTrigger(Model):
+    group_id: int
+    group_npc_id: int
+    near_distance: int | None = None
+    near_task: list["Task"] | None = None
+    far_distance: int | None = None
+    far_task: list["Task"] | None = None
 
 
 class MonsterResearchSubmit(Model):
@@ -759,6 +920,12 @@ class OnMuseumPerformanceEnd(Model):
     pass
 
 
+class OpenRaid(Model):
+    raid_id: int
+    on_cancel: list["Task"] | None = None
+    is_skip_ui: bool = False
+
+
 class OpenTreasureChallenge(Model):
     raid_id: int | None = None
     dynamic_raid_id: int | None = None
@@ -774,12 +941,27 @@ class OverrideEndTransferType(Model):
     black_type: excel.performance.BlackType | None = None
 
 
+class OverrideFinishActionAutoTransfer(Model):
+    submission_id: int
+    transfer_type: typing.Literal["Black"] | None = None
+
+
 class OverridePerformanceEndCrack(Model):
     end_with_crack: bool = False
 
 
 class PerformanceEndBlackText(Model):
     talk_sentence_id: int
+
+
+class PerformanceEndSeq(Model):
+    class Case(BaseModel):
+        Case: int | None = None
+        force_close_black: bool = False
+        on_success: list["Task"]
+
+    cases: list[Case | Empty] | None = None
+    before_cases: list["Task"] | None = None
 
 
 class PerformanceExtendEndBlack(Model):
@@ -809,6 +991,29 @@ class PerformanceTransition(Model):
     task_enabled: bool = True
 
 
+class PhotoGraphAimTarget(Model):
+    aim_target_type: target.Target
+    is_aim: bool = False
+    aim_identify_type: typing.Literal["Manual"] | None = None
+    aim_tag_extra_offset: float | None = None
+
+
+class PhotoGraphShowIdentifyResult(Model):
+    is_identify_success: bool = False
+    is_show_toast: typing.Literal[True]
+    toast_text: Text
+    is_show_aim: bool = False
+    photo_graph_mode: typing.Literal["IdentifyUAV"] | None = None
+
+
+class PhotoGraphWaitIdentifyFinish(Model):
+    wait_target_type: target.Target
+    wait_all: bool = False
+    on_identify_finish: list["Task"] | None = None
+    on_identify_failed: list["Task"] | None = None
+    on_preview_finish: list["Task"] | None = None
+
+
 class PlayAeonTalk(Model):
     aeon_talk_id: typing.Annotated[int, pydantic.Field(validation_alias="AeonTalkId")]
     aeon_talk_count: int
@@ -829,6 +1034,33 @@ class PlayAndWaitSimpleTalk(Model):
     use_target_behavior: bool = False
     target_behaviors: list[talk.TargetBehavior] | None = None
     simple_talk_list: list[talk.SimpleTalk]
+
+
+class PlayerForceWalk(Model):
+    force_walk: bool = False
+
+
+class PlayerRemoteControlOtherEntity(Model):
+    target_entity: target.Target | None = None
+    special_n_p_c_id: int | None = None
+    is_cancel: bool = False
+    use_local_player_position: bool = False
+    recover_control_entity_position: bool = False
+    support_rush: bool = True
+    sync_position_to_server: bool = False
+    leave_player_stub_inplace: bool = False
+    player_stub_animation: Value[typing.Literal["LookatPhoneBS"]] | None = None
+    force_position_and_rotation: bool = False
+    level_area_key: Custom | None = None
+    show_release_button: bool = False
+
+
+class PlayerSelectMotionMode(Model):
+    class MotionMode(enum.Enum):
+        ForbidFastRun = "ForbidFastRun"
+        ForceWalk = "ForceWalk"
+
+    motion_mode: MotionMode | None = None
 
 
 class PlayFullScreenTransfer(Model):
@@ -879,11 +1111,25 @@ class PlayFullScreenTransfer(Model):
     action: list[__Action] | None = None
 
 
+class PlayNPCBubbleTalk(Model):
+    bubble_talk_info_list: list[talk.NPCBubbleTalk]
+    instant_finish: bool = True
+    is_loop: bool = False
+    loop_interval: int | None = None
+    unique_id: int | None = None
+    id: int | None = None
+
+
 class PlayNPCSingleBubbleTalk(Model):
-    target_type: Target
+    target_type: target.Target
     auto_skip_time: int | None = None
     talk_sentence_id: FixedValue[int] | Dynamic
     unique_id: int | None = None
+
+
+class PlayMazeButtonEffect(Model):
+    enable: bool = False
+    btn_type: typing.Literal["MazeSkill"] | None = None
 
 
 class PlayMessage(Model):
@@ -891,8 +1137,30 @@ class PlayMessage(Model):
     show_notice: bool = True
 
 
+class PlayMissionTalk(Model):
+    is_voice_3d: bool = False
+    resume_after_interrupt: bool = False
+    start_sentence_id: FixedValue[int] | None = None
+    sub_mission_id_for_resume: int | None = None
+    voice_3d_target_type: target.Target | None = None
+    end_sentence_id: FixedValue[int] | None = None
+    simple_talk_list: list[talk.SimpleTalk]
+    task_enabled: bool = True
+
+
 class PlayMultiVoiceTalk(Model):
     talk_sentence_id: int
+
+
+class PlayMunicipalChat(Model):
+    class MunicipalChatEntityInfo(BaseModel):
+        typ: typing.Annotated[typing.Literal["RPG.GameCore.MunicipalChatEntityInfo"], pydantic.Field(alias="$type")]
+        unique_name: str
+        group_instance_id: int
+
+    new_municipal_chat_config_path: str
+    new_municipal_chat_entity_infos: Value[list[MunicipalChatEntityInfo]]
+    municipal_chat_name: str
 
 
 class PlayOptionTalk(Model):
@@ -962,8 +1230,13 @@ class PlaySequenceDialogue(Model):
 
 
 class PlayTimeline(Model):
+    class Type(enum.Enum):
+        Cutscene = "Cutscene"
+        Discussion = "Discussion"
+        Story = "Story"
+
     timeline_name: str
-    type: typing.Literal["Cutscene", "Discussion", "Story"] | None = None
+    type: Type | None = None
     parameters: list[None] | None = None
     release_volume: bool = False
     task_enabled: bool = True
@@ -983,7 +1256,7 @@ class PlayVideo(Model):
 
 class PlayVoice(Model):
     voice_ids: typing.Annotated[list[int], pydantic.Field(alias="VoiceIDs")]
-    target_type: Target | None = None
+    target_type: target.Target | None = None
     interval_time: int | None = None
 
 
@@ -1002,7 +1275,7 @@ class PPFilterStackEffect(Model):
     asset_path: str | None = None
     mute_audio_event: bool = False
     is_distance_attenuation_on: bool = False
-    target_type: Target | None = None
+    target_type: target.Target | None = None
     max_attenuation_distance: int | None = None
     task_enabled: bool = True
 
@@ -1019,7 +1292,7 @@ class PredicateTaskListWithFail(Model):
 
 
 class PropDestruct(Model):
-    target_type: Target
+    target_type: target.Target
 
 
 class PropEnableCollider(Model):
@@ -1038,7 +1311,7 @@ class PropEnableCollider(Model):
     specified_relative_paths: list[str] | None = None
     trigger_select: TriggerSelect | None = None
     custom_trigger_name: str | None = None
-    target_type: Target
+    target_type: target.Target
     task_enabled: bool = False
 
 
@@ -1050,17 +1323,72 @@ class PropMoveTo(Model):
     anchor_name: str | None = None
     wait_finish: bool = False
     use_curve_data: bool = False
-    target_type: Target
+    target_type: target.Target
 
 
 class PropReqInteract(Model):
-    target_type: Target
+    target_type: target.Target
     interact_id: FixedValue[int]
+
+
+class PropSetupHitBox(Model):
+    collider_relative_path: typing.Literal["Hitbox"] | None = None
+    on_be_hit: list["Task"]
+    target_type: target.Target
+
+
+class PropSetupTrigger(Model):
+    target_type: target.Target
+    is_single: bool = False
+    target_entity_type: target.EntityType | None = None
+    target_group_id: FixedValue[int] | Dynamic | None = None
+    target_id: FixedValue[int] | Dynamic | None = None
+    target_types: list[str] | None = None
+    collider_relative_path: str | None = None
+    destroy_after_triggered: bool = False
+    disable_after_triggered: bool = False
+    on_trigger_enter: list["Task"] | None = None
+    on_trigger_exit: list["Task"] | None = None
+    task_enabled: bool = True
+    block_dialogue_in_range: bool = False
+    destroy_after_graph_end: bool = False
+    on_exit_filter: predicate.Predicate | None = None
+    trigger_by_fake_avatar: bool = False
+    skip_fake_avatar: bool = True
+    block_change_fake_avatar_callback: bool = False
+
+
+class PropSetupUITrigger(Model):
+    class ColliderRelativePath(enum.Enum):
+        BackwardCollider = "BackwardCollider"
+        ForwardCollider = "ForwardCollider"
+        LeftCollider = "LeftCollider"
+        RightCollider = "RightCollider"
+        Trigger = "Trigger"
+        TriggerUIBtn = "TriggerUIBtn"
+
+    collider_relative_path: ColliderRelativePath | None = None
+    destroy_after_triggered: bool = False
+    disable_after_triggered: bool = False
+    disable_when_triggered: bool = False
+    button_icon: str | None = None
+    icon_type: talk.OptionIconType | None = None
+    button_text: Text | None = None
+    button_text_custom: Value[str] | Custom | None = None
+    button_callback: list["Task"]
+    consider_angle_limit: bool = False
+    force_interact_in_danger: bool = False
+    interact_angle_range: int | None = None
+    override_target_types: list[typing.Literal["LocalPlayer"]] | None = None
+    trigger_by_fake_avatar: bool = False
+    skip_fake_avatar: bool = True
+    on_enter_filter: predicate.Predicate | None = None
+    target_type: target.Target
 
 
 class PropSetVisibility(Model):
     specified_relative_paths: list[str] | None = None
-    target_type: Target
+    target_type: target.Target
     visible: bool = False
 
 
@@ -1069,11 +1397,11 @@ class PropStateChangeListenerConfig(Model):
     to_state: predicate.PropState | None = None
     from_any_state: bool = False
     on_change: list["Task"]
-    target_type: Target
+    target_type: target.Target
 
 
 class PropStateExecute(Model):
-    target_type: Target
+    target_type: target.Target
     execute: list["Task"] | None = None
     state: str | None = None
 
@@ -1083,7 +1411,7 @@ class PropTriggerAnimState(Model):
     fixed_transition_duration: bool = True
     transition_duration: int | None = None
     wati_anim_finish: bool = False
-    target_type: Target
+    target_type: target.Target
 
 
 class PuzzleSetAnimatorParams(Model):
@@ -1092,7 +1420,7 @@ class PuzzleSetAnimatorParams(Model):
         param_name: typing.Literal["Chaos"]
         param_type: typing.Literal["Int"]
 
-    target_type: Target
+    target_type: target.Target
     params: list[Param]
 
 
@@ -1100,11 +1428,29 @@ class QuestGetReward(Model):
     quest_id_list: list[FixedValue[int]]
 
 
+class RadialBlurEffect(Model):
+    active: bool = True
+    target_type: target.Target | None = None
+    duration: float | None = None
+    blur_radius: typing.Literal[1] | None = None
+    iteration: int | None = None
+    blur_start: float | None = None
+    blur_feather: float | None = None
+
+
+class RaidSceneTransfer(Model):
+    pass
+
+
 class RandomConfig(Model):
     odds_list: list[FixedValue[float]]
     task_list: list["Task"]
     continuous_not_repeat: bool = False
-    random_mask_target: Target | None = None
+    random_mask_target: target.Target | None = None
+
+
+class ReleaseCacheUI(Model):
+    prefab_path: str
 
 
 class ReleaseCharacter(Model):
@@ -1120,8 +1466,12 @@ class RemoveAirline(Model):
     prefab_path: str
 
 
+class RemoveBattleEventData(Model):
+    pass
+
+
 class RemoveEffect(Model):
-    target_type: Target
+    target_type: target.Target | None = None
     effect_path: str | None = None
     unique_effect_name: str | None = None
     attach_point_name: str | None = None
@@ -1135,8 +1485,60 @@ class RemoveLevelAreas(Model):
     task_enabled: bool = True
 
 
+class RemoveMazeBuff(Model):
+    target_type: target.Target
+    id: int
+
+
+class RemoveStreamingSource(Model):
+    streaming_source: str
+
+
+class RemoveVirtualLineupBindPlane(Model):
+    pass
+
+
+class ReplaceTrialPlayer(Model):
+    pass
+
+
+class ReplaceVirtualTeam(Model):
+    pass
+
+
+class ResetBillboardInfo(Model):
+    target_entity_type: target.EntityType
+    id: int
+    group_id: int
+
+
+class ResetMissionAudioState(Model):
+    reset_bgm_emotion_state: bool = False
+    reset_sound_effect_state: bool = False
+
+
+class ResetMissionWayPoint(Model):
+    sub_mission_id: int
+
+
+class ResetPhotoGraphTargets(Model):
+    bind_name: Value[str]
+
+
+class RestoreTrackingMission(Model):
+    pass
+
+
 class RetrySwordTrainingFinalBattle(Model):
     is_retry: bool = False
+
+
+class ReturnToLoginPage(Model):
+    wait_talk_mission_key: str
+
+
+class RogueFinish(Model):
+    pass
 
 
 class RogueShowSelectMainPage(Model):
@@ -1145,6 +1547,11 @@ class RogueShowSelectMainPage(Model):
 
 class SaveMessage(Model):
     message_section_id: int
+
+
+class SceneGachaListener(Model):
+    grand_reward_callback: list["Task"] | None = None
+    small_reward_callback: list["Task"]
 
 
 class SelectMissionItem(Model):
@@ -1171,6 +1578,17 @@ class SequenceConfig(Model):
     task_list: list["Task"]
 
 
+class SetAdvAchievement(Model):
+    achievement_id: int | None = None
+    quest_id: int | None = None
+    group_id: int | None = None
+    instance_id: int | None = None
+
+
+class SetAllMissionWaypointsVisiable(Model):
+    is_visiable: bool = False
+
+
 class SetAllRogueDoorState(Model):
     pass
 
@@ -1189,6 +1607,26 @@ class SetBattleBGMState(Model):
     state_name: Value[str]
 
 
+class SetBillboardInfo(Model):
+    target_entity_type: target.EntityType | None = None
+    id: int | None = None
+    group_id: int | None = None
+    name: Text | None = None
+    title: Text | None = None
+    map_icon_type: int | None = None
+    edit_height: bool = False
+    min_height: float | None = None
+    max_height: float | None = None
+    board_show_list: list[int] | None = None
+    show_distance: list[int] | None = None
+
+
+class SetCharacterAtlasFaceEmotion(Model):
+    character_unique_name: str | None = None
+    mesh_name: typing.Literal["Body"] | None = None
+    emotion_index: int | None = None
+
+
 class SetCharacterShadowFactor(Model):
     enable_factor: bool = False
     only_enable_when_use_shadow_probe: bool = False
@@ -1196,7 +1634,7 @@ class SetCharacterShadowFactor(Model):
 
 class SetCharacterVisible(Model):
     character_unique_name: str | None = None
-    target_type: Target | None = None
+    target_type: target.Target | None = None
     visible: bool = False
 
 
@@ -1209,13 +1647,23 @@ class SetClockBoyEmotion(Model):
         hour: int
         minute: int
 
-    target_type: Target
+    target_type: target.Target
     atlas_emotions: list[AtlasEmotion]
     clock: Clock
 
 
+class SetEffectAnimatorTrigger(Model):
+    unique_effect_name: str
+    trigger_name: typing.Literal["TriggerVisionClose"]
+
+
+class SetEntityTalkEnable(Model):
+    target: target.Target
+    enable_talk: bool = False
+
+
 class SetEntityVisible(Model):
-    target_type: Target
+    target_type: target.Target
     visible: bool = False
     mute_collider_when_invisible: bool = True
     mute_trigger_when_visible: bool = False
@@ -1243,13 +1691,39 @@ class SetFloorCustomFloatV2(Model):
     value: FixedValue[int]
 
 
+class SetFloorCustomString(Model):
+    name: Value[str]
+    value: Value[str]
+
+
 class SetFloorSavedValue(Model):
     pass
+
+
+class SetForceStreamingThisFrame(Model):
+    start_loading_tick: typing.Literal[True]
+
+
+class SetFuncBtn(Model):
+    custom_string: Value[str] | None = None
+    show_btn_effect: bool = False
+
+
+class SetHLODSwitchDelay(Model):
+    default_delay: bool = False
+    no_delay: bool = False
 
 
 class SetHudTemplate(Model):
     template_id: int
     enable_template: bool = False
+
+
+class SetLoadingStratageType(Model):
+    stratage_type: typing.Literal["Legacy", "Plain", "StoryLine"]
+    loading_type: typing.Literal["RefreshLoading"] | None = None
+    roll_back_when_mission_fail: bool = False
+    submission_id: int | None = None
 
 
 class SetLocalPlayerDitherAlpha(Model):
@@ -1269,12 +1743,32 @@ class SetMissionAudioState(Model):
 
 class SetMissionCustomValue(Model):
     submission_id: int
-    mission_custom_value: predicate.MissionCustomValue
+    mission_custom_value: mission.MissionCustomValue | None = None
     custom_value: int | None = None
+
+
+class SetMissionWayPoint(Model):
+    sub_mission_id: int
+    overide_mission_way_point_type: bool = False
+    mission_way_point_type: target.EntityType | None = None
+    overide_way_point_floor_id: bool = False
+    way_point_floor_id: int | None = None
+    overide_way_point_group_id: bool = False
+    way_point_group_id: int | None = None
+    overide_way_point_entity_id: bool = False
+    way_point_entity_id: int | None = None
+    overide_way_point_show_range_min: bool = False
+    way_point_show_range_min: int | None = None
+    overide_map_waypoint_range: bool = False
+    map_waypoint_range: int | None = None
 
 
 class SetMunicipalEnable(Model):
     visible: bool = False
+
+
+class SetNPCMonstersVisible(Model):
+    pass
 
 
 class SetNpcStatus(Model):
@@ -1284,13 +1778,13 @@ class SetNpcStatus(Model):
         Patrol = "Patrol"
         PetSearch = "PetSearch"
 
-    target_type: Target
+    target_type: target.Target
     status: Status | None = None
     task_enabled: bool = True
 
 
 class SetNpcWaypath(Model):
-    target_type: Target
+    target_type: target.Target
     UsageType: typing.Literal["TaskFollow"] | None = None
 
 
@@ -1322,13 +1816,13 @@ class SetStageItemState(Model):
 
 
 class SetTargetEntityFadeWithAnim(Model):
-    target_type: Target
+    target_type: target.Target
     target_value: typing.Literal[1] | None = None
     duration: float | None = None
 
 
 class SetTargetUniqueName(Model):
-    target_type: Target
+    target_type: target.Target
     unique_name: str
 
 
@@ -1343,9 +1837,45 @@ class SetTraceOrigamiFlag(Model):
     pass
 
 
+class SetTrackingMission(Model):
+    main_mission_id: int | None = None
+
+
+class SetVirtualLineupBindPlane(Model):
+    pass
+
+
+class SetWaypointIgnoreLock(Model):
+    reset: bool = False
+
+
+class SetWaypointSafeZone(Model):
+    is_reset: bool = False
+    margin_left: typing.Literal[0]
+    margin_right: typing.Literal[0]
+    margin_up: typing.Literal[0]
+    margin_down: typing.Literal[0]
+
+
+class ShowActivityPage(Model):
+    panel_id: list[int]
+
+
 class ShowBillboardInStoryMode(Model):
-    target_type: Target
+    target_type: target.Target
     is_show: bool = False
+
+
+class ShowDeleteMissionDialog(Model):
+    sub_mission_id: int
+    on_all_completed: list["Task"]
+    on_confirm: list["Task"]
+
+
+class ShowEnvBuffDialog(Model):
+    raid_id: int | None = None
+    is_auto_get_param: bool = False
+    on_cancel: list["Task"] | None = None
 
 
 class ShowFistClubMissionPage(Model):
@@ -1353,13 +1883,103 @@ class ShowFistClubMissionPage(Model):
     on_page_cancel: list["Task"]
 
 
+class ShowFuncBtn(Model):
+    class PuzzleFunc(enum.Enum):
+        Identify = "Identify"
+        Match7thGuessTheSilhouette = "Match7thGuessTheSilhouette"
+        SpecialVision = "SpecialVision"
+        SpecialVisionFindSneakMonster = "SpecialVisionFindSneakMonster"
+        TriggerCustomString = "TriggerCustomString"
+
+    hide_when_graph_finish: bool = True
+    show: bool = True
+    item_id: int | None = None
+    puzzle_func: PuzzleFunc | None = None
+    c_d_duration: float | None = None
+    show_btn_fuc_hint: bool = True
+    custom_string: Value[str] | None = None
+    show_btn_effect: bool = False
+    override_btn_hint: Text | None = None
+    override_icon_path: str | None = None
+    mission_id: FixedValue[int] | Dynamic | None = None
+
+
 class ShowGroupChallengeSelectPage(Model):
     pass
 
 
+class ShowGuideHintWithText(Model):
+    block: bool = False
+    target_event: list["Task"]
+    node_id_list: list[str]
+    is_auto_match_guide_hint_type: bool = True
+    guide_hint_type: input.GuideHintType | None = None
+    guide_text_type: input.GuideTextType | None = None
+    guide_text: str | None = None
+    guide_text_p_c: typing.Literal["TutorialTextmap_401202"] | None = None
+    guide_talk_id: int | None = None
+    guide_text_controller: str | None = None
+    override_action_name: input.ActionName | None = None
+    show_key_map_tip: bool = True
+    custom_text_direction: input.Direction | None = None
+    guide_hint_show_config: input.ShowConfig | None = None
+    guide_text_show_config: input.ShowConfig | None = None
+    guide_ui_context_config: input.ContextConfig | None = None
+    enable_navigation: bool = False
+    enable_submit: bool = False
+    enable_click_in_hint_area: bool = False
+    enable_action_list: list[str] | None = None
+    enable_battle_operation_list: list[str] | None = None
+    param_int: Dynamic | None = None
+    show_delay: float | None = None
+    disable_black_mask: bool = False
+    task_enabled: bool = True
+
+
+class ShowGuideText(Model):
+    class TextPath(enum.Enum):
+        Contents_Text = "Contexts/Text"
+        ContextsText = "ContextsText"
+        Text = "Text"
+
+    class PCGuide(BaseModel):
+        use_pc_guide: typing.Annotated[bool, pydantic.Field(alias="UsePCGuide")] = False
+        guide_res_id: int | None = None
+        path: pathlib.Path | None = None
+        text_path: "ShowGuideText.TextPath | None" = None
+        text: str | None = None
+        controller_text: str | None = None
+        action_name: str | None = None
+        controller_action_name: str | None = None
+        copy_anchor_and_sale: bool = False
+        offset_x: int | None = None
+        offset_y: int | None = None
+
+    id: int
+    guide_res_id: int | None = None
+    node_id: str | None = None
+    path: str | None = None
+    show: bool = False
+    text_path: TextPath | None = None
+    text: str | None = None
+    action_name: str | None = None
+    copy_anchor_and_sale: bool = False
+    follow: bool = True
+    is_3_d_object: bool = False
+    offset_x: int | None = None
+    offset_y: int | None = None
+    pc_guide: typing.Annotated[PCGuide, pydantic.Field(alias="PCGuide")]
+    task_enabled: bool = True
+
+
 class ShowHeartDialToast(Model):
     step_type: typing.Literal["Lock", "Normal"]
-    target_type: Target
+    target_type: target.Target
+
+
+class ShowMazeUI(Model):
+    is_show: bool = False
+    task_enabled: bool = True
 
 
 class ShowMuseumPage(Model):
@@ -1367,13 +1987,17 @@ class ShowMuseumPage(Model):
 
 
 class ShowOfferingClockieUpgradeHint(Model):
-    offering_type_id: int
+    offering_type_id: typing.Literal[1]
     phase_id: int
 
 
 class ShowPerformanceRollingSubtitles(Model):
     prev_duration: float | None = None
     json_config: pathlib.Path
+
+
+class ShowPlayGOSubPackageDialog(Model):
+    pass
 
 
 class ShowRogueTalkBg(Model):
@@ -1391,7 +2015,7 @@ class ShowRogueTalkUI(Model):
 
 class ShowSDFText(Model):
     is_show: bool = False
-    target_type: Target
+    target_type: target.Target
     is_face_to_camera: FixedValue[int]
     sdf_text_id: typing.Annotated[Dynamic | None, pydantic.Field(alias="SDFTextID")] = None
     sdf_text_effect: typing.Annotated[Dynamic | None, pydantic.Field(alias="SDFTextID")] = None
@@ -1409,15 +2033,35 @@ class ShowShop(Model):
     task_id: list[None] | None
 
 
+class ShowSpaceZooMainPage(Model):
+    page_type: typing.Literal["Bag", "Cattery", "Main"]
+    on_ui_enter: list["Task"] | None = None
+
+
+class ShowSubPackage(Model):
+    pass
+
+
 class ShowTalkUI(Model):
     show: bool = False
     show_dialog_control_ui: bool = True
     task_enabled: bool = True
 
 
+class ShowTransitionLoadingUI(Model):
+    name: str
+
+
 class ShowTutorialGuide(Model):
     guide_id: int
     wait_for_exit: bool = False
+    task_enabled: bool = True
+
+
+class ShowTutorialUI(Model):
+    is_hide: bool = False
+    associated_ui_name: str | None = None
+    force_show_dialog: bool = False
     task_enabled: bool = True
 
 
@@ -1431,29 +2075,90 @@ class ShowUI(Model):
     task_enabled: bool = True
 
 
+class ShowWaypointByProp(Model):
+    target_type: target.Target | None = None
+    use_owner_entity: bool = False
+    group_id: FixedValue[int] | Dynamic | None = None
+    instance_id: FixedValue[int] | Dynamic | None = None
+    min_range: int | None = None
+    prop_key: Custom | None = None
+    max_range: int | None = None
+    icon_path: str | None = None
+    offset: Axis | None = None
+    on_name_board: bool = False
+    task_enabled: bool = True
+
+
 class ShowWorldShop(Model):
     shop_type: int
     shop_id: int
 
 
+class ShowWorldShop4ThUpgradeHint(Model):
+    offering_type_id: typing.Literal[6]
+    phase_id: int
+
+
+class SpeedLineEffect(Model):
+    active: bool = True
+    speed: float
+    divide: float
+    start: float
+    brightness: float
+    density: float
+    speedline_seed_path: str
+
+
 class StartDialogueEntityInteract(Model):
-    target_type: Target | None = None
+    target_type: target.Target | None = None
     level_graph_path: pathlib.Path
     use_override_data: bool = False
     value_source: value.ValueSource
     override_tasks: camera.OverrideTasks | None = None
 
 
+class StartPropInteractMode(Model):
+    class Mode(enum.Enum):
+        LockControl = "LockControl"
+        OpenUI = "OpenUI"
+        UseInteractiveProp = "UseInteractiveProp"
+        UsePose01 = "UsePose01"
+        UsePose02 = "UsePose02"
+
+    class OverrideData01(BaseModel):
+        areas_path: str
+        area_name: str
+        anchor_name: str
+
+    target_type: target.Target
+    mode: Mode | None = None
+    use_override_data: bool = False
+    override_data_0_1: OverrideData01 | None = None
+    task_enabled: bool = True
+
+
 class StopBlendShapesEmotion(Model):
-    target_type: Target
+    target_type: target.Target
+
+
+class StopMunicipalChat(Model):
+    municipal_chat_name: str
 
 
 class StopPermanentEmotion(Model):
-    target_type: Target
+    target_type: target.Target
+
+
+class StopRandomMissionTalk(Model):
+    pass
+
+
+class StoryLineReplaceTrialPlayer(Model):
+    pass
 
 
 class SwitchAudioListenerToTarget(Model):
-    target_type: Target
+    target_type: target.Target
 
 
 class SwitchCase(Model):
@@ -1482,6 +2187,23 @@ class SwitchCharacterAnchorV2(Model):
     task_enabled: bool = False
 
 
+class SwitchPhotoGraphMode(Model):
+    class PhotoGraphMode(enum.Enum):
+        Identify = "Identify"
+        IdentifyUAV = "IdentifyUAV"
+        ShotUAV = "ShotUAV"
+
+    photo_graph_mode: PhotoGraphMode | None = None
+    skip_photo_preview_dialog: bool = False
+    exit_when_pre_view_dialog_finish: bool = True
+    identify_radius_override: FixedValue[int] | Dynamic | None = None
+    identify_display_type: typing.Literal["March7thGuessTheSilhouette"] | None = None
+    identify_max_exit_distance: typing.Literal[50] | None = None
+    identify_look_at: target.Target | None = None
+    init_fov: typing.Literal[1] | None = None
+    task_enabled: bool = True
+
+
 class SwitchUIMenuBGM(Model):
     should_stop: bool = False
     state_name: str | None = None
@@ -1498,17 +2220,43 @@ class TalkFigure(Model):
     task_enabled: bool = True
 
 
+class TeleportToRotatableRegion(Model):
+    target_region_index: FixedValue[int]
+    target_anchor_group_id: FixedValue[int]
+    target_anchor_instance_id: FixedValue[int]
+
+
+class ToastPile(Model):
+    img_path: str | None = None
+    desc_text_id: Text | None = None
+    desc_text_key: Value[str] | Custom | None = None
+    task_enabled: bool = True
+
+
 class TrainPartySwitchEnvironment(Model):
     name: typing.Literal["Train_Bar", "Train_Carriage", "Train_Default"]
 
 
+class TransitEnvProfile(Model):
+    path: Value[str] | Custom
+    priority: typing.Literal["TASK_DYNAMIC_BLOCK_BATTLE_AREA"] | None = None
+    duration: float | None = None
+
+
 class TransitEnvProfileForStory(Model):
     path: Value[str]
-    duration: int
+    duration: float
+
+
+class TriggerBattle(Model):
+    event_id: FixedValue[int]
+    group_id: FixedValue[int]
+    battle_area_id: FixedValue[int]
+    battle_area_config_id: FixedValue[int] | None = None
 
 
 class TriggerBlendShapesEmotion(Model):
-    target_type: Target
+    target_type: target.Target
     emotion_name: str | None = None
 
 
@@ -1530,8 +2278,20 @@ class TriggerDialogueEvent(Model):
     dialogue_event_id: int
 
 
+class TriggerDrinkMakerBartendInMainMission(Model):
+    formula_id: int
+    ingredient_ids: typing.Annotated[list[int], pydantic.Field(alias="IngredientIDs")]
+
+
+class TriggerDrinkMakerBartendInMission(Model):
+    request_id: int
+    is_save_on_server: bool = False
+    on_bartend_success: list["Task"]
+    on_bartend_fail: list["Task"]
+
+
 class TriggerEffect(Model):
-    target_type: Target | None = None
+    target_type: target.Target | None = None
     is_attach_to_target_entity: bool = False
     flags: list[typing.Literal["Field", "Resident"]]
     alive_only: bool = False
@@ -1555,8 +2315,14 @@ class TriggerEffectList(Model):
         scale: Axis | None = None
         sync_prop_state: bool = False
 
-    target_type: Target | None = None
+    target_type: target.Target | None = None
     effect_list: list[Effect]
+
+
+class TriggerEffectOnAnchor(Model):
+    area_name: str
+    anchor_name: str
+    effect_path: str
 
 
 class TriggerEntityEvent(Model):
@@ -1566,7 +2332,7 @@ class TriggerEntityEvent(Model):
 
 class TriggerEntityEventV2(Model):
     event_name: Value[str]
-    target_type: Target | None = None
+    target_type: target.Target | None = None
 
 
 class TriggerGroupEvent(Model):
@@ -1579,11 +2345,12 @@ class TriggerGroupEventOnDialogEnd(Model):
 
 class TriggerPerformance(Model):
     value_source: value.ValueSource | None = None
-    performance_type_ds: typing.Annotated[Custom, pydantic.Field(alias="PerformanceType_DS")]
+    performance_type: performance.Type | None = None
+    performance_type_ds: typing.Annotated[Custom | None, pydantic.Field(alias="PerformanceType_DS")] = None
     performance_id: int
-    performance_id_ds: typing.Annotated[Custom, pydantic.Field(alias="PerformanceID_DS")]
+    performance_id_ds: typing.Annotated[Custom | None, pydantic.Field(alias="PerformanceID_DS")] = None
     save_progress: bool = False
-    mask_config: performance.MaskConfig
+    mask_config: performance.MaskConfig | None = None
     task_enabled: bool = True
 
 
@@ -1606,19 +2373,27 @@ class TriggerPermanentEmotion(Model):
         Trouble02 = "Trouble02"
 
     emotion_name: EmotionName
-    target_type: Target
+    target_type: target.Target
+
+
+class TriggerRogueDialogue(Model):
+    dialogue_path: pathlib.Path
 
 
 class TriggerSound(Model):
     sound_name: Value[str] | None = None
     unique_name: str | None = None
     emitter_type: typing.Literal["DefaultEmitter", "LocalPlayer", "NPC", "Prop", "TargetEvaluator"] | None = None
-    target_type: Target | None = None
+    target_type: target.Target | None = None
     group_id: int | None = None
     id: int | None = None
     is_prop_lod_loop: bool = False
     event_cd: typing.Annotated[int | None, pydantic.Field(alias="EventCD")] = None
     task_enabled: bool = True
+
+
+class TriggerUINotify(Model):
+    notify_type_name: str
 
 
 class TutorialTaskUnlock(Model):
@@ -1636,7 +2411,7 @@ class UpdateTreasureChallengeProgress(Model):
 
 
 class VCameraConfigChange(Model):
-    character_camera_target_type: Target | None = None
+    character_camera_target_type: target.Target | None = None
     camera_config: camera.CameraConfig | camera.CameraFreelook3rdConfig | camera.CameraShakeConfig
     task_enabled: bool = False
 
@@ -1667,11 +2442,21 @@ class WaitFloorCustomValueChange(Model):
     is_loop: bool = True
 
 
+class WaitFloorCustomValueChangeV2(Model):
+    name: Value[str] | Custom
+    on_change: list["Task"]
+    condition: predicate.Predicate | None = None
+
+
 class WaitFloorSavedValueChangeV2(Model):
     name: Value[str] | None = None
     condition: predicate.Predicate | None = None
     on_change: list["Task"]
     is_loop: bool = True
+
+
+class WaitFor(Model):
+    predicate: predicate.Predicate
 
 
 class WaitFrame(Model):
@@ -1686,8 +2471,41 @@ class WaitGroupEvent(Model):
     task_enabled: bool = False
 
 
+class WaitMissionCustomValueChange(Model):
+    main_mission_id: int | None = None
+    mission_custom_value: mission.MissionCustomValue | None = None
+    on_change: list["Task"]
+    condition: predicate.Predicate | None = None
+    task_enabled: bool = True
+
+
+class WaitMissionTalkFinish(Model):
+    task_enabled: bool = True
+
+
+class WaitNewDecalDialogExit(Model):
+    wait_decal_list: list[typing.Literal[9]]
+
+
 class WaitPerformanceEnd(Model):
     pass
+
+
+class WaitPhotoGraphResult(Model):
+    wait_photo_result: list[str]
+    complete_match: bool = False
+    on_success: list["Task"]
+    on_fail: list["Task"] | None = None
+    is_loop: bool = True
+
+
+class WaitPredicateSucc(Model):
+    pass
+
+
+class WaitPropDestroy(Model):
+    on_success: list["Task"]
+    target_type: target.Target
 
 
 class WaitRogueSimpleTalkFinish(Model):
@@ -1701,6 +2519,12 @@ class WaitSecond(Model):
     task_enabled: bool = False
 
 
+class WaitSilverWolfCompanionToastExit(Model):
+    mission_id: int
+    avatar_id: int
+    max_wait_time: int
+
+
 class WaitSimpleTalkFinish(Model):
     pass
 
@@ -1709,7 +2533,32 @@ class WaitStreamingJobFinished(Model):
     stop_loading_tick: bool = False
 
 
-Task = typing.Annotated[
+class WaitTutorial(Model):
+    event: str
+    param: str | None = None
+    task_enabled: bool = True
+    go_next_immediately: bool = False
+    on_success_immediate: list["Task"] | None = None
+    block_on_waiting: bool = False
+
+
+class WaitUIControllerClose(Model):
+    ui_controller_name: str | None = None
+
+
+class WaitUIEvent(Model):
+    ui_event_type: typing.Literal["FindTrotter"]
+
+
+class WaitUINodeOpen(Model):
+    node_id: str | None = None
+    path: str | None = None
+    skip_check: bool = False
+    reverse: bool = False
+
+
+# 因为太大了导致 Pyright 无法继续分析，所以按首字母拆一下
+__TaskA = (
     typing.Annotated[ActiveTemplateVirtualCamera, pydantic.Tag("ActiveTemplateVirtualCamera")]
     | typing.Annotated[ActiveVirtualCamera, pydantic.Tag("ActiveVirtualCamera")]
     | typing.Annotated[
@@ -1719,6 +2568,7 @@ Task = typing.Annotated[
     | typing.Annotated[AddFinishMissionData_SelectConsumeItem, pydantic.Tag("AddFinishMissionData_SelectConsumeItem")]
     | typing.Annotated[AddFinishMissionData_PlayMessage, pydantic.Tag("AddFinishMissionData_PlayMessage")]
     | typing.Annotated[AddStreamingSource, pydantic.Tag("AddStreamingSource")]
+    | typing.Annotated[AddTrialPlayer, pydantic.Tag("AddTrialPlayer")]
     | typing.Annotated[AdvAINavigateTo, pydantic.Tag("AdvAINavigateTo")]
     | typing.Annotated[AdvCharacterDisableHitBox, pydantic.Tag("AdvCharacterDisableHitBox")]
     | typing.Annotated[AdvClientChangePropState, pydantic.Tag("AdvClientChangePropState")]
@@ -1733,19 +2583,35 @@ Task = typing.Annotated[
     | typing.Annotated[AdvEntityStopLookAt, pydantic.Tag("AdvEntityStopLookAt")]
     | typing.Annotated[AdventureCameraLookAt, pydantic.Tag("AdventureCameraLookAt")]
     | typing.Annotated[AdventureCameraLookAtSimple, pydantic.Tag("AdventureCameraLookAtSimple")]
+    | typing.Annotated[AdventureForbidAttackTriggerBattle, pydantic.Tag("AdventureForbidAttackTriggerBattle")]
     | typing.Annotated[AdventureShowReading, pydantic.Tag("AdventureShowReading")]
+    | typing.Annotated[AdvHideMazeBtn, pydantic.Tag("AdvHideMazeBtn")]
     | typing.Annotated[AdvNpcFaceTo, pydantic.Tag("AdvNpcFaceTo")]
     | typing.Annotated[AdvNpcFaceToPlayer, pydantic.Tag("AdvNpcFaceToPlayer")]
+    | typing.Annotated[AdvSetAIFollow, pydantic.Tag("AdvSetAIFollow")]
     | typing.Annotated[AdvSpecialVisionProtect, pydantic.Tag("AdvSpecialVisionProtect")]
     | typing.Annotated[AnimSetParameter, pydantic.Tag("AnimSetParameter")]
-    | typing.Annotated[BattlePerformInit, pydantic.Tag("BattlePerformInit")]
+)
+
+__TaskB = (
+    typing.Annotated[BattlePerformInit, pydantic.Tag("BattlePerformInit")]
     | typing.Annotated[BattlePerformTimeline, pydantic.Tag("BattlePerformTimeline")]
     | typing.Annotated[BattlePlayVideo, pydantic.Tag("BattlePlayVideo")]
+    | typing.Annotated[BlockInputController, pydantic.Tag("BlockInputController")]
     | typing.Annotated[ByHeroGender, pydantic.Tag("ByHeroGender")]
+)
+
+__TaskC = (
+    typing.Annotated[CacheUI, pydantic.Tag("CacheUI")]
     | typing.Annotated[CalculateMissionCustomValue, pydantic.Tag("CalculateMissionCustomValue")]
     | typing.Annotated[CaptureLocalPlayer, pydantic.Tag("CaptureLocalPlayer")]
     | typing.Annotated[CaptureNPCToCharacter, pydantic.Tag("CaptureNPCToCharacter")]
+    | typing.Annotated[ChangeDynamicOptionalBlock, pydantic.Tag("ChangeDynamicOptionalBlock")]
     | typing.Annotated[ChangeHeartDialModelByScript, pydantic.Tag("ChangeHeartDialModelByScript")]
+    | typing.Annotated[ChangeHeroType, pydantic.Tag("ChangeHeroType")]
+    | typing.Annotated[ChangePropState, pydantic.Tag("ChangePropState")]
+    | typing.Annotated[ChangeTeamLeader, pydantic.Tag("ChangeTeamLeader")]
+    | typing.Annotated[ChangeTrackingMission, pydantic.Tag("ChangeTrackingMission")]
     | typing.Annotated[ChangeTrackVirtualCameraFollowAndAim, pydantic.Tag("ChangeTrackVirtualCameraFollowAndAim")]
     | typing.Annotated[CharacterDisableLookAt, pydantic.Tag("CharacterDisableLookAt")]
     | typing.Annotated[CharacterHeadLookAt, pydantic.Tag("CharacterHeadLookAt")]
@@ -1756,10 +2622,16 @@ Task = typing.Annotated[
     | typing.Annotated[CharacterTriggerAnimState, pydantic.Tag("CharacterTriggerAnimState")]
     | typing.Annotated[CharacterTriggerFreeStyle, pydantic.Tag("CharacterTriggerFreeStyle")]
     | typing.Annotated[CharacterTriggerFreeStyleGraph, pydantic.Tag("CharacterTriggerFreeStyleGraph")]
+    | typing.Annotated[
+        CheckMainMissionFinishedInCurrentVersion, pydantic.Tag("CheckMainMissionFinishedInCurrentVersion")
+    ]
     | typing.Annotated[ClearDialogCamera, pydantic.Tag("ClearDialogCamera")]
+    | typing.Annotated[ClearNpcDistanceTrigger, pydantic.Tag("ClearNpcDistanceTrigger")]
     | typing.Annotated[ClearTalkUI, pydantic.Tag("ClearTalkUI")]
     | typing.Annotated[ClientFinishMission, pydantic.Tag("ClientFinishMission")]
+    | typing.Annotated[ClosePage, pydantic.Tag("ClosePage")]
     | typing.Annotated[CollectDataConditions, pydantic.Tag("CollectDataConditions")]
+    | typing.Annotated[ConsumeMissionItem, pydantic.Tag("ConsumeMissionItem")]
     | typing.Annotated[ConsumeMissionItemPerformance, pydantic.Tag("ConsumeMissionItemPerformance")]
     | typing.Annotated[ConsumeOrigamiItem, pydantic.Tag("ConsumeOrigamiItem")]
     | typing.Annotated[ConvinceInitialize, pydantic.Tag("ConvinceInitialize")]
@@ -1774,51 +2646,108 @@ Task = typing.Annotated[
     | typing.Annotated[ConvinceWaitTurnBegin, pydantic.Tag("ConvinceWaitTurnBegin")]
     | typing.Annotated[CreateAirline, pydantic.Tag("CreateAirline")]
     | typing.Annotated[CreateLevelAreas, pydantic.Tag("CreateLevelAreas")]
-    | typing.Annotated[DebateInitialize, pydantic.Tag("DebateInitialize")]
-    | typing.Annotated[DebateReturnTestimony, pydantic.Tag("DebateReturnTestimony")]
-    | typing.Annotated[DebateShowToast, pydantic.Tag("DebateShowToast")]
     | typing.Annotated[CreateNPC, pydantic.Tag("CreateNPC")]
     | typing.Annotated[CreatePhoneOnCharacter, pydantic.Tag("CreatePhoneOnCharacter")]
     | typing.Annotated[CreateProp, pydantic.Tag("CreateProp")]
+    | typing.Annotated[CreateTrialPlayer, pydantic.Tag("CreateTrialPlayer")]
+)
+
+__TaskD = (
+    typing.Annotated[DebateInitialize, pydantic.Tag("DebateInitialize")]
+    | typing.Annotated[DebateReturnTestimony, pydantic.Tag("DebateReturnTestimony")]
+    | typing.Annotated[DebateShowToast, pydantic.Tag("DebateShowToast")]
+    | typing.Annotated[DestroyCurvePropGroupPuzzle, pydantic.Tag("DestroyCurvePropGroupPuzzle")]
     | typing.Annotated[DestroyNPC, pydantic.Tag("DestroyNPC")]
     | typing.Annotated[DestroyProp, pydantic.Tag("DestroyProp")]
-    | typing.Annotated[EnableBillboard, pydantic.Tag("EnableBillboard")]
+    | typing.Annotated[DestroyTrialPlayer, pydantic.Tag("DestroyTrialPlayer")]
+)
+
+__TaskE = (
+    typing.Annotated[EnableBillboard, pydantic.Tag("EnableBillboard")]
     | typing.Annotated[EnableNPCMonsterAI, pydantic.Tag("EnableNPCMonsterAI")]
+    | typing.Annotated[EnablePerformanceMode, pydantic.Tag("EnablePerformanceMode")]
     | typing.Annotated[EndDialogueEntityInteract, pydantic.Tag("EndDialogueEntityInteract")]
     | typing.Annotated[EndPerformance, pydantic.Tag("EndPerformance")]
+    | typing.Annotated[EndPropInteract, pydantic.Tag("EndPropInteract")]
+    | typing.Annotated[EnterFlipperLightDeviceControl, pydantic.Tag("EnterFlipperLightDeviceControl")]
+    | typing.Annotated[EnterMap, pydantic.Tag("EnterMap")]
     | typing.Annotated[EnterMapByCondition, pydantic.Tag("EnterMapByCondition")]
-    | typing.Annotated[FinishLevelGraph, pydantic.Tag("FinishLevelGraph")]
+    | typing.Annotated[ExitTransitionLoadingUI, pydantic.Tag("ExitTransitionLoadingUI")]
+)
+
+__TaskF = (
+    typing.Annotated[FinishLevelGraph, pydantic.Tag("FinishLevelGraph")]
     | typing.Annotated[FinishPerformanceMission, pydantic.Tag("FinishPerformanceMission")]
     | typing.Annotated[FinishRogueAeonTalk, pydantic.Tag("FinishRogueAeonTalk")]
     | typing.Annotated[ForceSetDialogCamera, pydantic.Tag("ForceSetDialogCamera")]
-    | typing.Annotated[HeliobusSNSQuickPost, pydantic.Tag("HeliobusSNSQuickPost")]
+)
+
+__TaskG = typing.Annotated[GuessTheSilhouetteResult, pydantic.Tag("GuessTheSilhouetteResult")]
+
+__TaskH = (
+    typing.Annotated[HeliobusSNSQuickPost, pydantic.Tag("HeliobusSNSQuickPost")]
     | typing.Annotated[HideAllEntity, pydantic.Tag("HideAllEntity")]
     | typing.Annotated[HideEntity, pydantic.Tag("HideEntity")]
     | typing.Annotated[HideEntityV2, pydantic.Tag("HideEntityV2")]
     | typing.Annotated[HideSummonUnit, pydantic.Tag("HideSummonUnit")]
-    | typing.Annotated[LensDistortionCurveEffect, pydantic.Tag("LensDistortionCurveEffect")]
+    | typing.Annotated[HideTopPage, pydantic.Tag("HideTopPage")]
+    | typing.Annotated[HideWaypointByProp, pydantic.Tag("HideWaypointByProp")]
+)
+
+__TaskL = (
+    typing.Annotated[LensDistortionCurveEffect, pydantic.Tag("LensDistortionCurveEffect")]
     | typing.Annotated[LevelAudioState, pydantic.Tag("LevelAudioState")]
     | typing.Annotated[LevelPerformanceInitialize, pydantic.Tag("LevelPerformanceInitialize")]
+    | typing.Annotated[LockCurrentTeleportAction, pydantic.Tag("LockCurrentTeleportAction")]
+    | typing.Annotated[LockPhotoIdentifyHint, pydantic.Tag("LockPhotoIdentifyHint")]
     | typing.Annotated[LockPlayerControl, pydantic.Tag("LockPlayerControl")]
-    | typing.Annotated[NpcPossession, pydantic.Tag("NpcPossession")]
-    | typing.Annotated[MonsterResearchSubmit, pydantic.Tag("MonsterResearchSubmit")]
+    | typing.Annotated[LockTeamLeader, pydantic.Tag("LockTeamLeader")]
+)
+
+__TaskM = (
+    typing.Annotated[MonsterResearchSubmit, pydantic.Tag("MonsterResearchSubmit")]
     | typing.Annotated[MoveVirtualCameraOnDollyPath, pydantic.Tag("MoveVirtualCameraOnDollyPath")]
-    | typing.Annotated[OnMuseumPerformanceBegin, pydantic.Tag("OnMuseumPerformanceBegin")]
+)
+
+__TaskN = (
+    typing.Annotated[NpcPossession, pydantic.Tag("NpcPossession")]
+    | typing.Annotated[NpcSetupTrigger, pydantic.Tag("NpcSetupTrigger")]
+    | typing.Annotated[NpcToPlayerDistanceTrigger, pydantic.Tag("NpcToPlayerDistanceTrigger")]
+)
+
+__TaskO = (
+    typing.Annotated[OnMuseumPerformanceBegin, pydantic.Tag("OnMuseumPerformanceBegin")]
     | typing.Annotated[OnMuseumPerformanceEnd, pydantic.Tag("OnMuseumPerformanceEnd")]
+    | typing.Annotated[OpenRaid, pydantic.Tag("OpenRaid")]
     | typing.Annotated[OpenTreasureChallenge, pydantic.Tag("OpenTreasureChallenge")]
     | typing.Annotated[OverrideEndTransferColor, pydantic.Tag("OverrideEndTransferColor")]
     | typing.Annotated[OverrideEndTransferType, pydantic.Tag("OverrideEndTransferType")]
+    | typing.Annotated[OverrideFinishActionAutoTransfer, pydantic.Tag("OverrideFinishActionAutoTransfer")]
     | typing.Annotated[OverridePerformanceEndCrack, pydantic.Tag("OverridePerformanceEndCrack")]
-    | typing.Annotated[PerformanceEndBlackText, pydantic.Tag("PerformanceEndBlackText")]
+)
+
+__TaskP = (
+    typing.Annotated[PerformanceEndBlackText, pydantic.Tag("PerformanceEndBlackText")]
+    | typing.Annotated[PerformanceEndSeq, pydantic.Tag("PerformanceEndSeq")]
     | typing.Annotated[PerformanceExtendEndBlack, pydantic.Tag("PerformanceExtendEndBlack")]
     | typing.Annotated[PerformanceTransition, pydantic.Tag("PerformanceTransition")]
+    | typing.Annotated[PhotoGraphAimTarget, pydantic.Tag("PhotoGraphAimTarget")]
+    | typing.Annotated[PhotoGraphShowIdentifyResult, pydantic.Tag("PhotoGraphShowIdentifyResult")]
+    | typing.Annotated[PhotoGraphWaitIdentifyFinish, pydantic.Tag("PhotoGraphWaitIdentifyFinish")]
     | typing.Annotated[PlayAeonTalk, pydantic.Tag("PlayAeonTalk")]
     | typing.Annotated[PlayAndWaitRogueSimpleTalk, pydantic.Tag("PlayAndWaitRogueSimpleTalk")]
     | typing.Annotated[PlayAndWaitSimpleTalk, pydantic.Tag("PlayAndWaitSimpleTalk")]
+    | typing.Annotated[PlayerForceWalk, pydantic.Tag("PlayerForceWalk")]
+    | typing.Annotated[PlayerRemoteControlOtherEntity, pydantic.Tag("PlayerRemoteControlOtherEntity")]
+    | typing.Annotated[PlayerSelectMotionMode, pydantic.Tag("PlayerSelectMotionMode")]
     | typing.Annotated[PlayFullScreenTransfer, pydantic.Tag("PlayFullScreenTransfer")]
+    | typing.Annotated[PlayNPCBubbleTalk, pydantic.Tag("PlayNPCBubbleTalk")]
     | typing.Annotated[PlayNPCSingleBubbleTalk, pydantic.Tag("PlayNPCSingleBubbleTalk")]
+    | typing.Annotated[PlayMazeButtonEffect, pydantic.Tag("PlayMazeButtonEffect")]
     | typing.Annotated[PlayMessage, pydantic.Tag("PlayMessage")]
+    | typing.Annotated[PlayMissionTalk, pydantic.Tag("PlayMissionTalk")]
     | typing.Annotated[PlayMultiVoiceTalk, pydantic.Tag("PlayMultiVoiceTalk")]
+    | typing.Annotated[PlayMunicipalChat, pydantic.Tag("PlayMunicipalChat")]
     | typing.Annotated[PlayOptionTalk, pydantic.Tag("PlayOptionTalk")]
     | typing.Annotated[PlayOrigamiTraceTalk, pydantic.Tag("PlayOrigamiTraceTalk")]
     | typing.Annotated[PlayRogueOptionTalk, pydantic.Tag("PlayRogueOptionTalk")]
@@ -1839,41 +2768,81 @@ Task = typing.Annotated[
     | typing.Annotated[PropEnableCollider, pydantic.Tag("PropEnableCollider")]
     | typing.Annotated[PropMoveTo, pydantic.Tag("PropMoveTo")]
     | typing.Annotated[PropReqInteract, pydantic.Tag("PropReqInteract")]
+    | typing.Annotated[PropSetupHitBox, pydantic.Tag("PropSetupHitBox")]
+    | typing.Annotated[PropSetupTrigger, pydantic.Tag("PropSetupTrigger")]
+    | typing.Annotated[PropSetupUITrigger, pydantic.Tag("PropSetupUITrigger")]
     | typing.Annotated[PropSetVisibility, pydantic.Tag("PropSetVisibility")]
     | typing.Annotated[PropStateChangeListenerConfig, pydantic.Tag("PropStateChangeListenerConfig")]
     | typing.Annotated[PropStateExecute, pydantic.Tag("PropStateExecute")]
     | typing.Annotated[PropTriggerAnimState, pydantic.Tag("PropTriggerAnimState")]
     | typing.Annotated[PuzzleSetAnimatorParams, pydantic.Tag("PuzzleSetAnimatorParams")]
-    | typing.Annotated[QuestGetReward, pydantic.Tag("QuestGetReward")]
+)
+
+__TaskQ = typing.Annotated[QuestGetReward, pydantic.Tag("QuestGetReward")]
+
+__TaskR = (
+    typing.Annotated[RadialBlurEffect, pydantic.Tag("RadialBlurEffect")]
+    | typing.Annotated[RaidSceneTransfer, pydantic.Tag("RaidSceneTransfer")]
     | typing.Annotated[RandomConfig, pydantic.Tag("RandomConfig")]
+    | typing.Annotated[ReleaseCacheUI, pydantic.Tag("ReleaseCacheUI")]
     | typing.Annotated[ReleaseCharacter, pydantic.Tag("ReleaseCharacter")]
     | typing.Annotated[ReleaseEnvProfileForStory, pydantic.Tag("ReleaseEnvProfileForStory")]
     | typing.Annotated[RemoveAirline, pydantic.Tag("RemoveAirline")]
+    | typing.Annotated[RemoveBattleEventData, pydantic.Tag("RemoveBattleEventData")]
     | typing.Annotated[RemoveEffect, pydantic.Tag("RemoveEffect")]
     | typing.Annotated[RemoveLevelAreas, pydantic.Tag("RemoveLevelAreas")]
+    | typing.Annotated[RemoveMazeBuff, pydantic.Tag("RemoveMazeBuff")]
+    | typing.Annotated[RemoveStreamingSource, pydantic.Tag("RemoveStreamingSource")]
+    | typing.Annotated[RemoveVirtualLineupBindPlane, pydantic.Tag("RemoveVirtualLineupBindPlane")]
+    | typing.Annotated[ReplaceTrialPlayer, pydantic.Tag("ReplaceTrialPlayer")]
+    | typing.Annotated[ReplaceVirtualTeam, pydantic.Tag("ReplaceVirtualTeam")]
+    | typing.Annotated[ResetBillboardInfo, pydantic.Tag("ResetBillboardInfo")]
+    | typing.Annotated[ResetMissionAudioState, pydantic.Tag("ResetMissionAudioState")]
+    | typing.Annotated[ResetMissionWayPoint, pydantic.Tag("ResetMissionWayPoint")]
+    | typing.Annotated[ResetPhotoGraphTargets, pydantic.Tag("ResetPhotoGraphTargets")]
+    | typing.Annotated[RestoreTrackingMission, pydantic.Tag("RestoreTrackingMission")]
     | typing.Annotated[RetrySwordTrainingFinalBattle, pydantic.Tag("RetrySwordTrainingFinalBattle")]
+    | typing.Annotated[ReturnToLoginPage, pydantic.Tag("ReturnToLoginPage")]
+    | typing.Annotated[RogueFinish, pydantic.Tag("RogueFinish")]
     | typing.Annotated[RogueShowSelectMainPage, pydantic.Tag("RogueShowSelectMainPage")]
-    | typing.Annotated[SaveMessage, pydantic.Tag("SaveMessage")]
+)
+
+__TaskS = (
+    typing.Annotated[SaveMessage, pydantic.Tag("SaveMessage")]
+    | typing.Annotated[SceneGachaListener, pydantic.Tag("SceneGachaListener")]
     | typing.Annotated[SelectMissionItem, pydantic.Tag("SelectMissionItem")]
     | typing.Annotated[SelectorConfig, pydantic.Tag("SelectorConfig")]
     | typing.Annotated[SequenceConfig, pydantic.Tag("SequenceConfig")]
+    | typing.Annotated[SetAdvAchievement, pydantic.Tag("SetAdvAchievement")]
+    | typing.Annotated[SetAllMissionWaypointsVisiable, pydantic.Tag("SetAllMissionWaypointsVisiable")]
     | typing.Annotated[SetAllRogueDoorState, pydantic.Tag("SetAllRogueDoorState")]
     | typing.Annotated[SetAsRogueDialogue, pydantic.Tag("SetAsRogueDialogue")]
     | typing.Annotated[SetAudioEmotionState, pydantic.Tag("SetAudioEmotionState")]
     | typing.Annotated[SetBattleBGMState, pydantic.Tag("SetBattleBGMState")]
+    | typing.Annotated[SetBillboardInfo, pydantic.Tag("SetBillboardInfo")]
+    | typing.Annotated[SetCharacterAtlasFaceEmotion, pydantic.Tag("SetCharacterAtlasFaceEmotion")]
     | typing.Annotated[SetCharacterShadowFactor, pydantic.Tag("SetCharacterShadowFactor")]
     | typing.Annotated[SetCharacterVisible, pydantic.Tag("SetCharacterVisible")]
     | typing.Annotated[SetClockBoyEmotion, pydantic.Tag("SetClockBoyEmotion")]
+    | typing.Annotated[SetEffectAnimatorTrigger, pydantic.Tag("SetEffectAnimatorTrigger")]
+    | typing.Annotated[SetEntityTalkEnable, pydantic.Tag("SetEntityTalkEnable")]
     | typing.Annotated[SetEntityVisible, pydantic.Tag("SetEntityVisible")]
     | typing.Annotated[SetFloorCustomBool, pydantic.Tag("SetFloorCustomBool")]
     | typing.Annotated[SetFloorCustomFloat, pydantic.Tag("SetFloorCustomFloat")]
     | typing.Annotated[SetFloorCustomFloatV2, pydantic.Tag("SetFloorCustomFloatV2")]
+    | typing.Annotated[SetFloorCustomString, pydantic.Tag("SetFloorCustomString")]
     | typing.Annotated[SetFloorSavedValue, pydantic.Tag("SetFloorSavedValue")]
+    | typing.Annotated[SetForceStreamingThisFrame, pydantic.Tag("SetForceStreamingThisFrame")]
+    | typing.Annotated[SetFuncBtn, pydantic.Tag("SetFuncBtn")]
+    | typing.Annotated[SetHLODSwitchDelay, pydantic.Tag("SetHLODSwitchDelay")]
     | typing.Annotated[SetHudTemplate, pydantic.Tag("SetHudTemplate")]
+    | typing.Annotated[SetLoadingStratageType, pydantic.Tag("SetLoadingStratageType")]
     | typing.Annotated[SetLocalPlayerDitherAlpha, pydantic.Tag("SetLocalPlayerDitherAlpha")]
     | typing.Annotated[SetMissionAudioState, pydantic.Tag("SetMissionAudioState")]
     | typing.Annotated[SetMissionCustomValue, pydantic.Tag("SetMissionCustomValue")]
+    | typing.Annotated[SetMissionWayPoint, pydantic.Tag("SetMissionWayPoint")]
     | typing.Annotated[SetMunicipalEnable, pydantic.Tag("SetMunicipalEnable")]
+    | typing.Annotated[SetNPCMonstersVisible, pydantic.Tag("SetNPCMonstersVisible")]
     | typing.Annotated[SetNpcStatus, pydantic.Tag("SetNpcStatus")]
     | typing.Annotated[SetNpcWaypath, pydantic.Tag("SetNpcWaypath")]
     | typing.Annotated[SetPerformanceResult, pydantic.Tag("SetPerformanceResult")]
@@ -1884,63 +2853,144 @@ Task = typing.Annotated[
     | typing.Annotated[SetTargetUniqueName, pydantic.Tag("SetTargetUniqueName")]
     | typing.Annotated[SetTextJoinValue, pydantic.Tag("SetTextJoinValue")]
     | typing.Annotated[SetTraceOrigamiFlag, pydantic.Tag("SetTraceOrigamiFlag")]
+    | typing.Annotated[SetTrackingMission, pydantic.Tag("SetTrackingMission")]
+    | typing.Annotated[SetVirtualLineupBindPlane, pydantic.Tag("SetVirtualLineupBindPlane")]
+    | typing.Annotated[SetWaypointIgnoreLock, pydantic.Tag("SetWaypointIgnoreLock")]
+    | typing.Annotated[SetWaypointSafeZone, pydantic.Tag("SetWaypointSafeZone")]
+    | typing.Annotated[ShowActivityPage, pydantic.Tag("ShowActivityPage")]
     | typing.Annotated[ShowBillboardInStoryMode, pydantic.Tag("ShowBillboardInStoryMode")]
+    | typing.Annotated[ShowDeleteMissionDialog, pydantic.Tag("ShowDeleteMissionDialog")]
+    | typing.Annotated[ShowEnvBuffDialog, pydantic.Tag("ShowEnvBuffDialog")]
     | typing.Annotated[ShowFistClubMissionPage, pydantic.Tag("ShowFistClubMissionPage")]
+    | typing.Annotated[ShowFuncBtn, pydantic.Tag("ShowFuncBtn")]
     | typing.Annotated[ShowGroupChallengeSelectPage, pydantic.Tag("ShowGroupChallengeSelectPage")]
+    | typing.Annotated[ShowGuideHintWithText, pydantic.Tag("ShowGuideHintWithText")]
+    | typing.Annotated[ShowGuideText, pydantic.Tag("ShowGuideText")]
     | typing.Annotated[ShowHeartDialToast, pydantic.Tag("ShowHeartDialToast")]
+    | typing.Annotated[ShowMazeUI, pydantic.Tag("ShowMazeUI")]
     | typing.Annotated[ShowMuseumPage, pydantic.Tag("ShowMuseumPage")]
     | typing.Annotated[ShowOfferingClockieUpgradeHint, pydantic.Tag("ShowOfferingClockieUpgradeHint")]
     | typing.Annotated[ShowPerformanceRollingSubtitles, pydantic.Tag("ShowPerformanceRollingSubtitles")]
+    | typing.Annotated[ShowPlayGOSubPackageDialog, pydantic.Tag("ShowPlayGOSubPackageDialog")]
     | typing.Annotated[ShowRogueTalkBg, pydantic.Tag("ShowRogueTalkBg")]
     | typing.Annotated[ShowReading, pydantic.Tag("ShowReading")]
     | typing.Annotated[ShowRogueTalkUI, pydantic.Tag("ShowRogueTalkUI")]
     | typing.Annotated[ShowSDFText, pydantic.Tag("ShowSDFText")]
     | typing.Annotated[ShowShop, pydantic.Tag("ShowShop")]
+    | typing.Annotated[ShowSpaceZooMainPage, pydantic.Tag("ShowSpaceZooMainPage")]
+    | typing.Annotated[ShowSubPackage, pydantic.Tag("ShowSubPackage")]
     | typing.Annotated[ShowTalkUI, pydantic.Tag("ShowTalkUI")]
+    | typing.Annotated[ShowTransitionLoadingUI, pydantic.Tag("ShowTransitionLoadingUI")]
     | typing.Annotated[ShowTutorialGuide, pydantic.Tag("ShowTutorialGuide")]
+    | typing.Annotated[ShowTutorialUI, pydantic.Tag("ShowTutorialUI")]
     | typing.Annotated[ShowUI, pydantic.Tag("ShowUI")]
+    | typing.Annotated[ShowWaypointByProp, pydantic.Tag("ShowWaypointByProp")]
     | typing.Annotated[ShowWorldShop, pydantic.Tag("ShowWorldShop")]
+    | typing.Annotated[ShowWorldShop4ThUpgradeHint, pydantic.Tag("ShowWorldShop4ThUpgradeHint")]
+    | typing.Annotated[SpeedLineEffect, pydantic.Tag("SpeedLineEffect")]
     | typing.Annotated[StartDialogueEntityInteract, pydantic.Tag("StartDialogueEntityInteract")]
+    | typing.Annotated[StartPropInteractMode, pydantic.Tag("StartPropInteractMode")]
     | typing.Annotated[StopBlendShapesEmotion, pydantic.Tag("StopBlendShapesEmotion")]
+    | typing.Annotated[StopMunicipalChat, pydantic.Tag("StopMunicipalChat")]
     | typing.Annotated[StopPermanentEmotion, pydantic.Tag("StopPermanentEmotion")]
+    | typing.Annotated[StopRandomMissionTalk, pydantic.Tag("StopRandomMissionTalk")]
+    | typing.Annotated[StoryLineReplaceTrialPlayer, pydantic.Tag("StoryLineReplaceTrialPlayer")]
     | typing.Annotated[SwitchAudioListenerToTarget, pydantic.Tag("SwitchAudioListenerToTarget")]
     | typing.Annotated[SwitchCase, pydantic.Tag("SwitchCase")]
     | typing.Annotated[SwitchCharacterAnchor, pydantic.Tag("SwitchCharacterAnchor")]
     | typing.Annotated[SwitchCharacterAnchorV2, pydantic.Tag("SwitchCharacterAnchorV2")]
+    | typing.Annotated[SwitchPhotoGraphMode, pydantic.Tag("SwitchPhotoGraphMode")]
     | typing.Annotated[SwitchUIMenuBGM, pydantic.Tag("SwitchUIMenuBGM")]
     | typing.Annotated[SwordTrainingNotifySelectStory, pydantic.Tag("SwordTrainingNotifySelectStory")]
-    | typing.Annotated[TalkFigure, pydantic.Tag("TalkFigure")]
+)
+
+__TaskT = (
+    typing.Annotated[TalkFigure, pydantic.Tag("TalkFigure")]
+    | typing.Annotated[TeleportToRotatableRegion, pydantic.Tag("TeleportToRotatableRegion")]
+    | typing.Annotated[ToastPile, pydantic.Tag("ToastPile")]
     | typing.Annotated[TrainPartySwitchEnvironment, pydantic.Tag("TrainPartySwitchEnvironment")]
+    | typing.Annotated[TransitEnvProfile, pydantic.Tag("TransitEnvProfile")]
     | typing.Annotated[TransitEnvProfileForStory, pydantic.Tag("TransitEnvProfileForStory")]
+    | typing.Annotated[TriggerBattle, pydantic.Tag("TriggerBattle")]
     | typing.Annotated[TriggerBlendShapesEmotion, pydantic.Tag("TriggerBlendShapesEmotion")]
     | typing.Annotated[TriggerCustomString, pydantic.Tag("TriggerCustomString")]
     | typing.Annotated[TriggerCustomStringList, pydantic.Tag("TriggerCustomStringList")]
     | typing.Annotated[TriggerCustomStringOnDialogEnd, pydantic.Tag("TriggerCustomStringOnDialogEnd")]
     | typing.Annotated[TriggerDialogueEvent, pydantic.Tag("TriggerDialogueEvent")]
+    | typing.Annotated[TriggerDrinkMakerBartendInMainMission, pydantic.Tag("TriggerDrinkMakerBartendInMainMission")]
+    | typing.Annotated[TriggerDrinkMakerBartendInMission, pydantic.Tag("TriggerDrinkMakerBartendInMission")]
     | typing.Annotated[TriggerEffect, pydantic.Tag("TriggerEffect")]
     | typing.Annotated[TriggerEffectList, pydantic.Tag("TriggerEffectList")]
+    | typing.Annotated[TriggerEffectOnAnchor, pydantic.Tag("TriggerEffectOnAnchor")]
     | typing.Annotated[TriggerEntityEvent, pydantic.Tag("TriggerEntityEvent")]
     | typing.Annotated[TriggerEntityEventV2, pydantic.Tag("TriggerEntityEventV2")]
     | typing.Annotated[TriggerGroupEvent, pydantic.Tag("TriggerGroupEvent")]
     | typing.Annotated[TriggerGroupEventOnDialogEnd, pydantic.Tag("TriggerGroupEventOnDialogEnd")]
     | typing.Annotated[TriggerPerformance, pydantic.Tag("TriggerPerformance")]
     | typing.Annotated[TriggerPermanentEmotion, pydantic.Tag("TriggerPermanentEmotion")]
+    | typing.Annotated[TriggerRogueDialogue, pydantic.Tag("TriggerRogueDialogue")]
     | typing.Annotated[TriggerSound, pydantic.Tag("TriggerSound")]
+    | typing.Annotated[TriggerUINotify, pydantic.Tag("TriggerUINotify")]
     | typing.Annotated[TutorialTaskUnlock, pydantic.Tag("TutorialTaskUnlock")]
-    | typing.Annotated[UnLockPlayerControl, pydantic.Tag("UnLockPlayerControl")]
+)
+
+__TaskU = (
+    typing.Annotated[UnLockPlayerControl, pydantic.Tag("UnLockPlayerControl")]
     | typing.Annotated[UpdateTreasureChallengeProgress, pydantic.Tag("UpdateTreasureChallengeProgress")]
-    | typing.Annotated[VCameraConfigChange, pydantic.Tag("VCameraConfigChange")]
+)
+
+__TaskV = (
+    typing.Annotated[VCameraConfigChange, pydantic.Tag("VCameraConfigChange")]
     | typing.Annotated[VerifyInteractingEntity, pydantic.Tag("VerifyInteractingEntity")]
-    | typing.Annotated[WaitCustomString, pydantic.Tag("WaitCustomString")]
+)
+
+__TaskW = (
+    typing.Annotated[WaitCustomString, pydantic.Tag("WaitCustomString")]
     | typing.Annotated[WaitDialogueEvent, pydantic.Tag("WaitDialogueEvent")]
     | typing.Annotated[WaitFloorCustomValueChange, pydantic.Tag("WaitFloorCustomValueChange")]
+    | typing.Annotated[WaitFloorCustomValueChangeV2, pydantic.Tag("WaitFloorCustomValueChangeV2")]
     | typing.Annotated[WaitFloorSavedValueChangeV2, pydantic.Tag("WaitFloorSavedValueChangeV2")]
+    | typing.Annotated[WaitFor, pydantic.Tag("WaitFor")]
     | typing.Annotated[WaitFrame, pydantic.Tag("WaitFrame")]
     | typing.Annotated[WaitGroupEvent, pydantic.Tag("WaitGroupEvent")]
+    | typing.Annotated[WaitMissionCustomValueChange, pydantic.Tag("WaitMissionCustomValueChange")]
+    | typing.Annotated[WaitMissionTalkFinish, pydantic.Tag("WaitMissionTalkFinish")]
+    | typing.Annotated[WaitNewDecalDialogExit, pydantic.Tag("WaitNewDecalDialogExit")]
     | typing.Annotated[WaitPerformanceEnd, pydantic.Tag("WaitPerformanceEnd")]
+    | typing.Annotated[WaitPhotoGraphResult, pydantic.Tag("WaitPhotoGraphResult")]
+    | typing.Annotated[WaitPredicateSucc, pydantic.Tag("WaitPredicateSucc")]
+    | typing.Annotated[WaitPropDestroy, pydantic.Tag("WaitPropDestroy")]
     | typing.Annotated[WaitRogueSimpleTalkFinish, pydantic.Tag("WaitRogueSimpleTalkFinish")]
     | typing.Annotated[WaitSecond, pydantic.Tag("WaitSecond")]
+    | typing.Annotated[WaitSilverWolfCompanionToastExit, pydantic.Tag("WaitSilverWolfCompanionToastExit")]
     | typing.Annotated[WaitSimpleTalkFinish, pydantic.Tag("WaitSimpleTalkFinish")]
-    | typing.Annotated[WaitStreamingJobFinished, pydantic.Tag("WaitStreamingJobFinished")],
+    | typing.Annotated[WaitStreamingJobFinished, pydantic.Tag("WaitStreamingJobFinished")]
+    | typing.Annotated[WaitTutorial, pydantic.Tag("WaitTutorial")]
+    | typing.Annotated[WaitUIControllerClose, pydantic.Tag("WaitUIControllerClose")]
+    | typing.Annotated[WaitUIEvent, pydantic.Tag("WaitUIEvent")]
+    | typing.Annotated[WaitUINodeOpen, pydantic.Tag("WaitUINodeOpen")]
+)
+
+Task = typing.Annotated[
+    __TaskA
+    | __TaskB
+    | __TaskC
+    | __TaskD
+    | __TaskE
+    | __TaskF
+    | __TaskG
+    | __TaskH
+    | __TaskL
+    | __TaskM
+    | __TaskN
+    | __TaskO
+    | __TaskP
+    | __TaskQ
+    | __TaskR
+    | __TaskS
+    | __TaskT
+    | __TaskU
+    | __TaskV
+    | __TaskW,
     pydantic.Discriminator(get_discriminator),
 ]

@@ -55,7 +55,7 @@ from .monster_guide import (
     MonsterGuideTag,
     MonsterTextGuide,
 )
-from .performance import Performance
+from .performance import CutSceneConfig, Performance, VideoConfig
 from .planet_fes import (
     PlanetFesAvatar,
     PlanetFesAvatarEvent,
@@ -178,7 +178,9 @@ __all__ = (
     "MainMission",
     "SubMission",
     # performance
+    "CutSceneConfig",
     "Performance",
+    "VideoConfig",
     # planet fes
     "PlanetFesAvatar",
     "PlanetFesAvatarEvent",

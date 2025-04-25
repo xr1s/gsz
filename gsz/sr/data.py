@@ -945,6 +945,10 @@ class GameData:
 
     ######## performance ########
 
+    @excel_output_string(view.CutSceneConfig)
+    def cut_scene_config(self):
+        """过场"""
+
     @excel_output(view.Performance)
     def performance_a(self):
         """剧情演出"""
@@ -972,6 +976,10 @@ class GameData:
     @excel_output(view.Performance)
     def performance_video(self):
         """剧情演出"""
+
+    @excel_output(view.VideoConfig)
+    def video_config(self):
+        """游戏内视频"""
 
     ######## planet fes ########
 

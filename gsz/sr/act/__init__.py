@@ -1,6 +1,7 @@
-from . import model as actmodel
+from . import model
 from .act import Act
+from .caption import CaptionSentence
+from .mission import MissionInfo
 from .rogue import Dialogue
-from .wiki import WikiStyle
 
-__all__ = ("actmodel", "Act", "Dialogue", "WikiStyle")
+__all__ = ("Act", "CaptionSentence", "Dialogue", "MissionInfo", "model")

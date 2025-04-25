@@ -3,17 +3,32 @@ import typing
 
 import pydantic
 
-from ...excel import Path, Value, item
-from . import target
-from .base import BaseModel, Custom, FixedValue, Model, get_discriminator
+from ...excel import Path, Text, Value, item
+from . import mission, target
+from .base import Custom, Dynamic, FixedValue, Model, get_discriminator
+
+
+class CompareType(enum.Enum):
+    Equal = "Equal"
+    Greater = "Greater"
+    GreaterEqual = "GreaterEqual"
+    Less = "Less"
+    LessEqual = "LessEqual"
+    NotEqual = "NotEqual"
+
+
+class MissionState(enum.Enum):
+    Started = "Started"
+    Finish = "Finish"
 
 
 class AdvByCompareDimensionID(Model):
-    pass
+    compare_type: CompareType
+    compare_value: int | None = None
 
 
 class AdvByEntitiesExist(Model):
-    pass
+    target_type: target.Target
 
 
 class AdvByEntityExist(Model):
@@ -21,23 +36,28 @@ class AdvByEntityExist(Model):
 
 
 class AdvByFastDeliverHasMultiRoute(Model):
-    pass
+    target: target.Target
 
 
 class AdvByPlayerInVisionZone(Model):
-    pass
+    zone_tags: list[str]
 
 
 class AdventureByCompareMP(Model):
-    pass
+    compare_type: CompareType
 
 
 class AdventureByPropInPosition(Model):
-    pass
+    target_group_id: int
+    target_group_prop_id: int
+    source_is_owner: typing.Literal[True]
+    ignore_y_asix: typing.Literal[True]
+    range: float
+    target_type: target.Target
 
 
 class AdventureByPropShowInfoId(Model):
-    pass
+    target_type: target.Target
 
 
 class AdventureIsTriggerBattleByNpcMonster(Model):
@@ -45,7 +65,9 @@ class AdventureIsTriggerBattleByNpcMonster(Model):
 
 
 class ByAdvCharacterLogicState(Model):
-    pass
+    target_type: target.Target
+    type: typing.Literal["OnHit"]
+    inverse: bool = False
 
 
 class ByAnd(Model):
@@ -58,7 +80,13 @@ class ByAny(Model):
 
 
 class ByAnyNpcMonsterInRange(Model):
-    pass
+    consider_obstacle: typing.Literal[True]
+    range: float
+    angle_limit: int
+
+
+class ByCheckAdditionalConditions(Model):
+    check_for_win: bool = False
 
 
 class ByCheckColonyTrace(Model):
@@ -67,7 +95,7 @@ class ByCheckColonyTrace(Model):
 
 
 class ByCheckDarkTeamDestroy(Model):
-    pass
+    for_wave_end: typing.Literal[True]
 
 
 class ByCheckFloorCustomBool(Model):
@@ -75,8 +103,13 @@ class ByCheckFloorCustomBool(Model):
     inverse: bool = False
 
 
-class ByCheckTimelineEntityState(Model):
+class ByCheckRogueExploreWin(Model):
     pass
+
+
+class ByCheckTimelineEntityState(Model):
+    target: target.Target
+    state_name: Value[str]
 
 
 class ByCheckTrialCharacterDie(Model):
@@ -88,32 +121,32 @@ class ByCheckLineupHeroAvatarID(Model):
 
 
 class ByCompareCarryMazebuff(Model):
-    pass
+    target_type: target.Target
+    buff_id: int
 
 
 class ByCompareCurrentTeammemberCount(Model):
-    pass
+    equation_type: CompareType
+    target_count: int
 
 
 class ByCompareCustomString(Model):
-    pass
+    left_value: Custom
+    right_value: Value[str]
+    compare_type: CompareType
 
 
 class ByCompareDynamicValue(Model):
-    pass
+    target_type: target.Target
+    dynamic_key: Value[str]
+    context_scope: typing.Literal["TargetEntity"]
+    compare_type: CompareType
+    complare_value: FixedValue[int]
 
 
 class ByCompareEventMissionState(Model):
-    pass
-
-
-class CompareType(enum.Enum):
-    Equal = "Equal"
-    Greater = "Greater"
-    GreaterEqual = "GreaterEqual"
-    Less = "Less"
-    LessEqual = "LessEqual"
-    NotEqual = "NotEqual"
+    event_mission_id: int
+    sub_mission_state: MissionState
 
 
 class ByCompareFloorCustomFloat(Model):
@@ -129,7 +162,10 @@ class ByCompareFloorCustomFloatV2(Model):
 
 
 class ByCompareFloorCustomString(Model):
-    pass
+    name: Value[str]
+    compare_type: CompareType
+    compare_value: Value[str]
+    inverse: bool = False
 
 
 class ByCompareFloorSavedValueV2(Model):
@@ -147,11 +183,14 @@ class ByCompareFloorSavedValue(Model):
 
 
 class ByCompareGraphDynamicFloat(Model):
-    pass
+    name: str
+    value: FixedValue[float]
+    compare_type: CompareType
 
 
 class ByCompareGraphDynamicString(Model):
-    pass
+    name: str
+    value: Value[str]
 
 
 class ByCompareGroupMonsterNumByState(Model):
@@ -159,7 +198,8 @@ class ByCompareGroupMonsterNumByState(Model):
 
 
 class ByCompareGroupState(Model):
-    pass
+    equation_type: CompareType
+    value: int | None = None
 
 
 class ByCompareHeartDialTracingNPC(Model):
@@ -167,11 +207,15 @@ class ByCompareHeartDialTracingNPC(Model):
 
 
 class ByCompareHPRatio(Model):
-    pass
+    target_type: target.Target
+    compare_type: CompareType
+    compare_value: FixedValue[float]
 
 
 class ByCompareIsBookAvailable(Model):
-    pass
+    book_series_id: int
+    book_id: int
+    inverse: bool = False
 
 
 class ByCompareIsWolfBroBulletActivated(Model):
@@ -189,11 +233,6 @@ class ByCompareItemNumber(Model):
     compare_type: CompareType
 
 
-class MissionState(enum.Enum):
-    Started = "Started"
-    Finish = "Finish"
-
-
 class ByCompareMainMissionState(Model):
     main_mission_id: int
     main_mission_state: MissionState | None = None
@@ -202,40 +241,34 @@ class ByCompareMainMissionState(Model):
 
 
 class ByCompareMissionBattleWin(Model):
-    pass
-
-
-class MissionCustomValue(BaseModel):
-    index: int | None = None
-    is_local: typing.Annotated[bool, pydantic.Field(alias="isLocal")] = False
-    is_range: typing.Annotated[bool, pydantic.Field(alias="isRange")] = False
-    valid_value_param_list: list[int] | None = None
+    event_id: int
 
 
 class ByCompareMissionCustomValue(Model):
-    class MissionCustomValueCompare(BaseModel):
-        index: int
-        is_local: typing.Annotated[typing.Literal[True], pydantic.Field(alias="isLocal")]
-        valid_value_param_list: list[int]
-
     main_mission_id: int
-    mission_custom_value: MissionCustomValue
+    mission_custom_value: mission.MissionCustomValue
     equation_type: CompareType | None = None
     show_compare_value: bool = False
     target_value: int | None = None
-    mission_custom_value_compare: MissionCustomValueCompare | None = None
+    mission_custom_value_compare: mission.MissionCustomValue | None = None
 
 
 class ByCompareMusicRhythmSongID(Model):
-    pass
+    song_id: int
+    inverse: bool = False
 
 
 class ByCompareNPCMonsterCheckState(Model):
-    pass
+    group_id: FixedValue[int]
+    group_monster_id: FixedValue[int]
+    check_state: typing.Literal["Dead"]
 
 
 class ByComparePerformance(Model):
     performance_id: int
+    performance_id_ds: typing.Annotated[Value[typing.Literal["E"]] | None, pydantic.Field(alias="PerformanceID_DS")] = (
+        None
+    )
     inverse: bool = False
 
 
@@ -245,7 +278,14 @@ class ByComparePerformanceResult(Model):
 
 
 class ByComparePropAnimState(Model):
-    pass
+    class State(enum.Enum):
+        Closed = "Closed"
+        Opened01 = "Opened01"
+        PlayerCrouch = "PlayerCrouch"
+        TriggerSelectLoop = "TriggerSelectLoop"
+
+    state: State
+    target_type: target.Target
 
 
 class PropState(enum.Enum):
@@ -286,7 +326,11 @@ class ByComparePropState(Model):
 
 
 class ByComparePropStateNumber(Model):
-    pass
+    group_id: FixedValue[int] | Dynamic
+    prop_id_list: list[FixedValue[int] | Dynamic]
+    state: typing.Literal["Open"]
+    compare_type: CompareType
+    compare_value: int
 
 
 class ByCompareQuestGetReward(Model):
@@ -301,11 +345,7 @@ class ByCompareQuestProgress(Model):
 
 
 class ByCompareRogueMode(Model):
-    pass
-
-
-class ByCompareRogueTournLevel(Model):
-    pass
+    rogue_mode: typing.Literal["RogueMode"]
 
 
 class ByCompareRogueTournPermanantTalentState(Model):
@@ -313,7 +353,8 @@ class ByCompareRogueTournPermanantTalentState(Model):
 
 
 class ByCompareRotatableRegionLoadingState(Model):
-    pass
+    region_index: Dynamic
+    compare_state: typing.Literal["Ready"]
 
 
 class ByCompareSeriesID(Model):
@@ -325,7 +366,7 @@ class ByCompareServerSubMissionState(Model):
 
 
 class ByCompareStageType(Model):
-    pass
+    current_stage_type: typing.Literal["AetherDivide", "EvolveBuildActivity"]
 
 
 class ByCompareStoryLineID(Model):
@@ -340,7 +381,7 @@ class ByCompareSubMissionState(Model):
 
 
 class ByCompareTeamLeaderBodySize(Model):
-    pass
+    body_size: typing.Literal["Boy", "Girl", "Kid"]
 
 
 class ByCompareTeamLeaderPath(Model):
@@ -357,23 +398,33 @@ class ByCompareVersionFinalMainMission(Model):
 
 
 class ByCompareWaveCount(Model):
-    pass
+    compare_type: CompareType
+    compoare_with_max: typing.Literal[True]
 
 
 class ByContainBehaviorFlag(Model):
-    pass
+    target_type: target.Target
 
 
 class ByContainCustomString(Model):
-    pass
+    key: Text
 
 
 class ByDeployPuzzleBasePointIsAnswer(Model):
-    pass
+    target_type: target.Target
+
+
+class ByDieAnimFinished(Model):
+    team_type_mask: typing.Literal["TeamDark"]
+    entity_type_mask: typing.Literal["Mask_TeamCharacters"]
 
 
 class ByDistance(Model):
-    pass
+    from_: target.Target
+    to: target.Target
+    compare_type: CompareType
+    compare_value: FixedValue[int]
+    ignore_radius: bool = True
 
 
 class ByHasInsertAbilityPending(Model):
@@ -381,7 +432,7 @@ class ByHasInsertAbilityPending(Model):
 
 
 class ByHasInsertBattlePerform(Model):
-    pass
+    inverse: bool = False
 
 
 class ByHasUnGottenLevelReward(Model):
@@ -398,27 +449,31 @@ class ByHeroGender(Model):
 
 
 class ByIfGroupIsOccupied(Model):
-    pass
+    group_id: int
 
 
 class ByInTrackCameraByPathID(Model):
-    pass
+    use_owner_group: typing.Literal[True]
+    path_id: FixedValue[typing.Literal[1]]
+    detect_range: Dynamic
 
 
 class ByIsActivityInSchedule(Model):
-    pass
+    activity_panel_id: int
 
 
 class ByIsContainAdventureModifier(Model):
-    pass
+    target_type: target.Target
+    modifier_name: str
 
 
 class ByIsContainModifier(Model):
-    pass
+    target_type: target.Target
+    modifier_name: Value[str]
 
 
 class ByIsEraFlipperEntityShow(Model):
-    pass
+    inverse: bool = False
 
 
 class ByIsEvolveBuildCountDownItemShow(Model):
@@ -426,11 +481,12 @@ class ByIsEvolveBuildCountDownItemShow(Model):
 
 
 class ByIsGenderType(Model):
-    pass
+    gender: Gender
 
 
 class ByIsInDistrict(Model):
-    pass
+    district_type: target.Target
+    target_type: target.Target
 
 
 class ByIsInfiniteBattle(Model):
@@ -442,23 +498,23 @@ class ByIsRotatableTimeRewindTarget(Model):
 
 
 class ByIsShowInActionBar(Model):
-    pass
+    character_id: int
 
 
 class ByIsSwordTrainingSkillCanLearn(Model):
-    pass
+    skill_id: int
 
 
 class ByIsTargetValid(Model):
-    pass
+    target_type: target.Target
 
 
 class ByIsTutorialFinish(Model):
-    pass
+    tutorial_id: int
 
 
 class ByIsUIPageOpen(Model):
-    pass
+    page_name: typing.Literal["RogueSelectMainPage"]
 
 
 class ByLevelLoseCheck(Model):
@@ -470,7 +526,7 @@ class ByLocalPlayerAvatarID(Model):
 
 
 class ByLocalPlayerIsFakeAvatar(Model):
-    pass
+    inverse: bool = False
 
 
 class ByLocalPlayerIsHero(Model):
@@ -478,7 +534,8 @@ class ByLocalPlayerIsHero(Model):
 
 
 class ByMainMissionFinish(Model):
-    pass
+    main_mission_id: int
+    inverse: bool = False
 
 
 class ByNot(Model):
@@ -489,12 +546,9 @@ class BySimulateSpeedUp(Model):
     pass
 
 
-class ByTargetAliveCheck(Model):
-    pass
-
-
 class ByTargetListIntersects(Model):
-    pass
+    first_target_type: target.Target
+    second_target_type: target.Target
 
 
 class ByTargetNpcExists(Model):
@@ -503,7 +557,7 @@ class ByTargetNpcExists(Model):
 
 
 class ByTimeRewindTargetMotionPause(Model):
-    pass
+    target: target.Target
 
 
 class ConvinceByCompareHp(Model):
@@ -529,9 +583,11 @@ Predicate = typing.Annotated[
     | typing.Annotated[ByAnd, pydantic.Tag("ByAnd")]
     | typing.Annotated[ByAny, pydantic.Tag("ByAny")]
     | typing.Annotated[ByAnyNpcMonsterInRange, pydantic.Tag("ByAnyNpcMonsterInRange")]
+    | typing.Annotated[ByCheckAdditionalConditions, pydantic.Tag("ByCheckAdditionalConditions")]
     | typing.Annotated[ByCheckColonyTrace, pydantic.Tag("ByCheckColonyTrace")]
     | typing.Annotated[ByCheckDarkTeamDestroy, pydantic.Tag("ByCheckDarkTeamDestroy")]
     | typing.Annotated[ByCheckFloorCustomBool, pydantic.Tag("ByCheckFloorCustomBool")]
+    | typing.Annotated[ByCheckRogueExploreWin, pydantic.Tag("ByCheckRogueExploreWin")]
     | typing.Annotated[ByCheckTimelineEntityState, pydantic.Tag("ByCheckTimelineEntityState")]
     | typing.Annotated[ByCheckTrialCharacterDie, pydantic.Tag("ByCheckTrialCharacterDie")]
     | typing.Annotated[ByCheckLineupHeroAvatarID, pydantic.Tag("ByCheckLineupHeroAvatarID")]
@@ -568,7 +624,6 @@ Predicate = typing.Annotated[
     | typing.Annotated[ByCompareQuestGetReward, pydantic.Tag("ByCompareQuestGetReward")]
     | typing.Annotated[ByCompareQuestProgress, pydantic.Tag("ByCompareQuestProgress")]
     | typing.Annotated[ByCompareRogueMode, pydantic.Tag("ByCompareRogueMode")]
-    | typing.Annotated[ByCompareRogueTournLevel, pydantic.Tag("ByCompareRogueTournLevel")]
     | typing.Annotated[ByCompareRogueTournPermanantTalentState, pydantic.Tag("ByCompareRogueTournPermanantTalentState")]
     | typing.Annotated[ByCompareRotatableRegionLoadingState, pydantic.Tag("ByCompareRotatableRegionLoadingState")]
     | typing.Annotated[ByCompareSeriesID, pydantic.Tag("ByCompareSeriesID")]
@@ -584,6 +639,7 @@ Predicate = typing.Annotated[
     | typing.Annotated[ByContainBehaviorFlag, pydantic.Tag("ByContainBehaviorFlag")]
     | typing.Annotated[ByContainCustomString, pydantic.Tag("ByContainCustomString")]
     | typing.Annotated[ByDeployPuzzleBasePointIsAnswer, pydantic.Tag("ByDeployPuzzleBasePointIsAnswer")]
+    | typing.Annotated[ByDieAnimFinished, pydantic.Tag("ByDieAnimFinished")]
     | typing.Annotated[ByDistance, pydantic.Tag("ByDistance")]
     | typing.Annotated[ByHasInsertAbilityPending, pydantic.Tag("ByHasInsertAbilityPending")]
     | typing.Annotated[ByHasInsertBattlePerform, pydantic.Tag("ByHasInsertBattlePerform")]

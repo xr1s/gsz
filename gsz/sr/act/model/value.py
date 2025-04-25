@@ -7,6 +7,7 @@ from .base import BaseModel, Model, get_discriminator
 
 class SharedFloat(Model):
     key: str
+    value: float | None = None
 
 
 class SharedInt(Model):

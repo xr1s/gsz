@@ -58,7 +58,7 @@ class WaitFinishMode(enum.Enum):
 class BaseChangeParam(BaseModel):
     export_to_json: bool
     reset: bool = False
-    zoom_ratio: float
+    zoom_ratio: float | None = None
     center_pos: Axis | None = None
     time: int
     change_curve_path: str

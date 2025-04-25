@@ -1,3 +1,4 @@
+import enum
 import typing
 
 import pydantic
@@ -13,13 +14,25 @@ def get_fetch_type(v: typing.Any) -> str:
     return v.fetch_type
 
 
+class EntityType(enum.Enum):
+    Anchor = "Anchor"
+    LocalPlayer = "LocalPlayer"
+    NPC = "NPC"
+    NPCMonster = "NPCMonster"
+    Prop = "Prop"
+
+
 class GroupFetchLocalTarget(Model):
     target_type: typing.Literal["Prop"] | None = None
     targets: list[int] | None = None
 
 
 class TargetAlias(Model):
-    alias: typing.Literal["Caster"]
+    alias: typing.Literal["Caster", "LightTeamEntity"]
+
+
+class TargetConcat(Model):
+    targets: list["Target"]
 
 
 class TargetFetchAdvLocalPlayer(Model):
@@ -120,6 +133,8 @@ class PropID(BaseModel):
 class TargetFetchAdvProp(Model):
     target_is_owner: bool = False
     multi_group_fetch: list[PropID]
+    multi_group_fetch_by_unique_name: list[None] | None = None
+    multi_group_fetch_by_prop_key: list[None] | None = None
 
 
 class TargetFetchAdvPropExEmpty(Model):
@@ -219,6 +234,7 @@ class TargetFetchUniqueNameEntity(Model):
 Target = typing.Annotated[
     typing.Annotated[GroupFetchLocalTarget, pydantic.Tag("GroupFetchLocalTarget")]
     | typing.Annotated[TargetAlias, pydantic.Tag("TargetAlias")]
+    | typing.Annotated[TargetConcat, pydantic.Tag("TargetConcat")]
     | typing.Annotated[TargetFetchAdvLocalPlayer, pydantic.Tag("TargetFetchAdvLocalPlayer")]
     | typing.Annotated[TargetFetchAdvMonsterEx, pydantic.Tag("TargetFetchAdvMonsterEx")]
     | typing.Annotated[TargetFetchAdvNPC, pydantic.Tag("TargetFetchAdvNPC")]

@@ -61,7 +61,7 @@ class Path(enum.Enum):
     """毁灭"""
 
 
-ABBR_WORDS = {"ai", "bg", "hp", "id", "npc", "sp", "ui"}
+ABBR_WORDS = {"ai", "bg", "bgm", "hp", "id", "npc", "sp", "sfx", "ui"}
 
 
 def alias_generator(field_name: str) -> str:

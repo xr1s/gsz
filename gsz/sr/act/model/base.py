@@ -4,7 +4,7 @@ import pydantic
 
 from ...excel import Value
 
-ABBR_WORDS = {"id", "ui", "bgm"}
+ABBR_WORDS = {"3d", "id", "ui", "bgm"}
 
 
 def alias_generator(field_name: str) -> str:

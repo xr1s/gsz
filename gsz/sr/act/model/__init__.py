@@ -1,4 +1,4 @@
-from . import talk
+from . import caption, performance, talk
 from .act import Act, Sequence
 from .base import Custom, FixedValue
 from .caption import CaptionSentence
@@ -20,5 +20,7 @@ __all__ = (
     "RogueNPC",
     "Sequence",
     "Task",
+    "caption",
     "talk",
+    "performance",
 )

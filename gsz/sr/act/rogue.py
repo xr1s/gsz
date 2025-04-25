@@ -21,9 +21,9 @@ if typing.TYPE_CHECKING:
 
 
 class Dialogue(wiki.Dialogue):
-    def __init__(self, game: GameData, excel: model.Dialogue):
+    def __init__(self, game: GameData, dialogue: model.Dialogue):
         self._game: GameData = game
-        self._dialogue: model.Dialogue = excel
+        self._dialogue: model.Dialogue = dialogue
 
     @property
     def progress(self) -> int | None:
@@ -112,12 +112,7 @@ class Dialogue(wiki.Dialogue):
         return [Sequence(self._game, seq, index) for index, seq in enumerate(self.__dialogue.on_start_sequece)]
 
     def _write_rogue_options(
-        self,
-        style: wiki.WikiStyle,
-        wiki: io.StringIO,
-        indent: str,
-        options: list[model.talk.RogueOptionTalk],
-        confluence: Sequence | None,
+        self, wiki: io.StringIO, indent: str, options: list[model.talk.RogueOptionTalk], confluence: Sequence | None
     ):
         _ = wiki.write(indent)
         _ = wiki.write("{{剧情选项|选项1=选择}}")
@@ -161,15 +156,13 @@ class Dialogue(wiki.Dialogue):
                 _ = wiki.write(title)
                 _ = wiki.write("}}")
                 self._seq_in_search_stack[seq.index] = True
-                self._wiki_iter_seq(style, wiki, indent + "  ", seq, confluence)
+                self._wiki_iter_seq(wiki, indent + "  ", seq, confluence)
                 self._seq_in_search_stack[seq.index] = False
         _ = wiki.write(indent)
         _ = wiki.write("}}")
 
     @typing_extensions.override
-    def _write_option(
-        self, style: wiki.WikiStyle, wiki: io.StringIO, indent: str, task: Task, confluence: Sequence | None
-    ):
+    def _write_option(self, wiki: io.StringIO, indent: str, task: Task, confluence: Sequence | None):
         options = list(task.options())
         if len(options) == 0:
             return
@@ -177,11 +170,9 @@ class Dialogue(wiki.Dialogue):
             isinstance(option, model.talk.RogueOptionTalk) and option.rogue_option_id is not None for option in options
         )
         if not is_rogue_option:
-            self._write_dialogue_option(style, wiki, indent, options, confluence)
+            self._write_dialogue_option(wiki, indent, options, confluence)
             return
-        self._write_rogue_options(
-            style, wiki, indent, typing.cast(list[model.talk.RogueOptionTalk], options), confluence
-        )
+        self._write_rogue_options(wiki, indent, typing.cast(list[model.talk.RogueOptionTalk], options), confluence)
 
     def __wiki_debug(self):  # noqa: PLR0912
         for seq in self._sequences:
@@ -238,9 +229,9 @@ class Dialogue(wiki.Dialogue):
         return any(task.is_(model.task.WaitDialogueEvent) for seq in self._sequences for task in seq.tasks())
 
     @typing_extensions.override
-    def wiki(self, *, debug: bool = False, style: wiki.WikiStyle = wiki.WikiStyle.Rogue) -> str:
+    def wiki(self, *, indent: str = "  ", debug: bool = False) -> str:
         if len(self._sequences) == 0:
             return ""
         if debug or self.__need_debug:
             self.__wiki_debug()
-        return super().wiki(style=style)
+        return super().wiki(indent=indent, debug=debug)

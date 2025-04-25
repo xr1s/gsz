@@ -1,23 +1,19 @@
 from __future__ import annotations
 
 import abc
-import enum
 import functools
 import io
 import itertools
+import textwrap
 import typing
 
+from .. import excel
 from . import model
 
 if typing.TYPE_CHECKING:
     from .. import GameData
     from .sequence import Sequence
     from .task import Task
-
-
-class WikiStyle(enum.Enum):
-    Rogue = 0
-    Quest = 1
 
 
 class Dialogue(abc.ABC):
@@ -126,41 +122,37 @@ class Dialogue(abc.ABC):
     def _pretty_formatter(self):
         return self._game._mw_pretty_formatter  # pyright: ignore[reportPrivateUsage]
 
-    def _write_simple(self, style: WikiStyle, wiki: io.StringIO, indent: str, task: Task):
+    def _write_simple(self, wiki: io.StringIO, indent: str, task: Task):
         backgrounds = list(task.backgrounds())
         for index, talk in enumerate(task.talks()):
             if index < len(backgrounds) and backgrounds[index] is not None:
                 _ = wiki.write(indent)
                 _ = wiki.write(f"<!-- 背景: {backgrounds[index]} -->")
-            match style:
-                case WikiStyle.Rogue:
-                    _ = wiki.write(indent)
-                    _ = wiki.write("{{事件|")
+            if task.is_(
+                model.task.PlayAeonTalk | model.task.PlayRogueSimpleTalk | model.task.PlayAndWaitRogueSimpleTalk
+            ):
+                _ = wiki.write(indent)
+                _ = wiki.write("{{事件|")
+                name = self._formatter.format(talk.name)
+                if task.is_(model.task.PlayAeonTalk) or name in self.__AEON_NAMES:
+                    _ = wiki.write("星神|")
+                _ = wiki.write(name)
+                _ = wiki.write("|")
+                _ = wiki.write(self._formatter.format(talk.text))
+                _ = wiki.write("}}")
+            else:
+                _ = wiki.write("\n")
+                if talk.name != "":
+                    _ = wiki.write("* ")
                     name = self._formatter.format(talk.name)
-                    if task.is_(model.task.PlayAeonTalk) or name in self.__AEON_NAMES:
-                        _ = wiki.write("星神|")
                     _ = wiki.write(name)
-                    _ = wiki.write("|")
-                    _ = wiki.write(self._formatter.format(talk.text))
-                    _ = wiki.write("}}")
-                case WikiStyle.Quest:
-                    _ = wiki.write("\n")
-                    if talk.name != "":
-                        _ = wiki.write("* ")
-                        name = self._formatter.format(talk.name)
-                        _ = wiki.write(name)
-                        _ = wiki.write("：")
-                    else:
-                        _ = wiki.write(": ")
-                    _ = wiki.write(self._formatter.format(talk.text))
+                    _ = wiki.write("：")
+                else:
+                    _ = wiki.write(": ")
+                _ = wiki.write(self._formatter.format(talk.text))
 
     def _write_dialogue_option_no_wrap(
-        self,
-        style: WikiStyle,
-        wiki: io.StringIO,
-        indent: str,
-        options: list[model.talk.OptionTalk],
-        confluence: Sequence | None,
+        self, wiki: io.StringIO, indent: str, options: list[model.talk.OptionTalk], confluence: Sequence | None
     ):
         for index, option in enumerate(options):
             number = index + 1
@@ -175,23 +167,16 @@ class Dialogue(abc.ABC):
                 _ = wiki.write(f"|图标{number}={option.option_icon_type.wiki()}")
         _ = wiki.write("}}")
         if options[0].trigger_custom_string is not None:
-            next_seq = self._next_custom_string(options[0].trigger_custom_string)
-            if next_seq is not None:
-                self._wiki_iter_seq(style, wiki, indent, next_seq, confluence)
+            self.__do_trigger_custom_string(wiki, indent, options[0].trigger_custom_string, confluence)
 
     def _write_dialogue_option(
-        self,
-        style: WikiStyle,
-        wiki: io.StringIO,
-        indent: str,
-        options: list[model.talk.OptionTalk],
-        confluence: Sequence | None,
+        self, wiki: io.StringIO, indent: str, options: list[model.talk.OptionTalk], confluence: Sequence | None
     ):
         _ = wiki.write(indent)
         _ = wiki.write("{{剧情选项")
         if all(option.trigger_custom_string == options[0].trigger_custom_string for option in options[1:]):
             # 选项的后继全部相同，所有选项压成一行即可
-            self._write_dialogue_option_no_wrap(style, wiki, indent, options, confluence)
+            self._write_dialogue_option_no_wrap(wiki, indent, options, confluence)
             return
         for index, option in enumerate(options):
             number = index + 1
@@ -218,18 +203,18 @@ class Dialogue(abc.ABC):
             _ = wiki.write(indent)
             _ = wiki.write(f"|剧情{number}=")
             self._seq_in_search_stack[seq.index] = True
-            self._wiki_iter_seq(style, wiki, indent + "  ", seq, confluence)
+            self._wiki_iter_seq(wiki, indent + "  ", seq, confluence)
             self._seq_in_search_stack[seq.index] = False
         _ = wiki.write(indent)
         _ = wiki.write("}}")
 
-    def _write_option(self, style: WikiStyle, wiki: io.StringIO, indent: str, task: Task, confluence: Sequence | None):
+    def _write_option(self, wiki: io.StringIO, indent: str, task: Task, confluence: Sequence | None):
         options = list(task.options())
         if len(options) == 0:
             return
-        self._write_dialogue_option(style, wiki, indent, options, confluence)
+        self._write_dialogue_option(wiki, indent, options, confluence)
 
-    def _write_predicate(self, style: WikiStyle, wiki: io.StringIO, indent: str, seq: Sequence, task: Task):
+    def _write_predicate(self, wiki: io.StringIO, indent: str, seq: Sequence, task: Task, confluence: Sequence | None):
         from .task import Task
 
         _task = task._task  # pyright: ignore[reportPrivateUsage]
@@ -238,7 +223,7 @@ class Dialogue(abc.ABC):
             return
         if _task.success_task_list is None or _task.failed_task_list is None:
             for next_task in itertools.chain(_task.success_task_list or (), _task.failed_task_list or ()):
-                self.__do_task(style, wiki, indent, seq, Task(self._game, next_task))
+                self.__do_task(wiki, indent, seq, Task(self._game, next_task), confluence)
             return
         success, failure = task.predicate_titles()
         _ = wiki.write(indent)
@@ -250,36 +235,76 @@ class Dialogue(abc.ABC):
         _ = wiki.write(indent)
         _ = wiki.write("  {{切换板|显示内容}}")
         for success in _task.success_task_list:
-            self.__do_task(style, wiki, indent + "    ", seq, Task(self._game, success))
+            self.__do_task(wiki, indent + "    ", seq, Task(self._game, success), confluence)
         _ = wiki.write(indent)
         _ = wiki.write("  {{切换板|内容结束}}")
         _ = wiki.write(indent)
         _ = wiki.write("  {{切换板|折叠内容}}")
         for failure in _task.failed_task_list:
-            self.__do_task(style, wiki, indent + "    ", seq, Task(self._game, failure))
+            self.__do_task(wiki, indent + "    ", seq, Task(self._game, failure), confluence)
         _ = wiki.write(indent)
         _ = wiki.write("  {{切换板|内容结束}}")
         _ = wiki.write(indent)
         _ = wiki.write("{{切换板|结束}}")
 
-    def __do_task(self, style: WikiStyle, wiki: io.StringIO, indent: str, seq: Sequence, task: Task):  # noqa: PLR0912
+    def _write_trigger_performance(self, wiki: io.StringIO, indent: str, _seq: Sequence, task: Task):
+        _task = task._task  # pyright: ignore[reportPrivateUsage]
+        assert isinstance(_task, model.task.TriggerPerformance)
+        assert _task.performance_type is not None
+        match _task.performance_type:
+            case model.performance.Type.A:
+                method = self._game.performance_a
+            case model.performance.Type.C:
+                method = self._game.performance_c
+            case model.performance.Type.D:
+                method = self._game.performance_d
+            case model.performance.Type.E:
+                method = self._game.performance_e
+            case model.performance.Type.PlayVideo:
+                method = self._game.performance_video
+        performance = method(_task.performance_id)
+        if performance is None:
+            return
+        _ = wiki.write(f"{indent}<!-- TriggerPerformance: {performance.path} -->")
+        act = performance.performance()
+        assert act is not None
+        act_wiki = act.wiki()
+        if act_wiki != "":
+            _ = wiki.write(textwrap.indent(act_wiki, indent.removeprefix("\n")))
+
+    def __do_task(self, wiki: io.StringIO, indent: str, seq: Sequence, task: Task, confluence: Sequence | None):  # noqa: PLR0912, PLR0915
         _task = task._task  # pyright: ignore[reportPrivateUsage]
         if task.is_skip:
-            pass  # 故意用 pass，否则 linter 会提示下面 elif 不需要，但是改掉的话后面就不对称了
+            _ = wiki.write(f"{indent}<!-- {_task.model_dump_json(by_alias=True)} -->")
+            # pass  # 故意用 pass，否则 linter 会提示下面 elif 不需要，但是改掉的话后面就不对称了
         elif task.is_simple:
-            self._write_simple(style, wiki, indent, task)
+            # 简单对话
+            self._write_simple(wiki, indent, task)
         elif task.is_option:
+            # 玩家选择对话选项
             next_confluence = self._find_confluence(seq)
-            self._write_option(style, wiki, indent, task, next_confluence)
+            self._write_option(wiki, indent, task, next_confluence)
         elif task.is_(model.task.PredicateTaskList):
-            self._write_predicate(style, wiki, indent, seq, task)
-        elif task.is_(model.task.PlayMessage):
+            self._write_predicate(wiki, indent, seq, task, confluence)
+        elif isinstance(_task, model.task.PlayMessage):
             # 剧情中收到短信
-            assert isinstance(_task, model.task.PlayMessage)
             section = self._game.message_section_config(_task.message_section_id)
             if section is not None:
                 _ = wiki.write("\n")
                 _ = wiki.write(section.wiki())
+        elif isinstance(_task, model.task.PlayTimeline):
+            # TODO: 暂时不明，但是有字幕
+            if _task.type is not model.task.PlayTimeline.Type.Cutscene:
+                return
+            cutscene = self._game.cut_scene_config(_task.timeline_name)
+            assert cutscene is not None
+            _ = wiki.write(indent)
+            _ = wiki.write(f"{{{{折叠|开始|标题=过场 {cutscene._excel.cut_scene_path}}}}}")  # pyright: ignore[reportPrivateUsage]
+            for caption in cutscene.captions():
+                _ = wiki.write("\n")
+                _ = wiki.write(self._formatter.format(caption.text))
+            _ = wiki.write(indent)
+            _ = wiki.write("{{折叠|结束}}")
         elif isinstance(_task, model.task.ShowReading):
             # 剧情中打开阅读物
             book = self._game.localbook_config(_task.book_id.fixed_value.value)
@@ -293,34 +318,86 @@ class Dialogue(abc.ABC):
             # 剧情中弹出图片
             _ = wiki.write(f"{indent}<gallary><!-- {_task.image_path} --></gallary>")
         elif isinstance(_task, model.task.PerformanceTransition | model.task.PlayScreenTransfer):
-            # 转场，TextEnabled 时，黑屏时出现居中的文案
+            # 转场
+            # TextEnabled 时，黑屏时出现居中的文案，需要在 WIKI 中写入
             if not _task.text_enabled or _task.talk_sentence_id is None:
                 return
             talk = self._game.talk_sentence_config(_task.talk_sentence_id)
             if talk is None:
                 return
-            _ = wiki.write(indent if style is WikiStyle.Rogue else "\n: ")
-            _ = wiki.write("{{颜色|描述|")
+            _ = wiki.write("\n{{颜色|描述|")
             _ = wiki.write(self._formatter.format(talk.text))
             _ = wiki.write("}}")
-        elif task.is_(model.task.WaitDialogueEvent):
-            # TODO: 很重要，但是没搞懂机制
+        # elif isinstance(_task, model.task.TriggerCustomString):
+        elif isinstance(_task, model.task.TriggerPerformance):
+            self._write_trigger_performance(wiki, indent, seq, task)
+        elif isinstance(_task, model.task.PlayVideo):
+            video = self._game.video_config(_task.video_id)
+            assert video is not None
+            _ = wiki.write(indent)
+            _ = wiki.write(f"{{{{折叠|开始|标题=视频 {video.path}}}}}")
+            for caption in video.captions():
+                _ = wiki.write("\n")
+                _ = wiki.write(caption.text)
+            _ = wiki.write(indent)
+            _ = wiki.write("{{折叠|结束}}")
+        elif isinstance(_task, model.task.TriggerBattle):
+            # 进入战斗，应该不是 Stage，但是我也搜不到
+            stage = self._game.stage_config(_task.event_id.fixed_value.value)
+            if stage is None:
+                _ = wiki.write(f"{indent}<!-- {_task.model_dump_json(by_alias=True)} -->")
+                return
+            assert stage is not None
+            _ = wiki.write(f"{indent}<!-- {stage._excel.model_dump_json(by_alias=True)} -->")  # pyright: ignore[reportPrivateUsage]
+        elif isinstance(_task, model.task.PropSetupUITrigger):
+            from .task import Task
+
+            if _task.button_text is not None:
+                _ = wiki.write(indent)
+                _ = wiki.write("{{剧情选项|选项1=")
+                _ = wiki.write(self._formatter.format(self._game.text(_task.button_text)))
+                if _task.icon_type is not None and _task.icon_type is not model.talk.OptionIconType.ChatContinueIcon:
+                    _ = wiki.write("|图标1=")
+                    _ = wiki.write(_task.icon_type.wiki())
+                if len(_task.button_callback) != 0:
+                    _ = wiki.write("|剧情1=")
+                    for callback in _task.button_callback:
+                        if isinstance(callback, model.task.TriggerCustomString) and isinstance(
+                            callback.custom_string, excel.Value
+                        ):
+                            self.__do_trigger_custom_string(wiki, indent, callback.custom_string.value, confluence)
+                            continue
+                        self.__do_task(wiki, indent, seq, Task(self._game, callback), confluence)
+                _ = wiki.write("}}")
+        elif isinstance(_task, model.task.WaitDialogueEvent):
+            # TODO: 模拟宇宙中很重要，决定了事件的分支随机到哪一个，但是没搞懂机制
             # 感觉是先随机在几个 SuccessCustomString 里随机选一个，然后开始后续剧情
             pass
         else:
-            raise ValueError(f"unknown task type {task._task.typ}")  # pyright: ignore[reportPrivateUsage]
+            print(f"\x1b[1;31munknown task type {task._task.typ}\x1b[0m")  # pyright: ignore[reportPrivateUsage]
+            # raise ValueError(f"unknown task type {task._task.typ}")
 
-    def _wiki_iter_seq(
-        self, style: WikiStyle, wiki: io.StringIO, indent: str, seq: Sequence, confluence: Sequence | None
+    def __do_trigger_custom_string(
+        self, wiki: io.StringIO, indent: str, custom_string: str, confluence: Sequence | None
     ):
+        seq = self._next_custom_string(custom_string)
+        if seq is None:
+            return
+        if self._seq_in_search_stack[seq.index]:
+            return
+        self._seq_in_search_stack[seq.index] = True
+        self._wiki_iter_seq(wiki, indent, seq, confluence)
+        self._seq_in_search_stack[seq.index] = False
+
+    def _wiki_iter_seq(self, wiki: io.StringIO, indent: str, seq: Sequence, confluence: Sequence | None):
         if confluence is not None and seq.index == confluence.index:
             return
         for task in seq.tasks():
-            self.__do_task(style, wiki, indent, seq, task)
+            self.__do_task(wiki, indent, seq, task, confluence)
         next_seq = self._find_confluence(seq)
         if next_seq is not None and not self._seq_in_search_stack[next_seq.index]:
             self._seq_in_search_stack[next_seq.index] = True
-            self._wiki_iter_seq(style, wiki, indent, next_seq, confluence)
+            self._wiki_iter_seq(wiki, indent, next_seq, confluence)
             self._seq_in_search_stack[next_seq.index] = False
 
     def __wiki_debug(self):  # noqa: PLR0912
@@ -361,15 +438,17 @@ class Dialogue(abc.ABC):
                     print("    trigger dialogue event", act_task.dialogue_event_id)
             self._seq_in_search_stack[seq.index] = False
 
-    def wiki(self, *, debug: bool = False, style: WikiStyle = WikiStyle.Rogue) -> str:
+    def wiki(self, *, indent: str = "", debug: bool = False) -> str:
         if len(self._sequences) == 0:
             return ""
         if debug:
             self.__wiki_debug()
+        indent = "\n" + indent
         wiki = io.StringIO()
-        entrypoint = next(seq for seq in self._sequences if seq.is_entrypoint)
+        entrypoint = next((seq for seq in self._sequences if seq.is_entrypoint), None)
+        if entrypoint is None:
+            entrypoint = self._sequences[0]
         self._seq_in_search_stack[entrypoint.index] = True
-        indent = "\n  " if style is WikiStyle.Rogue else "\n"
-        self._wiki_iter_seq(style, wiki, indent, entrypoint, None)
+        self._wiki_iter_seq(wiki, "\n", entrypoint, None)
         self._seq_in_search_stack[entrypoint.index] = False
         return wiki.getvalue()

@@ -15,22 +15,23 @@ if typing.TYPE_CHECKING:
 
 
 class Task:
-    def __init__(self, game: GameData, excel: model.Task):
+    def __init__(self, game: GameData, task: model.Task):
         self._game: GameData = game
-        self._task: model.Task = excel
+        self._task: model.Task = task
 
     def is_(self, typ: type | types.UnionType) -> bool:
         return isinstance(self._task, typ)
 
     @property
     def is_skip(self) -> bool:  # TODO: 慢慢把这些类型效果厘清
-        return isinstance(
-            self._task,
+        a = (
             model.task.ActiveTemplateVirtualCamera
             | model.task.ActiveVirtualCamera
             | model.task.AddFinishMissionData_ConsumeItem
             | model.task.AddFinishMissionData_SelectConsumeItem
             | model.task.AddFinishMissionData_PlayMessage
+            | model.task.AddStreamingSource
+            | model.task.AddTrialPlayer
             | model.task.AdvAINavigateTo
             | model.task.AdvCharacterDisableHitBox
             | model.task.AdvClientChangePropState
@@ -44,16 +45,26 @@ class Task:
             | model.task.AdvEntityStopLookAt
             | model.task.AdventureCameraLookAt
             | model.task.AdventureCameraLookAtSimple
+            | model.task.AdventureForbidAttackTriggerBattle
             | model.task.AdventureShowReading
+            | model.task.AdvHideMazeBtn
             | model.task.AdvNpcFaceTo
             | model.task.AdvNpcFaceToPlayer
             | model.task.AdvSpecialVisionProtect
             | model.task.AnimSetParameter
-            | model.task.ByHeroGender
+        )
+        b = model.task.BlockInputController | model.task.ByHeroGender
+        c = (
+            model.task.CacheUI
             | model.task.CalculateMissionCustomValue
             | model.task.CaptureLocalPlayer
             | model.task.CaptureNPCToCharacter
+            | model.task.ChangeDynamicOptionalBlock
             | model.task.ChangeHeartDialModelByScript
+            | model.task.ChangeHeroType
+            | model.task.ChangePropState
+            | model.task.ChangeTeamLeader
+            | model.task.ChangeTrackingMission
             | model.task.ChangeTrackVirtualCameraFollowAndAim
             | model.task.CharacterDisableLookAt
             | model.task.CharacterHeadLookAt
@@ -64,11 +75,14 @@ class Task:
             | model.task.CharacterTriggerAnimState
             | model.task.CharacterTriggerFreeStyle
             | model.task.CharacterTriggerFreeStyleGraph
+            | model.task.CheckMainMissionFinishedInCurrentVersion
             | model.task.ClearDialogCamera
             | model.task.ClearTalkUI
             | model.task.ClientFinishMission
+            | model.task.ClosePage
             | model.task.CollectDataConditions
             | model.task.ConsumeOrigamiItem
+            | model.task.ConsumeMissionItem
             | model.task.ConsumeMissionItemPerformance
             | model.task.ConvinceInitialize
             | model.task.ConvinceMoveCurrTurnOption
@@ -85,108 +99,206 @@ class Task:
             | model.task.CreateNPC
             | model.task.CreatePhoneOnCharacter
             | model.task.CreateProp
-            | model.task.DebateInitialize
+            | model.task.CreateTrialPlayer
+        )
+        d = (
+            model.task.DebateInitialize
+            | model.task.DestroyCurvePropGroupPuzzle
             | model.task.DestroyNPC
             | model.task.DestroyProp
-            | model.task.EnableBillboard
+            | model.task.DestroyTrialPlayer
+        )
+        e = (
+            model.task.EnableBillboard
             | model.task.EnableNPCMonsterAI
+            | model.task.EnablePerformanceMode
             | model.task.EndDialogueEntityInteract
             | model.task.EndPerformance
+            | model.task.EndPropInteract
+            | model.task.EnterFlipperLightDeviceControl
+            | model.task.EnterMap
             | model.task.EnterMapByCondition
-            | model.task.FinishLevelGraph  # 清空选项，一般在选项结束后有
+        )
+        f = (
+            model.task.FinishLevelGraph  # 清空选项
             | model.task.FinishPerformanceMission
             | model.task.FinishRogueAeonTalk
             | model.task.ForceSetDialogCamera
-            | model.task.HeliobusSNSQuickPost
+        )
+        g = model.task.GuessTheSilhouetteResult
+        h = (
+            model.task.HeliobusSNSQuickPost
             | model.task.HideEntity
-            | model.task.MonsterResearchSubmit
-            | model.task.LensDistortionCurveEffect
+            | model.task.HideTopPage
+            | model.task.HideWaypointByProp
+        )
+        l = (  # noqa: E741
+            model.task.LensDistortionCurveEffect
             | model.task.LevelAudioState
             | model.task.LevelPerformanceInitialize
+            | model.task.LockCurrentTeleportAction
+            | model.task.LockPhotoIdentifyHint
             | model.task.LockPlayerControl
-            | model.task.NpcPossession
-            | model.task.MoveVirtualCameraOnDollyPath
+            | model.task.LockTeamLeader
+        )
+        m = model.task.MonsterResearchSubmit | model.task.MoveVirtualCameraOnDollyPath
+        n = model.task.NpcPossession | model.task.NpcSetupTrigger | model.task.NpcToPlayerDistanceTrigger
+        o = (
+            model.task.OpenRaid
             | model.task.OpenTreasureChallenge
             | model.task.OverrideEndTransferType
+            | model.task.OverrideFinishActionAutoTransfer
             | model.task.OverridePerformanceEndCrack
-            | model.task.PerformanceEndBlackText
+        )
+        p = (
+            model.task.PerformanceEndBlackText
+            | model.task.PerformanceEndSeq
             | model.task.PerformanceExtendEndBlack
+            | model.task.PhotoGraphAimTarget
+            | model.task.PhotoGraphShowIdentifyResult
+            | model.task.PhotoGraphWaitIdentifyFinish
+            | model.task.PlayerForceWalk
+            | model.task.PlayerRemoteControlOtherEntity
+            | model.task.PlayerSelectMotionMode
             | model.task.PlayFullScreenTransfer
+            | model.task.PlayMazeButtonEffect
+            | model.task.PlayNPCBubbleTalk
             | model.task.PlayScreenCrack
             | model.task.PlaySequenceDialogue
-            | model.task.PlayTimeline
             | model.task.PlayTimelinePrefab
-            | model.task.PlayVideo
             | model.task.PlayVoice
             | model.task.PPFilterStackEffect
+            | model.task.PropDestruct
             | model.task.PropEnableCollider
             | model.task.PropMoveTo
             | model.task.PropReqInteract
+            | model.task.PropSetupHitBox
+            | model.task.PropSetupTrigger
             | model.task.PropSetVisibility
             | model.task.PropStateChangeListenerConfig
+            | model.task.PropStateExecute
             | model.task.PropTriggerAnimState
             | model.task.PuzzleSetAnimatorParams
-            | model.task.QuestGetReward
+        )
+        q = model.task.QuestGetReward
+        r = (
+            model.task.RadialBlurEffect
+            | model.task.RaidSceneTransfer
             | model.task.RandomConfig
+            | model.task.ReleaseCacheUI
             | model.task.ReleaseCharacter
             | model.task.RemoveAirline
+            | model.task.RemoveBattleEventData
             | model.task.RemoveEffect
             | model.task.RemoveLevelAreas
+            | model.task.RemoveMazeBuff
+            | model.task.RemoveStreamingSource
+            | model.task.RemoveVirtualLineupBindPlane
+            | model.task.ReplaceTrialPlayer
+            | model.task.ReplaceVirtualTeam
+            | model.task.ResetBillboardInfo
+            | model.task.ResetMissionAudioState
+            | model.task.ResetMissionWayPoint
+            | model.task.RogueFinish
             | model.task.RogueShowSelectMainPage
-            | model.task.SaveMessage  # 短信保存到短信箱，打印短信具体见 PlayMessage
+        )
+        s = (
+            model.task.SaveMessage  # 短信保存到短信箱，打印短信具体见 PlayMessage
+            | model.task.SceneGachaListener
             | model.task.SelectMissionItem  # TODO: 提交道具，需要写一写三种后续（提交正确道具后续、提交错误道具对话、取消提交道具对话）
             | model.task.SelectorConfig
+            | model.task.SetAdvAchievement
+            | model.task.SetAllRogueDoorState
             | model.task.SetAsRogueDialogue
             | model.task.SetAudioEmotionState
+            | model.task.SetBillboardInfo
+            | model.task.SetCharacterAtlasFaceEmotion
             | model.task.SetCharacterShadowFactor
             | model.task.SetCharacterVisible
             | model.task.SetClockBoyEmotion
+            | model.task.SetEffectAnimatorTrigger
             | model.task.SetEntityVisible
+            | model.task.SetEntityTalkEnable
             | model.task.SetFloorCustomBool
             | model.task.SetFloorCustomFloat
             | model.task.SetFloorCustomFloatV2
+            | model.task.SetFloorCustomString
             | model.task.SetFloorSavedValue
+            | model.task.SetLoadingStratageType
             | model.task.SetLocalPlayerDitherAlpha
+            | model.task.SetHLODSwitchDelay
             | model.task.SetHudTemplate
-            | model.task.SetMissionCustomValue
             | model.task.SetMissionAudioState
+            | model.task.SetMissionCustomValue
+            | model.task.SetMissionWayPoint
             | model.task.SetMunicipalEnable
+            | model.task.SetNPCMonstersVisible
+            | model.task.SetNpcWaypath
+            | model.task.SetNpcStatus
+            | model.task.SetRogueRoomFinish
             | model.task.SetTraceOrigamiFlag
+            | model.task.SetTrackingMission
             | model.task.SetPerformanceResult
             | model.task.SetSpecialVisionOn
             | model.task.SetStageItemState
             | model.task.SetTargetEntityFadeWithAnim
             | model.task.SetTargetUniqueName
             | model.task.SetTextJoinValue
+            | model.task.SetVirtualLineupBindPlane
+            | model.task.SetWaypointIgnoreLock
+            | model.task.ShowActivityPage
+            | model.task.ShowEnvBuffDialog
             | model.task.ShowFistClubMissionPage
+            | model.task.ShowFuncBtn
             | model.task.ShowGroupChallengeSelectPage
+            | model.task.ShowGuideHintWithText
+            | model.task.ShowGuideText
             | model.task.ShowHeartDialToast  # 悬浮在大世界的文字，比如梦境里的心理活动
+            | model.task.ShowMazeUI
             | model.task.ShowMuseumPage
             | model.task.ShowOfferingClockieUpgradeHint
             | model.task.ShowPerformanceRollingSubtitles
+            | model.task.ShowPlayGOSubPackageDialog
             | model.task.ShowRogueTalkBg  # 入口
             | model.task.ShowRogueTalkUI  # 入口
             | model.task.ShowSDFText
             | model.task.ShowShop
+            | model.task.ShowSpaceZooMainPage
+            | model.task.ShowSubPackage
             | model.task.ShowTalkUI  # 入口
-            | model.task.ShowTutorialGuide  # 入口
+            | model.task.ShowTransitionLoadingUI
+            | model.task.ShowTutorialGuide
+            | model.task.ShowTutorialUI
             | model.task.ShowUI
+            | model.task.ShowWaypointByProp
             | model.task.ShowWorldShop
+            | model.task.ShowWorldShop4ThUpgradeHint
+            | model.task.SpeedLineEffect
             | model.task.StartDialogueEntityInteract
+            | model.task.StartPropInteractMode
             | model.task.StopBlendShapesEmotion
             | model.task.StopPermanentEmotion  # 结束表情，和 TriggerPermanentEmotion 成对
+            | model.task.StopRandomMissionTalk
+            | model.task.StoryLineReplaceTrialPlayer
             | model.task.SwitchAudioListenerToTarget
             | model.task.SwitchCase
             | model.task.SwitchCharacterAnchor
             | model.task.SwitchCharacterAnchorV2
+            | model.task.SwitchPhotoGraphMode
             | model.task.SwitchUIMenuBGM  # 循环播放 BGM
+        )
+        t = (
+            model.task.TeleportToRotatableRegion
+            | model.task.ToastPile
+            | model.task.TransitEnvProfile
             | model.task.TransitEnvProfileForStory
             | model.task.TriggerBlendShapesEmotion
-            | model.task.TriggerCustomString  # 目前看和改变执行状态有关
             | model.task.TriggerCustomString
             | model.task.TriggerCustomStringList
             | model.task.TriggerCustomStringOnDialogEnd
             | model.task.TriggerDialogueEvent  # 怀疑和 WaitDialogueEvent 有什么联动，但是所有文件里的 TriggerDialogueEvent 参数都一样
+            | model.task.TriggerDrinkMakerBartendInMainMission
+            | model.task.TriggerDrinkMakerBartendInMission
             | model.task.TriggerEffect
             | model.task.TriggerEffectList
             | model.task.TriggerEntityEvent
@@ -194,28 +306,46 @@ class Task:
             | model.task.TriggerGroupEvent
             | model.task.TriggerGroupEventOnDialogEnd
             | model.task.TriggerPermanentEmotion
+            | model.task.TriggerRogueDialogue
             | model.task.TriggerSound  # 播放声音
+            | model.task.TriggerUINotify
             | model.task.TutorialTaskUnlock
-            | model.task.UnLockPlayerControl
-            | model.task.UpdateTreasureChallengeProgress
-            | model.task.VCameraConfigChange
-            | model.task.VerifyInteractingEntity
-            | model.task.WaitCustomString  # 等待 TriggerCustomString
+        )
+        u = model.task.UnLockPlayerControl | model.task.UpdateTreasureChallengeProgress
+        v = model.task.VCameraConfigChange | model.task.VerifyInteractingEntity
+        w = (
+            model.task.WaitCustomString  # 等待 TriggerCustomString
             | model.task.WaitFrame
             | model.task.WaitFloorCustomValueChange
+            | model.task.WaitFloorCustomValueChangeV2
+            | model.task.WaitFor
             | model.task.WaitGroupEvent
-            | model.task.WaitSecond  # 等待 TriggerCustomString
+            | model.task.WaitMissionCustomValueChange
+            | model.task.WaitMissionTalkFinish
+            | model.task.WaitNewDecalDialogExit
             | model.task.WaitPerformanceEnd  # 出口
-            | model.task.WaitRogueSimpleTalkFinish,
+            | model.task.WaitPhotoGraphResult
+            | model.task.WaitPredicateSucc
+            | model.task.WaitPropDestroy
+            | model.task.WaitRogueSimpleTalkFinish
+            | model.task.WaitSecond  # 等待 TriggerCustomString
+            | model.task.WaitSilverWolfCompanionToastExit
+            | model.task.WaitStreamingJobFinished
+            | model.task.WaitTutorial
+            | model.task.WaitUIControllerClose
+            | model.task.WaitUIEvent
+            | model.task.WaitUINodeOpen
         )
+        return isinstance(self._task, a | b | c | d | e | f | g | h | l | m | n | o | p | q | r | s | t | u | v | w)
 
     @property
     def is_simple(self):
         return isinstance(
             self._task,
-            model.task.PlayAeonTalk
+            model.task.PlayAeonTalk  # 模拟宇宙中星神出场的对话，会在一开始反复刷新星神名称
             | model.task.PlayAndWaitRogueSimpleTalk
             | model.task.PlayAndWaitSimpleTalk
+            | model.task.PlayMissionTalk
             | model.task.PlayMultiVoiceTalk
             | model.task.PlayRogueSimpleTalk
             | model.task.PlaySimpleTalk
@@ -289,9 +419,11 @@ class Task:
             return [talk]
         if isinstance(
             self._task,
-            model.task.PlayAeonTalk  # 游戏中会连续弹出许多概念作为名字
+            model.task.PlayAeonTalk
             | model.task.PlayAndWaitRogueSimpleTalk
             | model.task.PlayAndWaitSimpleTalk
+            | model.task.PlayMissionTalk
+            | model.task.PlayMultiVoiceTalk
             | model.task.PlayRogueSimpleTalk
             | model.task.PlaySimpleTalk,
         ):

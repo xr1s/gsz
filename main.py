@@ -7,7 +7,6 @@ import fire
 
 import gsz.format
 import gsz.sr
-import gsz.sr.act
 import gsz.sr.excel
 import gsz.sr.view
 

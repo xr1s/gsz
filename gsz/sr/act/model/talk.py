@@ -40,6 +40,7 @@ class SimpleTalk(BaseModel):
 class OptionIconType(enum.Enum):
     AbyssIcon = "AbyssIcon"
     ActivityIcon = "ActivityIcon"
+    BoxIcon = "BoxIcon"
     ChallengeBossIcon = "ChallengeBossIcon"
     ChallengeStoryIcon = "ChallengeStoryIcon"
     ChatBackIcon = "ChatBackIcon"
@@ -58,6 +59,7 @@ class OptionIconType(enum.Enum):
     ShopIcon = "ShopIcon"
     SpecialChatIcon = "SpecialChatIcon"
     SwitchHandIcon = "SwitchHandIcon"
+    TriggerProp = "TriggerProp"
 
     def wiki(self) -> str:  # noqa: PLR0911, PLR0912
         match self:
@@ -65,6 +67,8 @@ class OptionIconType(enum.Enum):
                 return "Abyss <!-- 未上传 -->"
             case OptionIconType.ActivityIcon | OptionIconType.GeneralActivityIcon:
                 return "活动"
+            case OptionIconType.BoxIcon:
+                return "赠礼"
             case OptionIconType.ChallengeBossIcon:
                 return "ChallengeBoss <!-- 未上传 -->"
             case OptionIconType.ChallengeStoryIcon:
@@ -96,7 +100,9 @@ class OptionIconType(enum.Enum):
             case OptionIconType.SpecialChatIcon:
                 return "SpecialChatIcon <!-- 未上传，金色的 ChatIcon -->"
             case OptionIconType.SwitchHandIcon:
-                return "SwitchHandIcon <!-- 未上传，大手 -->"
+                return "SwitchHandIcon <!-- 未上传，扎格列斯的大手 -->"
+            case OptionIconType.TriggerProp:
+                return "TriggerProp <!-- 未上传，齿轮形状，地图解谜交互图标 -->"
 
 
 class RogueOptionTalk(BaseModel):
@@ -129,3 +135,13 @@ class OptionTalk(typing.Protocol):
     option_textmap_id: Text | None
     option_icon_type: OptionIconType | None
     trigger_custom_string: str | None
+
+
+class NPCBubbleTalk(BaseModel):
+    auto_skip_time: float | None = None
+    group_id: int | None = None
+    group_npc_id: int | None = None
+    instance_id: int | None = None
+    talk_sentence_id: int | None = None
+    dialogue_textmap_id: Text | None = None
+    enable_voice: bool = False

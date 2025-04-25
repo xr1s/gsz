@@ -44,10 +44,10 @@ class Type(enum.Enum):
 
 
 class MaskConfig(BaseModel):
-    use_excel_data: typing.Literal[True]
-    start_black: performance.BlackType
-    end_black: performance.BlackType
-    mask_color: typing.Literal["None"]
+    use_excel_data: bool | None = None
+    start_black: performance.BlackType | None = None
+    end_black: performance.BlackType | None = None
+    mask_color: typing.Literal["None", "White"] | None = None
 
 
 class CaptureNpc(BaseModel):

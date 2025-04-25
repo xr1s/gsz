@@ -304,10 +304,10 @@ class SellType(enum.Enum):
 
 
 class Pair(Model):
-    """用于展示一整排物品，比如掉落物等"""
+    """用于展示一整排物品，比如掉落物等，所以有数量"""
 
     item_id: int
-    item_num: int
+    item_num: int | None = None
 
 
 class ItemConfig(ModelID):

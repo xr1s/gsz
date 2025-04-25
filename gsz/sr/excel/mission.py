@@ -118,8 +118,8 @@ class MainMission(ModelID):
     sub_type: SubType | None = None  # 仅在 3.0 及之后出现
     world_id: int | None = None  # 仅在 3.0 及之后出现
     display_priority: int
-    is_display_activity_icon: bool = False
     is_in_raid: bool = False
+    is_display_activity_icon: bool = False
     next_main_mission_list: list[None]  #  只有空 []
     name: Text | None = None
     take_type_a: ParamType | None = None  # 仅在 1.0 出现

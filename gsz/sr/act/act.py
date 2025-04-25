@@ -18,12 +18,12 @@ if typing.TYPE_CHECKING:
 
 
 class Act(Dialogue):
-    def __init__(self, game: GameData, excel: pathlib.Path | model.Act):
+    def __init__(self, game: GameData, act: pathlib.Path | model.Act):
         self._game: GameData = game
         self._act: model.Act = (
-            excel
-            if isinstance(excel, model.Act)
-            else model.Act.model_validate_json(game.base.joinpath(excel).read_bytes())
+            act
+            if isinstance(act, model.Act)
+            else model.Act.model_validate_json(game.base.joinpath(act).read_bytes())
         )
 
     @functools.cached_property
