@@ -1,9 +1,16 @@
+from __future__ import annotations
+
 import functools
 import typing
 
 from .. import excel
-from ..excel import mission
 from .base import View
+
+if typing.TYPE_CHECKING:
+    import collections.abc
+
+    from ..act.model import mission as actmission
+    from ..excel import mission
 
 
 class MainMission(View[excel.MainMission]):
@@ -16,6 +23,22 @@ class MainMission(View[excel.MainMission]):
     @property
     def type(self) -> mission.MainType:
         return self._excel.type
+
+    __MISSION_INFO_PATH = "Config/Level/Mission/{main_mission_id}/MissionInfo_{main_mission_id}.json"
+
+    @functools.cached_property
+    def __info(self) -> actmission.MissionInfo:
+        from ..act.model.mission import MissionInfo
+
+        path = MainMission.__MISSION_INFO_PATH.format(main_mission_id=self._excel.main_mission_id)
+        return MissionInfo.model_validate_json(self._game.base.joinpath(path).read_bytes())
+
+    @functools.cached_property
+    def __sub_missions(self) -> list[SubMission]:
+        return list(self._game.sub_mission(sub.id for sub in self.__info.sub_mission_list))
+
+    def sub_missions(self) -> collections.abc.Iterable[SubMission]:
+        return (SubMission(self._game, sub._excel) for sub in self.__sub_missions)
 
 
 class SubMission(View[excel.SubMission]):
