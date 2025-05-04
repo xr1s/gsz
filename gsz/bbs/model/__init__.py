@@ -1,4 +1,5 @@
 from .base import Response
-from .user_post import UserPostList
+from .structured_content import StructuredContent
+from .user_post import UserPost
 
-__all__ = ("Response", "UserPostList")
+__all__ = ("Response", "StructuredContent", "UserPost")
