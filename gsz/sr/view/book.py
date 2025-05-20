@@ -32,10 +32,13 @@ class BookSeriesConfig(View[excel.BookSeriesConfig]):
         return self._game.text(self._excel.book_series_comments)
 
     @functools.cached_property
-    def world(self) -> BookSeriesWorld:
+    def __world(self) -> BookSeriesWorld:
         world = self._game.book_series_world(self._excel.book_series_world)
         assert world is not None
         return world
+
+    def world(self) -> BookSeriesWorld:
+        return BookSeriesWorld(self._game, self.__world._excel)
 
     @functools.cached_property
     def __books(self) -> list[LocalbookConfig]:
@@ -54,7 +57,7 @@ class BookSeriesConfig(View[excel.BookSeriesConfig]):
         return self._excel.book_series_num
 
     @functools.cached_property
-    def __series_type(self) -> str:  # noqa: PLR0911, PLR0912
+    def series_type(self) -> str:  # noqa: PLR0911, PLR0912
         item = self._game.item_config_book(self.__books[0].id)
         if item is None:
             item = self._game.item_config(self.__books[0].id)
@@ -90,7 +93,7 @@ class BookSeriesConfig(View[excel.BookSeriesConfig]):
 
     def wiki(self) -> str:
         return self._game._template_environment.get_template("书籍.jinja2").render(  # pyright: ignore[reportPrivateUsage]
-            series=self, series_type=self.__series_type
+            series=self, series_type=self.series_type
         )
 
 
@@ -100,6 +103,10 @@ class BookSeriesWorld(View[excel.BookSeriesWorld]):
     @property
     def id(self) -> int:
         return self._excel.book_series_world
+
+    @functools.cached_property
+    def name(self) -> str:
+        return self._game.text(self._excel.book_series_world_textmap_id)
 
 
 class LocalbookConfig(View[excel.LocalbookConfig]):

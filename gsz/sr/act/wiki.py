@@ -265,7 +265,6 @@ class Dialogue(abc.ABC):
         performance = method(_task.performance_id)
         if performance is None:
             return
-        _ = wiki.write(f"{indent}<!-- TriggerPerformance: {performance.path} -->")
         act = performance.performance()
         assert act is not None
         act_wiki = act.wiki()
@@ -275,8 +274,7 @@ class Dialogue(abc.ABC):
     def __do_task(self, wiki: io.StringIO, indent: str, seq: Sequence, task: Task, confluence: Sequence | None):  # noqa: PLR0912, PLR0915
         _task = task._task  # pyright: ignore[reportPrivateUsage]
         if task.is_skip:
-            _ = wiki.write(f"{indent}<!-- {_task.model_dump_json(by_alias=True)} -->")
-            # pass  # 故意用 pass，否则 linter 会提示下面 elif 不需要，但是改掉的话后面就不对称了
+            pass  # 故意用 pass，否则 linter 会提示下面 elif 不需要，但是改掉的话后面就不对称了
         elif task.is_simple:
             # 简单对话
             self._write_simple(wiki, indent, task)
@@ -345,10 +343,8 @@ class Dialogue(abc.ABC):
             # 进入战斗，应该不是 Stage，但是我也搜不到
             stage = self._game.stage_config(_task.event_id.fixed_value.value)
             if stage is None:
-                _ = wiki.write(f"{indent}<!-- {_task.model_dump_json(by_alias=True)} -->")
                 return
             assert stage is not None
-            _ = wiki.write(f"{indent}<!-- {stage._excel.model_dump_json(by_alias=True)} -->")  # pyright: ignore[reportPrivateUsage]
         elif isinstance(_task, model.task.PropSetupUITrigger):
             from .task import Task
 

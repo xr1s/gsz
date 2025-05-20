@@ -131,7 +131,7 @@ class MonsterConfig(ModelID):
     monster_name: Text
     monster_introduction: Text | None
     monster_battle_introduction: Text | None = None  # 仅出现于 1.0
-    hard_level_group: int
+    hard_level_group: int = 1  # 仅出现在 3.2 版本及之前，全部都是 1
     elite_group: int
     attack_modify_ratio: Value[float]
     defence_modify_ratio: Value[float] = Value[float](value=1)
@@ -180,8 +180,8 @@ class MonsterSkillConfig(ModelID):
     delay_ratio: Value[float] | None = None
     param_list: list[Value[float]]
     attack_type: typing.Literal["Normal"]
-    ai_cd: typing.Annotated[typing.Literal[1], pydantic.Field(alias="AI_CD")]
-    ai_icd: typing.Annotated[typing.Literal[1], pydantic.Field(alias="AI_ICD")]
+    ai_cd: typing.Annotated[typing.Literal[1], pydantic.Field(alias="AI_CD")] = 1  # 仅出现于 3.2 版本及之前
+    ai_icd: typing.Annotated[typing.Literal[1], pydantic.Field(alias="AI_ICD")] = 1  # 仅出现于 3.2 版本及之前
     modifier_list: list[str] = []  # 2.0 无此字段
 
     @property
@@ -217,7 +217,7 @@ class MonsterTemplateConfig(ModelID):
     atlas_sort_id: int | None = None
     monster_name: Text
     monster_camp_id: int | None = None
-    monster_base_type: typing.Literal[""]
+    monster_base_type: typing.Literal[""] = ""  # 仅出现于 3.2 版本及之前
     rank: Rank
     json_config: pathlib.Path
     icon_path: str
@@ -227,7 +227,7 @@ class MonsterTemplateConfig(ModelID):
     manikin_prefab_path: str
     manikin_config_path: pathlib.Path
     manikin_image_path: str | None = None  # 仅出现于 1.2 版本及之后
-    nature_id: typing.Literal[1]
+    nature_id: typing.Literal[1] = 1  # 仅出现于 3.2 版本及之前
     attack_base: Value[float]
     defence_base: Value[int] = Value(value=1)
     hp_base: Value[float]

@@ -156,7 +156,7 @@ class RogueTournBuff(View[excel.RogueTournBuff]):
         return self._game._template_environment.get_template("祝福.jinja2").render(  # pyright: ignore[reportPrivateUsage]
             name=self.wiki_name,
             category=self.category,
-            buff_type=self.__rogue_tourn_buff_type.name,
+            buff_type=self.__rogue_tourn_buff_type.subtitle,
             rogue_degrade=rogue_degrade,
             rogue_upgrade=rogue_upgrade,
             tourn_degrade=self.__degrade,

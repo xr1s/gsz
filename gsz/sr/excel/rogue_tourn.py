@@ -268,27 +268,57 @@ class RogueTournMiracle(ModelID):
 
 
 class TitanType(enum.Enum):
+    Aigle = "Aigle"
+    """「天空之泰坦」晨昏之眼，艾格勒"""
+    Cerces = "Cerces"
+    """「理性之泰坦」裂分之枝，瑟希斯"""
+    Georia = "Georia"
+    """「大地之泰坦」磐岩之脊，吉奥里亚"""
     Ianos = "Ianos"
+    """「门径之泰坦」万径之门，雅努斯"""
+    Kephale = "Kephale"
+    """「负世之泰坦」全世之座，刻法勒"""
     Moneta = "Moneta"
+    """「浪漫之泰坦」黄金之茧，墨涅塔"""
     Nikadory = "Nikadory"
+    """「纷争之泰坦」天谴之矛，尼卡多利"""
+    Olonyx = "Olonyx"
+    """「岁月之泰坦」永夜之帷，欧洛尼斯"""
     Phageina = "Phageina"
+    """「海洋之泰坦」满溢之杯，法吉娜"""
+    Talentum = "Talentum"
+    """「律法之泰坦」公正之秤，塔兰顿"""
     Xenatos = "Xenatos"
+    """「死亡之泰坦」灰黯之手，塞纳托斯"""
     Zagreus = "Zagreus"
+    """「诡计之泰坦」翻飞之币，扎格列斯"""
 
     @typing_extensions.override
-    def __str__(self) -> str:
+    def __str__(self) -> str:  # noqa: PLR0911
         match self:
-            case self.Ianos:
+            case self.Aigle:  # 艾格勒
+                return "风堇"
+            case self.Cerces:  # 瑟希斯
+                return "那刻夏"
+            case self.Georia:  # 吉奥里亚
+                return "荒笛"
+            case self.Ianos:  # 雅努斯
                 return "缇宝"
-            case self.Moneta:
+            case self.Kephale:  # 刻法勒
+                return "白厄"
+            case self.Moneta:  # 墨涅塔
                 return "阿格莱雅"
-            case self.Nikadory:
+            case self.Nikadory:  # 尼卡多利
                 return "万敌"
-            case self.Phageina:
+            case self.Olonyx:  # 欧洛尼斯
+                return "█ █ █"
+            case self.Phageina:  # 法吉娜
                 return "海瑟音"
-            case self.Xenatos:
+            case self.Talentum:  # 塔兰顿
+                return "刻律德菈"
+            case self.Xenatos:  # 塞纳托斯
                 return "遐蝶"
-            case self.Zagreus:
+            case self.Zagreus:  # 扎格列斯
                 return "赛飞儿"
 
 
@@ -305,6 +335,7 @@ class RogueTournTitanBless(ModelID):
     titan_bless_level: int
     maze_buff_id: int
     extra_effect_id_list: list[int]
+    speed_up_ratio: int | None = None  # 仅出现于 3.3 版本及之后
     bless_ratio: int | None = None
     bless_battle_display_category_list: list[BlessBattleDisplayCategory] | None = None
 

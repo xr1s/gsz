@@ -5,7 +5,7 @@
 |卷数=${series.num}<!-- 仅填写数字 -->
 |编号=<!-- 按照游戏内显示顺序编号，第一位为所属编号，共四位 -->
 |描述=${ series.comments | default("", true) | gszformat }
-|所属=${series.world.id}
+|所属=${ series.world().id }
 |类型=${series_type}
 |实装版本=
 |相关角色=
