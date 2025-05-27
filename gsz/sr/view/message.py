@@ -113,6 +113,7 @@ class EmojiConfig(View[excel.EmojiConfig]):
         30031: "20-10",
         30032: "21-05",
         30033: "21-07",
+        30034: "24-05",
     }
 
     @functools.cached_property
@@ -153,7 +154,7 @@ class EmojiConfig(View[excel.EmojiConfig]):
             # 从「帕姆展览馆第13弹」开始
             # 因为 Wiki 中间插入了一个不属于游戏的表情包系列（来自微信）
             # 因此需要 group_id 要从 -100 变成 -99 才是 Wiki 顺序
-            case id_ if 114000 <= id_ < 121000 or 131000 <= id_ < 132000:
+            case id_ if 114000 <= id_ < 123000 or 131000 <= id_ < 132000:
                 # 131000 是第 13 弹，给我整不会了
                 # 114000 是第 14 弹
                 # 115000 是第 15 弹
@@ -162,6 +163,8 @@ class EmojiConfig(View[excel.EmojiConfig]):
                 # 118000 是第 18 弹
                 # 119000 是第 19 弹
                 # 120000 是第 20 弹
+                # 121000 是第 21 弹
+                # 122000 是第 22 弹
                 assert self._excel.emoji_group_id is not None
                 assert self._excel.same_group_order is not None
                 return wiki_id(self._excel.emoji_group_id - 99, self._excel.same_group_order)
@@ -224,10 +227,12 @@ class MessageContactsConfig(View[excel.MessageContactsConfig]):
 
     @functools.cached_property
     def __sections(self) -> list[MessageSectionConfig]:
-        return [
+        sections = [
             MessageSectionConfig(self._game, section)
             for section in self._game._message_contact_sections.get(self.id, ())  # pyright: ignore[reportPrivateUsage]
         ]
+        sections.sort(key=lambda section: section.id)
+        return sections
 
     def sections(self) -> collections.abc.Iterable[MessageSectionConfig]:
         return (MessageSectionConfig(self._game, section._excel) for section in self.__sections)
@@ -256,12 +261,13 @@ class MessageContactsConfig(View[excel.MessageContactsConfig]):
         for section in self.__sections:
             _ = wiki.write("\n\n{{短信内容\n|人物=")
             _ = wiki.write(name)
-            _ = wiki.write("\n|短信标题=<!-- 填入相关事件或任务 -->")
-            _ = wiki.write("\n|版本=<!-- 填入版本 -->")
             contacts_type = "" if self.__type is None else self.__type.name
             if contacts_type != "角色" and self.signature != "":
                 _ = wiki.write("\n|签名=")
                 _ = wiki.write(self.signature)
+            _ = wiki.write("\n|短信标题=<!-- 填入相关事件或任务 -->")
+            _ = wiki.write("\n|版本=<!-- 填入版本 -->")
+            _ = wiki.write("\n|排序=<!-- 填入排序 -->")
             main_mission = section.main_mission()
             if main_mission is not None:
                 _ = wiki.write("\n|接取任务=")
@@ -579,9 +585,7 @@ class MessageSectionConfig(View[excel.MessageSectionConfig]):
         _ = wiki.write(indent)
         match item._excel.sender:
             case message.Sender.NPC:
-                contacts = item.contacts()
-                if contacts is None:
-                    contacts = self.__contacts
+                contacts = item.contacts() or self.contacts()
                 contacts_name = contacts.name
                 if contacts_name == "{NICKNAME}":
                     contacts_name = "开拓者"
@@ -609,7 +613,7 @@ class MessageSectionConfig(View[excel.MessageSectionConfig]):
         _ = wiki.write(indent)
         _ = wiki.write("{{短信选项")
         nexts = [self.__item_dict[k] for k in item.nexts()]
-        is_sticker = all(item.type == message.ItemType.Sticker for item in nexts)
+        is_sticker = all(item.type is message.ItemType.Sticker for item in nexts)
         if is_sticker:
             _ = wiki.write("|表情")
         next_confluence = self.__find_confluence(item)
@@ -651,9 +655,14 @@ class MessageSectionConfig(View[excel.MessageSectionConfig]):
             # 只有在父节点只有自己一个后继的时候才会进入本函数
             _ = wiki.write(indent)
             _ = wiki.write("{{短信选项")
-            # item.type 可能为 Sticker，但我看了几个选项都是文字的，因此应该无视即可
-            _ = wiki.write("|选项1=")
-            _ = wiki.write(self.__formatter.format(item.option_text))
+            if item.type is message.ItemType.Sticker:
+                _ = wiki.write("|表情|选项1=")
+                sticker = item.wiki_sticker()
+                assert sticker is not None
+                _ = wiki.write(sticker.wiki())
+            else:
+                _ = wiki.write("|选项1=")
+                _ = wiki.write(self.__formatter.format(item.option_text))
             _ = wiki.write("}}")
         self.__wiki_write_message_item(wiki, indent, item)
         # nexts = item.nexts()

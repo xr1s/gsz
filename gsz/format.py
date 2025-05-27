@@ -121,29 +121,9 @@ class Formatter:
                 _ = self.__texts[-1].write(s)
             case Syntax.Terminal:
                 for char in s:
-                    match char:
-                        case (
-                            "Ⅰ"
-                            | "Ⅱ"
-                            | "Ⅲ"
-                            | "Ⅳ"
-                            | "Ⅴ"
-                            | "Ⅵ"
-                            | "Ⅶ"
-                            | "Ⅷ"
-                            | "Ⅸ"
-                            | "Ⅹ"
-                            | "Ⅺ"
-                            | "Ⅻ"
-                            | "Ⅼ"
-                            | "Ⅽ"
-                            | "Ⅾ"
-                            | "Ⅿ"
-                        ):
-                            _ = self.__texts[-1].write(char)
-                            _ = self.__texts[-1].write(" ")
-                        case _:
-                            _ = self.__texts[-1].write(char)
+                    _ = self.__texts[-1].write(char)
+                    if char in "ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅪⅫⅬⅭⅮⅯ":
+                        _ = self.__texts[-1].write(" ")
             case Syntax.MediaWiki | Syntax.MediaWikiPretty:
                 for char in s:
                     match char:
@@ -377,9 +357,8 @@ class Formatter:
             prec = int(specifier[1:])  # may throws ValueError
             return f"{param:.{prec}f}"
         if specifier == "i":
-            # TODO: 需要给数字做千分位分隔
             param = round(float(param))
-            return str(round(float(param)))
+            return f"{round(float(param)):,}"
         if specifier == "m":
             # TODO: %1[m] 表示将比如数字 1,000,000 表示成 一百万 等语言对应的缩写形式
             # 仅在罗浮杂俎相关任务和成就中出现，应该暂时用不到
@@ -442,7 +421,7 @@ class Formatter:
                     case '"right"':
                         _ = self.__texts[-1].write("right")
                     case _:
-                        raise ValueError(f"invalid xml align={repr(val)}")
+                        raise ValueError(f"invalid xml align={val!r}")
                 _ = self.__texts[-1].write('">')
                 _ = self.__texts[-1].write(text)
                 _ = self.__texts[-1].write("</p>")

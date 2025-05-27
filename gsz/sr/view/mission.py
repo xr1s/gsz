@@ -16,6 +16,23 @@ if typing.TYPE_CHECKING:
     from .performance import Performance
 
 
+class ChronicleConclusion(View[excel.ChronicleConclusion]):
+    ExcelOutput: typing.Final = excel.ChronicleConclusion
+
+    @functools.cached_property
+    def __mission(self) -> MainMission:
+        mission = self._game.main_mission(self._excel.mission_id)
+        assert mission is not None
+        return mission
+
+    def mission(self) -> MainMission:
+        return MainMission(self._game, self.__mission._excel)
+
+    @functools.cached_property
+    def conclusion(self) -> str:
+        return self._game.text(self._excel.mission_conclusion)
+
+
 class MainMission(View[excel.MainMission]):
     ExcelOutput: typing.Final = excel.MainMission
 

@@ -36,7 +36,7 @@ from .misc import (
     TextJoinConfig,
     TextJoinItem,
 )
-from .mission import MainMission, SubMission
+from .mission import ChronicleConclusion, MainMission, SubMission
 from .monster import (
     EliteGroup,
     HardLevelGroup,
@@ -175,6 +175,7 @@ __all__ = (
     "TextJoinConfig",
     "TextJoinItem",
     # mission
+    "ChronicleConclusion",
     "MainMission",
     "SubMission",
     # performance

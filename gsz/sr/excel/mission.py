@@ -6,6 +6,16 @@ import typing_extensions
 from .base import Model, ModelID, Text
 
 
+class ChronicleConclusion(ModelID):
+    mission_id: int
+    mission_conclusion: Text
+
+    @property
+    @typing_extensions.override
+    def id(self) -> int:
+        return self.mission_id
+
+
 class MissionChapterConfig(ModelID):
     id_: int
     chapter_name: Text
@@ -35,7 +45,7 @@ class MainType(enum.Enum):
     Gap = "Gap"
     """间章任务"""
     Main = "Main"
-    """主线任务"""
+    """开拓任务"""
 
     @typing_extensions.override
     def __str__(self) -> str:
@@ -49,7 +59,7 @@ class MainType(enum.Enum):
             case self.Gap:
                 return "间章任务"
             case self.Main:
-                return "主线任务"
+                return "开拓任务"
 
 
 class Operation(enum.Enum):

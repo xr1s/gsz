@@ -829,6 +829,10 @@ class GameData:
 
     ######## mission ########
 
+    @excel_output(view.ChronicleConclusion)
+    def chronicle_conclusion(self):
+        """命路歧途文案"""
+
     @excel_output(view.MainMission)
     def main_mission(self):
         """任务（会展示在任务列表里的内容）"""
