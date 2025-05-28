@@ -470,13 +470,18 @@ class Formatter:
                 _ = self.__texts[-1].write(text)
                 _ = self.__texts[-1].write("</span>")
             case "u":  # 下划线
+                has_quote = text.startswith("【") and text.endswith("】")
+                without_quote = text.removeprefix("【").removesuffix("】")
                 if (
-                    isinstance(self.__game, SRGameData)
-                    and text.removeprefix("【").removesuffix("】") in self.__game._extra_effect_config_names  # pyright: ignore[reportPrivateUsage]
+                    isinstance(self.__game, SRGameData) and without_quote in self.__game._extra_effect_config_names  # pyright: ignore[reportPrivateUsage]
                 ):
+                    if has_quote:
+                        _ = self.__texts[-1].write("【")
                     _ = self.__texts[-1].write("{{效果说明|")
-                    _ = self.__texts[-1].write(text)
+                    _ = self.__texts[-1].write(without_quote)
                     _ = self.__texts[-1].write("}}")
+                    if has_quote:
+                        _ = self.__texts[-1].write("】")
                     return
                 _ = self.__texts[-1].write("<u>")
                 _ = self.__texts[-1].write(text)

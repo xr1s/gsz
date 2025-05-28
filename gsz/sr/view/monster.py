@@ -14,7 +14,7 @@ if typing.TYPE_CHECKING:
     from ..excel import Element
     from .monster_guide import MonsterGuideConfig
 
-NPC_COLLIDE_NAMES = {"可可利亚", "杰帕德", "布洛妮娅", "史瓦罗", "银枝"}
+NPC_COLLIDE_NAMES = {"可可利亚", "杰帕德", "布洛妮娅", "史瓦罗", "银枝", "黑潮朽弓"}
 
 
 def wiki_name(name: str) -> str:

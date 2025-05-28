@@ -228,7 +228,7 @@ class RogueTournFormula(View[excel.RogueTournFormula]):
         name = self._game._mw_formatter.format(self.name)  # pyright: ignore[reportPrivateUsage]
         if self.category == rogue_tourn.FormulaCategory.PathEcho and self.mode == rogue_tourn.Mode.TournMode1:
             return name + "（方程）"
-        if self.name in ("赏金猎人", "混沌医师"):
+        if self.name in ("赏金猎人", "混沌医师", "黑潮朽弓"):
             return name + "（方程）"
         return name
 
