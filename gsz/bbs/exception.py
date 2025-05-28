@@ -1,5 +1,9 @@
+import collections.abc
+import typing
+
+
 class APIException(Exception):
-    def __init__(self, api: str, params: dict[str, int], retcode: int, message: str):
+    def __init__(self, api: str, params: collections.abc.Mapping[str, typing.Any], retcode: int, message: str):
         super().__init__()
         self.__retcode = retcode
         self.__message = message

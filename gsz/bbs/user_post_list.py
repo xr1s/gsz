@@ -13,17 +13,33 @@ class StructuredContent:
     def __init__(self, structured_content: model.StructuredContent):
         self.__structured_content = structured_content
 
+    def is_(self, sc: type):
+        return isinstance(self.__structured_content.insert, sc)
+
+    @property
+    def bold(self) -> bool:
+        return self.__structured_content.attributes.bold if self.__structured_content.attributes is not None else False
+
+    @property
+    def italic(self) -> bool:
+        return (
+            self.__structured_content.attributes.italic if self.__structured_content.attributes is not None else False
+        )
+
+    @property
     def text(self) -> str | None:
         return self.__structured_content.insert if isinstance(self.__structured_content.insert, str) else None
 
-    def image_url(self) -> str | None:
+    @property
+    def image(self) -> str | None:
         if not isinstance(self.__structured_content.insert, model.structured_content.Image):
             return None
         if self.__structured_content.insert.image == "true":
             return None
         return str(self.__structured_content.insert.image)
 
-    def video_url(self) -> str | None:
+    @property
+    def video(self) -> str | None:
         if isinstance(self.__structured_content.insert, model.structured_content.Video):
             return str(self.__structured_content.insert.video)
         if isinstance(self.__structured_content.insert, model.structured_content.Vod):
@@ -36,7 +52,8 @@ class StructuredContent:
             return str(resolution.url)
         return None
 
-    def video_cover_url(self) -> str | None:
+    @property
+    def video_cover(self) -> str | None:
         if not isinstance(self.__structured_content.insert, model.structured_content.Vod):
             return None
         return str(self.__structured_content.insert.vod.cover)
@@ -47,6 +64,10 @@ class Post:
         self.__post = post
 
     @property
+    def id(self) -> int:
+        return self.__post.post.post_id
+
+    @property
     def subject(self) -> str:
         return self.__post.post.subject
 
@@ -54,11 +75,11 @@ class Post:
     def created_at(self) -> datetime.datetime:
         return self.__post.post.created_at.astimezone()
 
-    def structured_content(self) -> list[StructuredContent]:
+    def structured_content(self) -> collections.abc.Iterable[StructuredContent]:
         return (
-            []
+            ()
             if self.__post.post.structured_content is None
-            else [StructuredContent(structured_content) for structured_content in self.__post.post.structured_content]
+            else (StructuredContent(structured_content) for structured_content in self.__post.post.structured_content)
         )
 
 
@@ -84,6 +105,7 @@ class UserPost(collections.abc.AsyncIterator[Post]):
             self.__iter_index += 1
             return Post(self.__user_posts[self.__iter_index - 1])
         res = await self.__client.get(API, params=self.__params)
+        res = res.raise_for_status()
         res = model.Response[model.user_post.UserPostList].model_validate_json(res.content)
         if res.retcode != 0:
             raise exception.APIException(API, self.__params, res.retcode, res.message)

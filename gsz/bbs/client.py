@@ -28,8 +28,5 @@ class Client(contextlib.AbstractAsyncContextManager["Client"]):
     async def aclose(self):
         await self.__client.aclose()
 
-    def user_post_list(self, uid: int):
+    def user_post_list(self, uid: int) -> user_post_list.UserPostList:
         return user_post_list.UserPostList(self.__client, uid)
-
-    def get_post_full(self, post_id: int):
-        return user_post_list.GetFullPost(self.__client, post_id)

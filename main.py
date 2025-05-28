@@ -1,10 +1,18 @@
 import datetime
+import difflib
 import itertools
+import logging
 import pathlib
+import re
+import shutil
 import typing
+import zoneinfo
 
+import aiofiles
+import aiofiles.os
 import fire
 
+import gsz.bbs
 import gsz.format
 import gsz.sr
 import gsz.sr.excel
@@ -30,6 +38,7 @@ class Main:
         self.base = base
         self.__game = gsz.sr.GameData(base)
         self.__formatter = gsz.format.Formatter(game=self.__game, syntax=gsz.format.Syntax.Terminal)
+        self.__mwformatter = gsz.format.Formatter(game=self.__game, syntax=gsz.format.Syntax.MediaWiki)
 
     def monster(self, name: str | None = None):
         monster_name_dedup = set[str]()
@@ -208,9 +217,100 @@ class Main:
                 continue
             print(challenge.wiki(), end="\n\n")
 
+    MIYOUSHE_SR_OFFICIAL = 288909600
+    BILIBILI_SR_OFFICIAL = 1340190821
+    BILIBILI_SR_POM_POM = 508103429
+    BILIBILI_SR_WUBBABOO = 3493120220071960
+    SOCIAL_MEDIA_VIDEO_KEYWORDS = [
+        "动画短片",
+        "千星纪游PV",
+        "黄金史诗PV",
+        "角色PV",
+        "角色前瞻",
+        "走近星穹",
+        "星穹美学速递",
+        "星旅一瞬",
+        "版本PV",
+        "前瞻特别节目",
+        "EP",
+        "夜间车厢",
+        "虚一直构",
+        "浮光映影",
+        "参展视频",
+        "OP",
+        "PV",
+    ]
+    SOCIAL_MEDIA_IMAGE_KEYWORDS = ["星旅留影", "帕姆展览馆 | 光锥故事", "帕姆展览馆 | 表情包", "帕姆展览馆"]
+
+    async def social_media(self):  # noqa: PLR0915
+        TRIM_CATEGORY = re.compile(r"^[^|丨]+[\|丨]\s*")
+        DIRECTORY = pathlib.Path("崩坏：星穹铁道媒体")
+        DIRECTORY.mkdir(exist_ok=True)
+        localtz = zoneinfo.ZoneInfo("localtime")
+        async with gsz.bbs.bilibili.Client() as client:
+            videos = itertools.chain(
+                [video async for video in client.space(self.BILIBILI_SR_OFFICIAL).search()],
+                [video async for video in client.space(self.BILIBILI_SR_POM_POM).search()],
+                [video async for video in client.space(self.BILIBILI_SR_WUBBABOO).search()],
+            )
+        video_titles_revmap = {video.title.removeprefix("《崩坏：星穹铁道》"): video for video in videos}
+        video_titles = list(video_titles_revmap.keys())
+        for keyword in itertools.chain(self.SOCIAL_MEDIA_VIDEO_KEYWORDS, self.SOCIAL_MEDIA_IMAGE_KEYWORDS, ("未分类",)):
+            file_path = DIRECTORY / keyword
+            if not file_path.exists():
+                continue
+            ctime = await aiofiles.os.path.getctime(file_path)
+            cdatetime = datetime.datetime.fromtimestamp(ctime, tz=localtz).date()
+            shutil.move(file_path, f"{file_path}-{cdatetime}")
+        async with gsz.bbs.Client() as client:
+            async for post in client.user_post_list(self.MIYOUSHE_SR_OFFICIAL):
+                # subject 偶尔会多敲空格，需要把空格都去掉再比较
+                subject = post.subject.strip().replace("\xa0", "").removeprefix("《崩坏：星穹铁道》")
+                video_covers = [content.video_cover for content in post.structured_content()]
+                if any(video_covers):  # 有视频
+                    category = next(
+                        (keyword for keyword in self.SOCIAL_MEDIA_VIDEO_KEYWORDS if keyword in subject), "未分类"
+                    )
+                    description = "".join(filter(None, (content.text for content in post.structured_content())))
+                    description = description.strip().replace("\n", "<br />")
+                    # 通过最长公共子序列来判断视频是否匹配
+                    video_title = difflib.get_close_matches(subject, video_titles)
+                    if len(video_title) == 0:
+                        logging.warning("%s not found on bilibili", subject)
+                    video = video_titles_revmap[video_title[0]] if len(video_title) != 0 else None
+                    title = video.title if video is not None else post.subject
+                    title = title.replace("|", "")
+                    bvid = str(video.bvid) if video is not None else ""
+                    async with aiofiles.open(DIRECTORY / re.sub(r"\W", "", category), "a") as file:
+                        _ = await file.write("{{视频|标题=")
+                        _ = await file.write(title)
+                        _ = await file.write(f"|BV号={bvid}|简介={description}")
+                        _ = await file.write("|角色=}}")
+                        _ = await file.write(f"\n<!-- https://www.miyoushe.com/sr/article/{post.id} -->")
+                        if video is not None:
+                            _ = await file.write(f"\n<!-- https://www.bilibili.com/video/{bvid} -->")
+                        _ = await file.writelines(f"\n<!-- 米封面 {cover} -->" for cover in video_covers if cover)
+                        if video is not None:
+                            _ = await file.write(f"\n<!-- 哔封面 {video.cover} -->")
+                        _ = await file.writelines("\n\n")
+                    continue
+                category = next((keyword for keyword in self.SOCIAL_MEDIA_IMAGE_KEYWORDS if keyword in subject), None)
+                if category is not None:  # 角色贺图
+                    async with aiofiles.open(DIRECTORY / re.sub(r"\W", "", category), "a") as file:
+                        _ = await file.write(f"<!-- https://www.miyoushe.com/sr/article/{post.id} -->\n")
+                        _ = await file.write(f"'''{TRIM_CATEGORY.sub('', subject)}'''\n")
+                        structured_texts = (
+                            content.text.strip() for content in post.structured_content() if content.text is not None
+                        )
+                        _ = await file.write("<br />\n".join(structured_texts))
+                        for content in post.structured_content():
+                            if content.image is not None:
+                                _ = await file.write(f"\n[[文件:<!-- {content.image} -->|500px]]")
+                        _ = await file.write("\n\n")
+
     def main(self):
         """调试代码可以放这里"""
 
 
 if __name__ == "__main__":
-    fire.Fire(Main)
+    fire.Fire(Main)  # pyright: ignore[reportUnknownMemberType]

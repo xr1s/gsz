@@ -98,7 +98,7 @@ class Topic(Model):
 
 
 class Certification(Model):
-    type: typing.Literal[1]
+    type: typing.Literal[1, 2]
     label: str
 
 
