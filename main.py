@@ -1,10 +1,10 @@
 import datetime
 import difflib
+import io
 import itertools
 import logging
 import pathlib
 import re
-import shutil
 import typing
 import zoneinfo
 
@@ -245,8 +245,7 @@ class Main:
     async def social_media(self):  # noqa: PLR0915
         TRIM_CATEGORY = re.compile(r"^[^|丨]+[\|丨]\s*")
         DIRECTORY = pathlib.Path("崩坏：星穹铁道媒体")
-        DIRECTORY.mkdir(exist_ok=True)
-        localtz = zoneinfo.ZoneInfo("localtime")
+        await aiofiles.os.makedirs(DIRECTORY, exist_ok=True)
         async with gsz.bbs.bilibili.Client() as client:
             videos = itertools.chain(
                 [video async for video in client.space(self.BILIBILI_SR_OFFICIAL).search()],
@@ -255,13 +254,14 @@ class Main:
             )
         video_titles_revmap = {video.title.removeprefix("《崩坏：星穹铁道》"): video for video in videos}
         video_titles = list(video_titles_revmap.keys())
-        for keyword in itertools.chain(self.SOCIAL_MEDIA_VIDEO_KEYWORDS, self.SOCIAL_MEDIA_IMAGE_KEYWORDS, ("未分类",)):
-            file_path = DIRECTORY / keyword
-            if not file_path.exists():
-                continue
-            ctime = await aiofiles.os.path.getctime(file_path)
-            cdatetime = datetime.datetime.fromtimestamp(ctime, tz=localtz).date()
-            shutil.move(file_path, f"{file_path}-{cdatetime}")
+        streams = {
+            keyword: io.BytesIO()
+            for keyword in itertools.chain(
+                self.SOCIAL_MEDIA_VIDEO_KEYWORDS,
+                self.SOCIAL_MEDIA_IMAGE_KEYWORDS,
+                ("未分类",),
+            )
+        }
         async with gsz.bbs.Client() as client:
             async for post in client.user_post_list(self.MIYOUSHE_SR_OFFICIAL):
                 # subject 偶尔会多敲空格，需要把空格都去掉再比较
@@ -281,32 +281,46 @@ class Main:
                     title = video.title if video is not None else post.subject
                     title = title.replace("|", "")
                     bvid = str(video.bvid) if video is not None else ""
-                    async with aiofiles.open(DIRECTORY / re.sub(r"\W", "", category), "a") as file:
-                        _ = await file.write("{{视频|标题=")
-                        _ = await file.write(title)
-                        _ = await file.write(f"|BV号={bvid}|简介={description}")
-                        _ = await file.write("|角色=}}")
-                        _ = await file.write(f"\n<!-- https://www.miyoushe.com/sr/article/{post.id} -->")
-                        if video is not None:
-                            _ = await file.write(f"\n<!-- https://www.bilibili.com/video/{bvid} -->")
-                        _ = await file.writelines(f"\n<!-- 米封面 {cover} -->" for cover in video_covers if cover)
-                        if video is not None:
-                            _ = await file.write(f"\n<!-- 哔封面 {video.cover} -->")
-                        _ = await file.writelines("\n\n")
+                    stream = streams[category]
+                    _ = stream.write("{{视频|标题=".encode())
+                    _ = stream.write(title.encode())
+                    _ = stream.write(f"|BV号={bvid}|简介={description}".encode())
+                    _ = stream.write("|角色=}}".encode())
+                    _ = stream.write(f"\n<!-- https://www.miyoushe.com/sr/article/{post.id} -->".encode())
+                    if video is not None:
+                        _ = stream.write(f"\n<!-- https://www.bilibili.com/video/{bvid} -->".encode())
+                    _ = stream.writelines(f"\n<!-- 米封面 {cover} -->".encode() for cover in video_covers if cover)
+                    if video is not None:
+                        _ = stream.write(f"\n<!-- 哔封面 {video.cover} -->".encode())
+                    _ = stream.write(b"\n\n")
                     continue
                 category = next((keyword for keyword in self.SOCIAL_MEDIA_IMAGE_KEYWORDS if keyword in subject), None)
                 if category is not None:  # 角色贺图
-                    async with aiofiles.open(DIRECTORY / re.sub(r"\W", "", category), "a") as file:
-                        _ = await file.write(f"<!-- https://www.miyoushe.com/sr/article/{post.id} -->\n")
-                        _ = await file.write(f"'''{TRIM_CATEGORY.sub('', subject)}'''\n")
-                        structured_texts = (
-                            content.text.strip() for content in post.structured_content() if content.text is not None
-                        )
-                        _ = await file.write("<br />\n".join(structured_texts))
-                        for content in post.structured_content():
-                            if content.image is not None:
-                                _ = await file.write(f"\n[[文件:<!-- {content.image} -->|500px]]")
-                        _ = await file.write("\n\n")
+                    stream = streams[category]
+                    _ = stream.write(f"<!-- https://www.miyoushe.com/sr/article/{post.id} -->\n".encode())
+                    _ = stream.write(f"'''{TRIM_CATEGORY.sub('', subject)}'''\n".encode())
+                    structured_texts = (
+                        content.text.strip() for content in post.structured_content() if content.text is not None
+                    )
+                    _ = stream.write("<br />\n".join(structured_texts).encode())
+                    for content in post.structured_content():
+                        if content.image is not None:
+                            _ = stream.write(f"\n[[文件:<!-- {content.image} -->|500px]]".encode())
+                    _ = stream.write(b"\n\n")
+        # 整合信息，判断是否和旧文件相同，如不同则备份旧文件后写入
+        localtz = zoneinfo.ZoneInfo("localtime")
+        for category, stream in streams.items():
+            file_path = DIRECTORY / re.sub(r"\W", "", category)
+            if await aiofiles.os.path.exists(file_path):
+                size = await aiofiles.os.path.getsize(file_path)
+                # 文件长度是单调递增的，因为媒体只会越来越多（除非崩铁删视频），所以可以用长度判断
+                if len(stream.getvalue()) == size:
+                    continue
+                ctime = await aiofiles.os.path.getctime(file_path)
+                cdate = datetime.datetime.fromtimestamp(ctime, tz=localtz).date()
+                await aiofiles.os.replace(file_path, f"{file_path}-{cdate}")
+            async with aiofiles.open(file_path, "wb") as file:
+                _ = await file.write(stream.getvalue())
 
     def main(self):
         """调试代码可以放这里"""
