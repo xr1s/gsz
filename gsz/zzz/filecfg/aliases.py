@@ -54,6 +54,7 @@ NAME = pydantic.Field(
     )
 )
 
+# 一般作为头像图标的字段名
 # AvatarProfessionTemplateTb.json
 ICON = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
@@ -65,6 +66,22 @@ ICON = pydantic.Field(
         "IJBKHFLGPHJ",  # v1.3
         "DBKGODAFDCP",  # v1.2
         "ELLAAEPEEPC",  # v1.1
+    )
+)
+
+# 比如作为短信、绳网帖子z中图片字段名
+# MessageGroupConfigTemplateTb.json
+# InterKnotConfigTemplateTb.json
+IMAGE = pydantic.Field(
+    validation_alias=pydantic.AliasChoices(
+        "KOIJAKALEBB",  # v2.0
+        "LMJJHCGEEKH",  # v1.7
+        "BKDHNBKMLEH",  # v1.6
+        "BCCFOCBBNHF",  # v1.5
+        "DFFHKODPBOF",  # v1.4
+        "KJOMPOAFJDP",  # v1.3
+        "IEPLEDIIPIK",  # v1.2
+        "ECICHGFPJKG",  # v1.1
     )
 )
 
@@ -107,5 +124,34 @@ PARTNER_ID = pydantic.Field(
         "MLKOGACEPJJ",  # v1.3
         "NOGICDBGMHG",  # v1.2
         "JOCCGJBAPNK",  # v1.1
+    )
+)
+
+# MessageConfig PostCommentConfig
+OPTION_1 = pydantic.Field(
+    validation_alias=pydantic.AliasChoices(
+        "ANOGLHNNINL",  # v2.0
+        "DPMNGFBMPAI",  # v1.7
+        "EKENONMBDFB",  # v1.6
+        "EAOGJNHGNCC",  # v1.5
+        "BGBBDHKHABJ",  # v1.4
+        "AFFFAGHMCKI",  # v1.3
+        "JCCNCNCPGNM",  # v1.2
+        "GMFFDAKPFNL",  # v1.1
+    )
+)
+
+# MessageConfigTemplateTb.json
+# PostCommentConfigTemplateTb.json
+OPTION_2 = pydantic.Field(
+    validation_alias=pydantic.AliasChoices(
+        "IJDJPMIHHEH",  # v2.0
+        "GPJNDHPMKIN",  # v1.7
+        "MIJDGAIGNCA",  # v1.6
+        "EKMIILMACOD",  # v1.5
+        "FOKHEIPDGDM",  # v1.4
+        "EHPPNFEALOE",  # v1.3
+        "CEDEPEBICEL",  # v1.2
+        "GOMFGFAGNFB",  # v1.1
     )
 )

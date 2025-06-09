@@ -171,6 +171,34 @@ class GameData:
         """knock knock 中的非自机角色联系人"""
 
     ######## partner ########
+
     @file_cfg(view.PartnerConfig)
     def partner_config(self):
         """可能包含 NPC 的联系人"""
+
+    ######## post ########
+
+    @file_cfg(view.InterKnotConfig)
+    def inter_knot_config(self):
+        """绳网帖子"""
+
+    @file_cfg(view.PostCommentConfig)
+    def post_comment_config(self):
+        """绳网帖子回复"""
+
+    @functools.cached_property
+    def _comments_under_post(self) -> dict[int, list[filecfg.PostCommentConfig]]:
+        comments: dict[int, list[filecfg.PostCommentConfig]] = {}
+        for comment in self.post_comment_config():
+            cfg = comment._filecfg  # pyright: ignore[reportPrivateUsage]
+            if cfg.group_id in comments:
+                comments[cfg.group_id].append(cfg)
+            else:
+                comments[cfg.group_id] = [cfg]
+        return comments
+
+    ######## quest ########
+
+    @file_cfg(view.QuestConfig)
+    def quest_config(self):
+        """委托"""

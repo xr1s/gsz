@@ -84,19 +84,7 @@ MESSAGE_TEXT = pydantic.Field(
         "KAJBKJKMHOM",  # v1.7
     )
 )
-MESSAGE_OPTION_01 = pydantic.Field(
-    validation_alias=pydantic.AliasChoices(
-        "ANOGLHNNINL",  # v2.0
-        "DPMNGFBMPAI",  # v1.7
-        "EKENONMBDFB",  # v1.6
-        "EAOGJNHGNCC",  # v1.5
-        "BGBBDHKHABJ",  # v1.4
-        "AFFFAGHMCKI",  # v1.3
-        "JCCNCNCPGNM",  # v1.2
-        "GMFFDAKPFNL",  # v1.1
-    )
-)
-MESSAGE_OPTION_LONG_01 = pydantic.Field(
+MESSAGE_OPTION_LONG_1 = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
         "MDGHOIDHADH",  # v2.0
         "HCMBGLFKOLH",  # v1.7
@@ -108,19 +96,7 @@ MESSAGE_OPTION_LONG_01 = pydantic.Field(
         "CENCINKPEKA",  # v1.1
     )
 )
-MESSAGE_OPTION_02 = pydantic.Field(
-    validation_alias=pydantic.AliasChoices(
-        "IJDJPMIHHEH",  # v2.0
-        "GPJNDHPMKIN",  # v1.7
-        "MIJDGAIGNCA",  # v1.6
-        "EKMIILMACOD",  # v1.5
-        "FOKHEIPDGDM",  # v1.4
-        "EHPPNFEALOE",  # v1.3
-        "CEDEPEBICEL",  # v1.2
-        "GOMFGFAGNFB",  # v1.1
-    )
-)
-MESSAGE_OPTION_LONG_02 = pydantic.Field(
+MESSAGE_OPTION_LONG_2 = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
         "DNNDOHCBDHO",  # v2.0
         "FIIFOCIBPFB",  # v1.7
@@ -142,6 +118,7 @@ MESSAGE_SENDER_ID = pydantic.Field(
         # "JIKICBFNCDP",  # v1.3
         # "ADEMJOAEJOL",  # v1.2
         # "EMFBKODOKLE",  # v1.1
+        # 下面的是另一个字段，有些时候是 0，但好像也不是发信人
         "FJIGNDBDFGH",  # v2.0
         "JLBFBBIBKFN",  # v1.7
         "MBEKPIEKHBO",  # v1.6
@@ -152,6 +129,42 @@ MESSAGE_SENDER_ID = pydantic.Field(
         "FMMIBDPEOHB",  # v1.1
     )
 )
+MESSAGE_SEGMENT = pydantic.Field(
+    validation_alias=pydantic.AliasChoices(
+        "ILLNMKIDBOC",  # v2.0
+        "OPCPFJMMICA",  # v1.7
+        "MIMIKGPBOFG",  # v1.6
+        "JMNNPIGLDMA",  # v1.5
+        "JHNKDJMCFBA",  # v1.4
+        "IGCCHBECFCN",  # v1.3
+        "CLICHHGFGLJ",  # v1.2
+        "CDHCJFKGIAL",  # v1.1
+    )
+)
+MESSAGE_OPTION_SEGMENT_1 = pydantic.Field(
+    validation_alias=pydantic.AliasChoices(
+        "DMPOBPACNFG",  # v2.0
+        "ABGCJDOAKHN",  # v1.7
+        "GFCBLLMBFEH",  # v1.6
+        "HMLBEODKNID",  # v1.5
+        "NNHNKGHIDAE",  # v1.4
+        "AELKAMJKGBI",  # v1.3
+        "CHHEADLAHID",  # v1.2
+        "ABOHGBNOHMA",  # v1.1
+    )
+)
+MESSAGE_OPTION_SEGMENT_2 = pydantic.Field(
+    validation_alias=pydantic.AliasChoices(
+        "CBFAFJMBLDO",  # v2.0
+        "HKIPEMBOLEC",  # v1.7
+        "AHPEAHJMJGC",  # v1.6
+        "JECCOJCGKFO",  # v1.5
+        "GJNBLIAIEML",  # v1.4
+        "KHIMOEDNBHC",  # v1.3
+        "DEAGPHNNPGL",  # v1.2
+        "GLBCCGJMHFM",  # v1.1
+    )
+)
 
 
 class MessageConfig(ModelID):
@@ -159,10 +172,26 @@ class MessageConfig(ModelID):
     group_id: typing.Annotated[int, aliases.GROUP_ID]
     sender_id: typing.Annotated[int, MESSAGE_SENDER_ID]
     text: typing.Annotated[str, MESSAGE_TEXT]
-    option_01: typing.Annotated[str, MESSAGE_OPTION_01]
-    option_long_01: typing.Annotated[str, MESSAGE_OPTION_LONG_01]
-    option_02: typing.Annotated[str, MESSAGE_OPTION_02]
-    option_long_02: typing.Annotated[str, MESSAGE_OPTION_LONG_02]
+    image: typing.Annotated[str, aliases.IMAGE]
+    """图片或表情 Emoji"""
+    segment: typing.Annotated[int, MESSAGE_SEGMENT]
+    """
+    用来实现短信选项分支的字段
+    segment 是一个同 group_id 不重复的编号，表示这一条消息属于哪个分段
+    在每个 option 之后会出现一个字段，表示选择该选项后继进入哪个分段
+    """
+    option_1: typing.Annotated[str, aliases.OPTION_1]
+    """第一个选项文案"""
+    option_long_1: typing.Annotated[str, MESSAGE_OPTION_LONG_1]
+    """表示选择第一个选项后玩家实际发送的文字"""
+    option_segment_1: typing.Annotated[int, MESSAGE_OPTION_SEGMENT_1]
+    """表示选择第一个选项后，后续进入哪个 segment 对应的分支"""
+    option_2: typing.Annotated[str, aliases.OPTION_2]
+    """第二个选项文案"""
+    option_long_2: typing.Annotated[str, MESSAGE_OPTION_LONG_2]
+    """表示选择第二个选项后玩家实际发送的文字"""
+    option_segment_2: typing.Annotated[int, MESSAGE_OPTION_SEGMENT_2]
+    """表示选择第二个选项后，后续进入哪个 segment 对应的分支"""
 
     @property
     @typing_extensions.override
@@ -182,11 +211,24 @@ MESSAGE_GROUP_CONTACT_ID = pydantic.Field(
         "JMDGJCBENMP",  # v1.1
     )
 )
+MESSAGE_GROUP_QUEST_IDS = pydantic.Field(
+    validation_alias=pydantic.AliasChoices(
+        "DCAPBBIKKDL",  # v2.0
+        "DFDAJIMKHAP",  # v1.7
+        "AFJCFEBLLPP",  # v1.6
+        "PIKOJIKHEBF",  # v1.5
+        "NJFEGLOMCMD",  # v1.4
+        "ECBBLGANCKP",  # v1.3
+        "HPDAHKEKLKI",  # v1.2
+        "JAFGOFDBJIP",  # v1.1
+    )
+)
 
 
 class MessageGroupConfig(ModelID):
     group_id: typing.Annotated[int, aliases.GROUP_ID]
     contact_id: typing.Annotated[int, MESSAGE_GROUP_CONTACT_ID]
+    quest_ids: typing.Annotated[list[int], MESSAGE_GROUP_QUEST_IDS]
 
     @property
     @typing_extensions.override
