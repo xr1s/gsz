@@ -20,7 +20,7 @@ include = ["*"]
 namespaces = false
 
 [tool.setuptools.package-data]
-gsz = ["templates/*.jinja2"]
+gsz = ["sr/templates/*.jinja2"]
 
 [tool.pyright]
 reportAny = false

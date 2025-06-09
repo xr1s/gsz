@@ -480,7 +480,7 @@ class GameData:
     @functools.cached_property
     def _template_environment(self) -> jinja2.Environment:
         self_path = pathlib.Path(__file__)
-        templates_path = self_path.parent.parent / "templates"
+        templates_path = self_path.parent / "templates"
         env = jinja2.Environment(
             block_start_string="<%",
             block_end_string="%>",
