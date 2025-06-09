@@ -1,11 +1,9 @@
-from .base import ExpFileCfg, ModelID
+from .base import IView
 from .message import DirectoryConfig, MessageConfig, MessageGroupConfig, MessageNPC
 from .partner import PartnerConfig
 
 __all__ = (
-    # bases
-    "ModelID",
-    "ExpFileCfg",
+    "IView",
     # message
     "DirectoryConfig",
     "MessageConfig",

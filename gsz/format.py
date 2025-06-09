@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import collections.abc
 import enum
 import functools
@@ -7,12 +9,8 @@ import os
 import typing
 import unicodedata
 
-
-@typing.runtime_checkable
-class SRGameData(typing.Protocol):
-    @functools.cached_property
-    def _extra_effect_config_names(self) -> set[str]: ...
-    def _text_join_config_item(self, id: int) -> tuple[int, list[str]]: ...
+if typing.TYPE_CHECKING:
+    from . import SRGameData, ZZZGameData
 
 
 class Syntax(enum.Enum):
@@ -35,7 +33,7 @@ class State(enum.Enum):
     * 类似 XML 的某种 DSL，有以下形式 <u> </i> <color=#0000> <size=20> <size=+2>
     * 某种特殊的变量 DSL，有以下形式
         {BIRTH}
-        {F#女性开拓者分支} {M#男性开拓者分支}
+        {F#女性主角分支} {M#男性主角分支}
         {RUBY_B#注音内容}对话内容{RUBY_E}
         {TEXTJOIN#编号}
     """
@@ -77,7 +75,7 @@ class State(enum.Enum):
     VarKey = 30
     """VarKey 记录比如 {BIRTH} <RUBY_B#注音内容> 中的 BIRTH RUBY_B"""
     VarVal = 31
-    """VarKey 记录比如 {F#女性开拓者分支} {RUBY_B#注音内容} 中的 女性开拓者分支 注音内容"""
+    """VarKey 记录比如 {F#女性主角分支} {RUBY_B#注音内容} 中的 女性主角分支 注音内容"""
     AnsiEscape = 40
     """删除多余的 AnsiSeq"""
 
@@ -92,7 +90,7 @@ class Formatter:
         self,
         *,
         syntax: Syntax | None = None,
-        game: SRGameData | None = None,
+        game: SRGameData | ZZZGameData | None = None,
         gender_order: GenderOrder = GenderOrder.Preserve,
         percent_as_plain: bool = False,
     ):
@@ -406,6 +404,8 @@ class Formatter:
         self.__param_num = 0
 
     def __flush_tag_media_wiki(self, tag: str, val: str, text: str):  # noqa: PLR0912, PLR0915
+        from . import SRGameData
+
         if text == "":
             return
         match tag:
@@ -594,6 +594,8 @@ class Formatter:
         return Formatter(syntax=self.__syntax, game=self.__game, gender_order=self.__gender_order)
 
     def __flush_var(self):  # noqa: PLR0911, PLR0912, PLR0915
+        from . import SRGameData, ZZZGameData
+
         _state = self.__states.pop()
         var = self.__keys.pop().getvalue()
         val = self.__vals.pop().getvalue()
@@ -640,7 +642,13 @@ class Formatter:
                         self.__push(self.__f_text)
                 _ = self.__f_text = ""
             case "NICKNAME":
-                self.__push("开拓者")  # TODO: 根据游戏区分
+                match self.__game:
+                    case SRGameData():
+                        self.__push("开拓者")
+                    case ZZZGameData():
+                        self.__push("绳匠")
+                    case None:
+                        self.__push("主角")
             case "RUBY_B":
                 if self.__syntax in (Syntax.MediaWiki, Syntax.MediaWikiPretty):
                     _ = self.__texts[-1].write("{{注音|")
