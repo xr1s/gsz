@@ -5,6 +5,7 @@ import itertools
 import logging
 import pathlib
 import re
+import textwrap
 import typing
 import zoneinfo
 
@@ -17,6 +18,7 @@ import gsz.format
 import gsz.sr
 import gsz.sr.excel
 import gsz.sr.view
+import gsz.zzz
 
 
 def confirm_excel_objects_validate_no_error(game: gsz.sr.GameData):
@@ -33,14 +35,23 @@ def confirm_excel_objects_validate_no_error(game: gsz.sr.GameData):
 
 @typing.final
 class Main:
-    def __init__(self, base: pathlib.Path | str):
+    def __init__(self, base: pathlib.Path | str | None = None):
+        self.__game = None
+        if base is None:
+            return  # 可能是下载社媒，不需要提供 GameData 路径
         assert isinstance(base, pathlib.Path | str)
-        self.base = base
-        self.__game = gsz.sr.GameData(base)
+        self.base = pathlib.Path(base)
+        if self.base.joinpath("ExcelBinOutput").exists():  # Genshin Impact
+            raise NotImplementedError("AnimeGameData not implemented")
+        if self.base.joinpath("ExcelOutput").exists():
+            self.__game = gsz.sr.GameData(base)
+        if self.base.joinpath("FileCfg").exists():
+            self.__game = gsz.zzz.GameData(base)
         self.__formatter = gsz.format.Formatter(game=self.__game, syntax=gsz.format.Syntax.Terminal)
         self.__mwformatter = gsz.format.Formatter(game=self.__game, syntax=gsz.format.Syntax.MediaWiki)
 
     def monster(self, name: str | None = None):
+        assert isinstance(self.__game, gsz.sr.GameData), "`--base <TurnBasedGameData> monster` required"
         monster_name_dedup = set[str]()
         prototypes = [monster.prototype() for monster in self.__game.monster_config()]
         prototypes = [
@@ -54,6 +65,8 @@ class Main:
             print(monster.wiki(), end="\n\n")
 
     def miracle(self):
+        """模拟宇宙 / 差分宇宙 奇物"""
+        assert isinstance(self.__game, gsz.sr.GameData), "`--base TurnBasedGameData> miracle` required"
         dedup_miracle_names = set[str]()
         miracles = [
             dedup_miracle_names.add(miracle.name) or miracle
@@ -68,6 +81,7 @@ class Main:
 
     def rogue_event(self, title: str | None = None, debug: bool = False):
         """模拟宇宙事件"""
+        assert isinstance(self.__game, gsz.sr.GameData), "`--base <TurnBasedGameData> rogue-event` required"
         if title is not None:
             assert isinstance(title, str)
             events = self.__game.rogue_hand_book_event_name(title)
@@ -87,6 +101,7 @@ class Main:
 
     def rogue_tourn_event(self, title: str | None = None, debug: bool = False):
         """差分宇宙事件"""
+        assert isinstance(self.__game, gsz.sr.GameData), "`--base <TurnBasedGameData> rogue-tourn-event` required"
         if title is not None:
             assert isinstance(title, str)
             events = self.__game.rogue_tourn_hand_book_event_name(title)
@@ -112,10 +127,14 @@ class Main:
                 print(dialogue.wiki(debug=debug), end="\n\n")
 
     def formula(self):
+        """差分宇宙方程"""
+        assert isinstance(self.__game, gsz.sr.GameData), "`--base <TurnBasedGameData> formula` required"
         for formula in self.__game.rogue_tourn_formula():
             print(formula.wiki(), end="\n\n")
 
     def rogue_buff(self):
+        """模拟宇宙 / 差分宇宙 祝福"""
+        assert isinstance(self.__game, gsz.sr.GameData), "`--base <TurnBasedGameData> rogue-buff` required"
         dedup_buff_names = set[str]()
         buffs = [
             dedup_buff_names.add(buff.name) or buff
@@ -126,11 +145,14 @@ class Main:
             print(buff.wiki(), end="\n\n")
 
     def extrapolation(self):
-        """周期演算"""
+        """差分宇宙周期演算"""
+        assert isinstance(self.__game, gsz.sr.GameData), "`--base <TurnBasedGameData> extrapolation` required"
         for challenge in self.__game.rogue_tourn_weekly_challenge():
             print(challenge.wiki(), end="\n\n")
 
     def book(self, title: str | None = None, pretty: bool = False, cure: bool = False):
+        """书籍"""
+        assert isinstance(self.__game, gsz.sr.GameData), "`--base <TurnBasedGameData> book` required"
         if cure:
             for item in self.__game.item_cure_info_data():
                 if title is not None and item.title != title:
@@ -152,30 +174,64 @@ class Main:
         for series in self.__game.book_series_config():
             print(series.wiki(), end="\n\n")
 
-    def text(self, *hashes: int):
-        print("\n".join(self.__game.text(gsz.sr.excel.Text(hash=hash)) for hash in hashes))
+    def text(self, *hashes: int | str):
+        match self.__game:
+            case gsz.sr.GameData():
+                for hash in hashes:
+                    assert isinstance(hash, int), "SR TextMap only allow int"
+                hashes = typing.cast(tuple[int, ...], hashes)
+                print("\n".join(self.__game.text(gsz.sr.excel.Text(hash=hash)) for hash in hashes))
+            case gsz.zzz.GameData():
+                for hash in hashes:
+                    assert isinstance(hash, str), "ZZZ TextMap only allow str"
+                hashes = typing.cast(tuple[str, ...], hashes)
+                print("\n".join(self.__game.text(hash) for hash in hashes))
+            case None:
+                raise ValueError("`--base <GameData> text` required")
 
     def talk(self, *ids: int):
+        assert isinstance(self.__game, gsz.sr.GameData), "`--base <TurnBasedGameData> talk` required"
         for id in ids:
             talk = self.__game.talk_sentence_config(id)
             assert talk is not None
             print(f"{talk.name}：{talk.text}")
 
     def message(self, contacts_name: str | None = None, section_id: int | None = None):
+        match self.__game:
+            case gsz.sr.GameData():
+                self.__message_sr(self.__game, contacts_name, section_id)
+            case gsz.zzz.GameData():
+                self.__message_zzz(self.__game)
+            case None:
+                raise ValueError("`--base <GameData> message` required")
+
+    def __message_sr(self, game: gsz.sr.GameData, contacts_name: str | None = None, section_id: int | None = None):
+        assert isinstance(self.__game, gsz.sr.GameData), "`--base <TurnBasedGameData> message` required"
         if section_id is not None:
             assert isinstance(section_id, int)
-            section = self.__game.message_section_config(section_id)
+            section = game.message_section_config(section_id)
             if section is not None:
                 print(section.wiki())
             return
         if contacts_name is not None:
             assert isinstance(contacts_name, str)
-        for contacts in self.__game.message_contacts_config():
+        for contacts in game.message_contacts_config():
             if contacts_name is not None and self.__formatter.format(contacts.name) != contacts_name:
                 continue
             print(contacts.wiki(), end="\n\n")
 
+    def __message_zzz(self, game: gsz.zzz.GameData):
+        """TODO: 完成 ZZZ BWiki 补充后改为模板"""
+        assert isinstance(self.__game, gsz.zzz.GameData), "`--base <ZenlessData> message` required"
+        for group in game.message_group_config():
+            print(f"\n\033[1m{group.contact_name}\033[22m <!-- {group.id} -->", end="")
+            quests = list(group.quests())
+            if len(quests) != 0:
+                print("\n  相关任务:", "、".join(quest.name for quest in quests), end="")
+            print(group.wiki())
+
     def rogue_npc(self):
+        assert isinstance(self.__game, gsz.sr.GameData), "`--base <TurnBasedGameData> rogue-npc` required"
         for npc in itertools.chain(
             self.__game.rogue_npc(), self.__game.rogue_tourn_npc(), self.__game.rogue_magic_npc()
         ):
@@ -190,6 +246,7 @@ class Main:
         next: bool = False,
         date: str | None = None,
     ):
+        assert isinstance(self.__game, gsz.sr.GameData), "`--base <TurnBasedGameData> challenge` required"
         assert isinstance(current, bool)
         assert isinstance(next, bool)
         assert type in (None, "memory", "story", "boss")
@@ -321,6 +378,47 @@ class Main:
                 await aiofiles.os.replace(file_path, f"{file_path}-{cdate}")
             async with aiofiles.open(file_path, "wb") as file:
                 _ = await file.write(stream.getvalue())
+
+    def inter_knot(self):  # noqa: PLR0912
+        """TODO: 结构化、完成 ZZZ BWiki 补充后改为模板"""
+        assert isinstance(self.__game, gsz.zzz.GameData), "`--base <ZenlessData> inter-knot` required"
+        for post in self.__game.inter_knot_config():
+            print("#" * 80)
+            print(f"\x1b[1m{post.title}\x1b[m", end=" ")
+            print("<!--", post.id, end=" ")
+            if post.image != "":
+                print("PostImg:", post.image, end=" ")
+            print("-->")
+            print(textwrap.indent(post.text, "  "))
+            print()
+            for comment in post.comments():
+                print(f"  - \x1b[1m{comment.commentator}\x1b[m:", comment.text)
+            if post.replies is not None:
+                if post.replies[1] == "":
+                    print("  回复:", post.replies[0])
+                    comments = post.follow_up()
+                    if comments is None:
+                        continue
+                    for comment in comments[0]:
+                        print(f"  - \x1b[1m{comment.commentator}\x1b[m:", comment.text)
+                elif post.same_follow_up:
+                    comments = post.follow_up()
+                    print("  回复 1:", post.replies[0])
+                    print("  回复 2:", post.replies[1])
+                    if comments is None:
+                        continue
+                    for comment in comments[0]:
+                        print(f"  - \x1b[1m{comment.commentator}\x1b[m:", comment.text)
+                else:
+                    comments = post.follow_up()
+                    print("  回复 1:", post.replies[0])
+                    if comments is not None:
+                        for comment in comments[0]:
+                            print(f"    - \x1b[1m{comment.commentator}\x1b[m:", comment.text)
+                    print("  回复 2:", post.replies[1])
+                    if comments is not None:
+                        for comment in comments[1]:
+                            print(f"    - \x1b[1m{comment.commentator}\x1b[m:", comment.text)
 
     def main(self):
         """调试代码可以放这里"""

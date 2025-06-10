@@ -18,12 +18,24 @@ PARTNER_ICON = pydantic.Field(
         "FFAIFNEIAGM",  # v1.1
     )
 )
+NAME = pydantic.Field(
+    validation_alias=pydantic.AliasChoices(
+        "KGACNEEFAFN",  # v2.0
+        "INNAIMOAPID",  # v1.7
+        "EFPJLPJOBFL",  # v1.6
+        "MEIDPJNKIDE",  # v1.5
+        "BBAGGIAJFMD",  # v1.4
+        "MDGBBLDPIPF",  # v1.3
+        "LDPKGDEPFCH",  # v1.2
+        "FAHEPAJDADB",  # v1.1
+    )
+)
 
 
 class PartnerConfig(ModelID):
     partner_id: typing.Annotated[int, aliases.PARTNER_ID]
     avatar_id: typing.Annotated[int, aliases.AVATAR_ID]
-    name: typing.Annotated[str, aliases.NAME]
+    name: typing.Annotated[str, NAME]
     icon: typing.Annotated[str, PARTNER_ICON]
 
     @property

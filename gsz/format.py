@@ -13,6 +13,14 @@ if typing.TYPE_CHECKING:
     from . import SRGameData, ZZZGameData
 
 
+def is_hexdigit(s: str) -> bool:
+    try:
+        _ = int(s, 16)
+    except ValueError:
+        return False
+    return True
+
+
 class Syntax(enum.Enum):
     Plain = 1
     Terminal = 2
@@ -438,11 +446,12 @@ class Formatter:
             case "color":
                 _ = self.__texts[-1].write("{{颜色|")
                 color = ""
-                match val:
-                    case "#f29e38" | "#f29e38ff":
-                        color = "描述2"
-                    case _:
-                        color = val.removeprefix("#")
+                if val.lower() in ("#f29e38", "#f29e38ff"):
+                    color = "描述2"
+                elif val.startswith("#") and len(val) in (7, 9) and is_hexdigit(val[1:]):
+                    color = val.removeprefix("#")
+                    if len(color) == 8:
+                        color = color.removesuffix("ff").removesuffix("FF")
                 _ = self.__texts[-1].write(color)
                 _ = self.__texts[-1].write("|")
                 _ = self.__texts[-1].write(text)

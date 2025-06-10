@@ -15,6 +15,10 @@ if typing.TYPE_CHECKING:
 class InterKnotConfig(View[filecfg.InterKnotConfig]):
     FileCfg: typing.Final = filecfg.InterKnotConfig
 
+    @property
+    def id(self) -> int:
+        return self._filecfg.id_
+
     @functools.cached_property
     def poster(self) -> str:
         return self._game.text(self._filecfg.poster)
@@ -27,9 +31,13 @@ class InterKnotConfig(View[filecfg.InterKnotConfig]):
     def text(self) -> str:
         return self._game.text(self._filecfg.text)
 
+    @property
+    def image(self) -> str:
+        return self._filecfg.image
+
     @functools.cached_property
     def __comments(self) -> list[filecfg.PostCommentConfig]:
-        return self._game._comments_under_post.get(self._filecfg.comment_group, [])  # pyright: ignore[reportPrivateUsage]
+        return self._game._comments_under_post.get(self._filecfg.comment_id, [])  # pyright: ignore[reportPrivateUsage]
 
     def comments(self) -> collections.abc.Iterable[PostCommentConfig]:
         return (PostCommentConfig(self._game, comment) for comment in self.__comments)
@@ -49,32 +57,32 @@ class InterKnotConfig(View[filecfg.InterKnotConfig]):
         return reply_1, reply_2
 
     @property
-    def same_subsequent(self) -> bool:
-        return self._filecfg.subsequent_1 == self._filecfg.subsequent_2
+    def same_follow_up(self) -> bool:
+        return self._filecfg.follow_up_1 == self._filecfg.follow_up_2
 
     @functools.cached_property
-    def __subsequent(self) -> tuple[list[filecfg.PostCommentConfig], list[filecfg.PostCommentConfig]] | None:
-        if self._filecfg.subsequent_1 == 0 and self._filecfg.subsequent_2 == 0:
+    def __follow_up(self) -> tuple[list[filecfg.PostCommentConfig], list[filecfg.PostCommentConfig]] | None:
+        if self._filecfg.follow_up_1 == 0 and self._filecfg.follow_up_2 == 0:
             return None
         comments_under_post = self._game._comments_under_post  # pyright: ignore[reportPrivateUsage]
-        subsequent_1 = comments_under_post.get(self._filecfg.subsequent_1, [])
-        if self.same_subsequent:
-            subsequent_2 = subsequent_1
-        elif self._filecfg.subsequent_2 == 0:
-            subsequent_2 = []
+        follow_up_1 = comments_under_post.get(self._filecfg.follow_up_1, [])
+        if self.same_follow_up:
+            follow_up_2 = follow_up_1
+        elif self._filecfg.follow_up_2 == 0:
+            follow_up_2 = []
         else:
-            subsequent_2 = comments_under_post.get(self._filecfg.subsequent_2, [])
-        if len(subsequent_1) == 0 and len(subsequent_2) == 0:
+            follow_up_2 = comments_under_post.get(self._filecfg.follow_up_2, [])
+        if len(follow_up_1) == 0 and len(follow_up_2) == 0:
             return None
-        return subsequent_1, subsequent_2
+        return follow_up_1, follow_up_2
 
-    def subsequent(self) -> tuple[list[PostCommentConfig], list[PostCommentConfig]] | None:
-        if self.__subsequent is None:
+    def follow_up(self) -> tuple[list[PostCommentConfig], list[PostCommentConfig]] | None:
+        if self.__follow_up is None:
             return None
-        subsequent_1 = [PostCommentConfig(self._game, comment) for comment in self.__subsequent[0]]
-        if self.same_subsequent:
-            return subsequent_1, subsequent_1
-        return subsequent_1, [PostCommentConfig(self._game, comment) for comment in self.__subsequent[1]]
+        follow_up_1 = [PostCommentConfig(self._game, comment) for comment in self.__follow_up[0]]
+        if self.same_follow_up:
+            return follow_up_1, follow_up_1
+        return follow_up_1, [PostCommentConfig(self._game, comment) for comment in self.__follow_up[1]]
 
 
 class PostCommentConfig(View[filecfg.PostCommentConfig]):

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import abc
 import collections
 import collections.abc
 import functools
@@ -296,57 +297,6 @@ class MessageGroupConfig(View[excel.MessageGroupConfig]):
 class MessageItemConfig(View[excel.MessageItemConfig]):
     ExcelOutput: typing.Final = excel.MessageItemConfig
 
-    @typing_extensions.override
-    def __init__(self, game: GameData, excel: excel.MessageItemConfig):
-        super().__init__(game, excel)
-        self.confluence: MessageItemConfig | None = None
-
-    @typing_extensions.override
-    def __eq__(self, other: object) -> bool:
-        """
-        当且仅当所有自身和后继都一样时，才判断相等
-        需要注意的是最后一步判断后继是否相等存在递归，可能会导致性能劣化。
-        目前经测试影响不大，可能是提前用 ID 判等跳出的数据比较多，也就是 ID 不同内容相同的极端数据比较少
-        """
-        if not isinstance(other, MessageItemConfig):
-            return False
-        if self._excel is other._excel or self._excel.id == other._excel.id:
-            return True
-        if not self.shallow_eq(other):
-            return False
-        this_nexts = tuple(self._game.message_item_config(next_id) for next_id in self.next_ids)
-        that_nexts = tuple(self._game.message_item_config(next_id) for next_id in other.next_ids)
-        return this_nexts == that_nexts
-
-    def shallow_eq(self, other: MessageItemConfig) -> bool:
-        if self._game is not other._game:
-            return False
-        if self._excel is other._excel or self._excel.id == other._excel.id:
-            return True
-        this_contacts = "" if self.__contacts is None else self.__contacts.name
-        that_contacts = "" if other.__contacts is None else other.__contacts.name
-        return (
-            this_contacts == that_contacts
-            and self.content_id == other.content_id
-            and self.main_text == other.main_text
-            and self.option_text == other.option_text
-        )
-
-    @functools.cached_property
-    def __hash_cache(self) -> int:
-        """
-        计算并缓存 hash 值
-        需要注意的是最后一项包含了后继 hash 会导致递归，所以需要缓存
-        没有缓存会导致性能劣化，目前看全部短信算一次加起来总共从 3s 劣化到 5s 左右
-        """
-        contacts_name = "" if self.__contacts is None else self.__contacts.name
-        nexts = tuple(self._game.message_item_config(next_id) for next_id in self.next_ids)
-        return hash((contacts_name, self.main_text, self.option_text, self.content_id, *nexts))
-
-    @typing_extensions.override
-    def __hash__(self) -> int:
-        return self.__hash_cache
-
     @property
     def id(self) -> int:
         return self._excel.id
@@ -401,11 +351,11 @@ class MessageItemConfig(View[excel.MessageItemConfig]):
         )
 
     @functools.cached_property
-    def __contacts(self) -> MessageContactsConfig | None:
+    def _contacts(self) -> MessageContactsConfig | None:
         return None if self._excel.contacts_id is None else self._game.message_contacts_config(self._excel.contacts_id)
 
     def contacts(self) -> MessageContactsConfig | None:
-        return None if self.__contacts is None else MessageContactsConfig(self._game, self.__contacts._excel)
+        return None if self._contacts is None else MessageContactsConfig(self._game, self._contacts._excel)
 
     def wiki_sticker(self) -> EmojiConfig | None:
         if self.content_id is None:
@@ -515,27 +465,136 @@ class MessageItemVideo(View[excel.MessageItemVideo]):
         return self._excel.image_path
 
 
-class Node(typing.Protocol):
-    """
-    消息节点，可能是起点 MessageSectionConfig 或任意节点 MessageItemConfig
-    """
+class _Node(metaclass=abc.ABCMeta):
+    """消息节点，可能是起点 MessageSectionConfig 或任意节点 _Message"""
 
-    confluence: MessageItemConfig | None
+    def __init__(self):
+        self.confluence: MessageItemConfig | _Uninit | None = _uninit
 
     @property
-    def id(self) -> int: ...
+    @abc.abstractmethod
+    def id(self) -> int: ...  # 用于调试，倒是可以删，不过还是放着吧
+
+    @property
+    @abc.abstractmethod
+    def _option_half(self) -> bool:
+        """表示本 _Node 是用来处理 MainText 还是处理 NextItemIDList 的"""
+
     @functools.cached_property
-    def next_ids(self) -> tuple[int, ...]: ...
+    @abc.abstractmethod
+    def _successors(self) -> tuple[_Message, ...]:
+        """
+        后继需要处理的节点
+        对于 option_half 的节点就是 NextItemIDList 指向的 _Node, 且后继 _option_half 都是 False
+        对于 main_text_half 的节点的后继那就是 _option_half == True 的同一个对象
+        """
 
 
-class MessageSectionConfig(View[excel.MessageSectionConfig]):
+class _Uninit: ...
+
+
+_uninit = _Uninit()
+
+
+class _Message(MessageItemConfig, _Node):  # pyright: ignore[reportUnsafeMultipleInheritance]
+    # 反正是非导出对象，这里就搞一堆后置初始化了
+    # message_dict 和 neighbour 是需要由 MessageSectionConfig 初始化
+    # 这是因为这些数据上挂了 functools，为了避免对同一条消息反反复复计算文案和后置所以都放到一起
+    def __init__(self, game: GameData, message: excel.MessageItemConfig, is_option: bool = False):
+        MessageItemConfig.__init__(self, game, message)
+        _Node.__init__(self)
+        self.__is_option = is_option
+        """self 表示选项还是正文"""
+        self.message_dict: dict[int, _Message] = {}  # 依赖外部手动初始化
+        """所有同 section 的 message"""
+        self.neighbour: _Message | None = None  # 依赖外部手动初始化
+        """neighbour 表示当自己不是 option_half 时候的后继"""
+
+    @functools.cached_property
+    def _successors(self) -> tuple[_Message, ...]:
+        if len(self._excel.next_item_id_list) == 0:
+            return ()
+        # 后继有 0 个的情况不可能有 _option_half
+        if self._option_half:
+            return tuple(self.message_dict[id] for id in self._excel.next_item_id_list)
+        if self.neighbour is not None:
+            return (self.neighbour,)
+        # 这里 next_item_id_list 只可能有一项
+        assert len(self._excel.next_item_id_list) == 1
+        return (self.message_dict[self._excel.next_item_id_list[0]],)
+
+    @property
+    @typing_extensions.override
+    def _option_half(self) -> bool:
+        return self.__is_option
+
+    def shallow_eq(self, other: _Message) -> bool:  # noqa: PLR0911
+        """
+        当自身数据一样时，判断为相等
+        需要注意的是，对于选项来说，它的「自身」是包含 NextItem 的 OptionText 的，也就是我们要多找一层
+        """
+        if self is other:
+            return True
+        if self._game is not other._game:
+            return False
+        if self._excel is other._excel or self._excel.id_ == other._excel.id_:
+            return True
+        if self._option_half:
+            # 是 option 的情况只需要判断后继们的 OptionText 是否相等
+            this_options = [message.option_text for message in self._successors]
+            that_options = [message.option_text for message in other._successors]
+            return this_options == that_options
+        this_contacts = None if self._contacts is None else self._contacts.name
+        that_contacts = None if other._contacts is None else other._contacts.name
+        return (
+            this_contacts == that_contacts and self.content_id == other.content_id and self.main_text == other.main_text
+        )
+
+    @typing_extensions.override
+    def __eq__(self, other: object) -> bool:
+        """
+        当且仅当所有自身和所有后继都相等时，才判断为相等
+        需要注意的是最后一步判断后继是否相等存在递归，可能会导致性能劣化。
+        目前经测试影响不大，可能是提前用 ID 判等跳出的数据比较多，也就是 ID 不同内容相同的极端数据比较少
+        """
+        if not isinstance(other, _Message):
+            return False
+        if self is other:
+            return True
+        if self._option_half != other._option_half:
+            return False
+        if self._excel is other._excel or self._excel.id_ == other._excel.id_:
+            return True  # 因为上面已经过滤了选择和非选择不一样的情况，所以这里肯定是 True
+        if not self.shallow_eq(other):
+            return False
+        return self._successors == other._successors
+
+    @functools.cached_property
+    def __hash_cache(self) -> int:
+        """
+        计算并缓存 hash 值
+        需要注意的是最后一项包含了后继 hash 会导致递归，所以需要缓存
+        没有缓存会导致性能劣化，目前看全部短信算一次加起来总共从 3s 劣化到 5s 左右
+        """
+        if self._option_half:
+            return hash((*(message.option_text for message in self._successors), *self._successors))
+        contacts_name = "" if self._contacts is None else self._contacts.name
+        return hash((contacts_name, self.content_id, self.main_text, *self._successors))
+
+    @typing_extensions.override
+    def __hash__(self) -> int:
+        return self.__hash_cache
+
+
+class MessageSectionConfig(View[excel.MessageSectionConfig], _Node):  # pyright: ignore[reportUnsafeMultipleInheritance]
     ExcelOutput: typing.Final = excel.MessageSectionConfig
 
     def __init__(self, game: GameData, excel: excel.MessageSectionConfig):
-        super().__init__(game, excel)
-        self.confluence: MessageItemConfig | None = None
+        View.__init__(self, game, excel)  # pyright: ignore[reportUnknownMemberType]
+        _Node.__init__(self)
 
     @property
+    @typing_extensions.override
     def id(self) -> int:
         return self._excel.id
 
@@ -546,25 +605,27 @@ class MessageSectionConfig(View[excel.MessageSectionConfig]):
     def contacts(self) -> MessageContactsConfig:
         return MessageContactsConfig(self._game, self.__contacts._excel)
 
-    @functools.cached_property
-    def next_ids(self) -> tuple[int, ...]:
-        return tuple(self._excel.start_message_item_id_list)
+    @property
+    @typing_extensions.override
+    def _option_half(self) -> bool:
+        return True  # MessageSection 不会有正文，总是要找后继，所以这里 option_half 只能是 True
 
-    def __find_confluence(self, current: Node) -> MessageItemConfig | None:
-        """
-        找到公共后继，主要为了找到选项终点合并重复项
-        exact 是从分支中找到仅后继节点完全相同的汇聚节点（自身可以不同）
-        """
-        if current.confluence is not None:
-            return current.confluence  # 记忆化
-        nexts = self.__nexts(current)
-        if len(nexts) == 0:
-            return None
-        if len(nexts) == 1:
-            current.confluence = nexts[0]
+    @functools.cached_property
+    def _successors(self) -> tuple[_Message, ...]:
+        return tuple(self.__message_dict[id] for id in self._excel.start_message_item_id_list)
+
+    def __find_confluence(self, current: _Node) -> _Message | None:
+        """找到公共后继，主要为了找到选项终点合并后续重复项"""
+        if current.confluence is not _uninit:
+            return current.confluence  # pyright: ignore[reportReturnType]
+        if len(current._successors) == 0:
+            current.confluence = None
             return current.confluence
-        queue: list[MessageItemConfig | None] = list(nexts)
-        visit: dict[tuple[MessageItemConfig, ...], int] = collections.defaultdict(int)
+        if len(current._successors) == 1:
+            current.confluence = current._successors[0]
+            return current.confluence  # 还是可能有没设置的，比如 MessageSectionConfig
+        queue: list[_Message | None] = list(current._successors)
+        visit: dict[_Message, int] = collections.defaultdict(int)
         while any(node is not None for node in queue):
             for index, node in enumerate(queue):
                 if node is None:
@@ -575,12 +636,12 @@ class MessageSectionConfig(View[excel.MessageSectionConfig]):
                 queue[index] = next_node
                 if next_node is None:
                     continue
-                next_nexts = self.__nexts(next_node)
-                visit[next_nexts] += 1
-                if visit[next_nexts] == len(nexts):
+                visit[next_node] += 1
+                if visit[next_node] == len(queue):
                     current.confluence = next_node
                     return current.confluence
-        return None
+        current.confluence = None
+        return current.confluence
 
     @property
     def __formatter(self) -> Formatter:
@@ -588,7 +649,7 @@ class MessageSectionConfig(View[excel.MessageSectionConfig]):
 
     @staticmethod
     def __wiki_dialogue(
-        wiki: io.StringIO, direction: typing.Literal["左", "右"], contacts_name: str, item: MessageItemConfig
+        wiki: typing.IO[str], direction: typing.Literal["左", "右"], contacts_name: str, item: MessageItemConfig
     ):
         _ = wiki.write("{{角色对话|")
         _ = wiki.write(direction)
@@ -600,9 +661,7 @@ class MessageSectionConfig(View[excel.MessageSectionConfig]):
         _ = wiki.write(item.wiki_main_text())
         _ = wiki.write("}}")
 
-    def __wiki_write_message_select(
-        self, wiki: io.StringIO, indent: str, item: Node, confluence_nexts: MessageItemConfig | None
-    ):
+    def __wiki_write_message_select(self, wiki: typing.IO[str], indent: str, node: _Node, confluence: _Message | None):
         """
         处理需要玩家选择的选项（分支）消息
         本函数会直接写入这条选项分支开的后续剧情
@@ -610,38 +669,34 @@ class MessageSectionConfig(View[excel.MessageSectionConfig]):
 
         参数 item 是分支开始的选项消息，confluence 是若本选项外面还套着一层选项，则传入外层选项的聚合节点
         """
-        # 存在分支选项为表情的情况，需要在聊天记录中再手动发一条表情
+        if len(node._successors) == 1 and node._successors[0]._excel.option_text is None:
+            return  # 应该只有 MessageSectionConfig 进来的时候会直接从这里返回
         _ = wiki.write(indent)
         _ = wiki.write("{{短信选项")
-        nexts = self.__nexts(item)
-        assert all(item.type == nexts[0].type for item in nexts), "一次选择中不能同时存在表情包和文字两种选项"
-        is_sticker = all(item.type is message.ItemType.Sticker for item in nexts)
+        is_sticker = all(item.type is message.ItemType.Sticker for item in node._successors)
         if is_sticker:
             _ = wiki.write("|表情")
+        if len(node._successors) == 1:
+            indent = ""  # 假选项
         next_indent = indent + "  "
-        for index, next_item in enumerate(nexts):
+        for index, next_node in enumerate(node._successors):
             _ = wiki.write(indent)
             _ = wiki.write(f"|选项{index + 1}=")
             if is_sticker:
-                sticker = next_item.wiki_sticker()
+                sticker = next_node.wiki_sticker()
                 assert sticker is not None
                 _ = wiki.write(sticker.wiki())
             else:
-                _ = wiki.write(self.__formatter.format(next_item.option_text))
-            _ = wiki.write(indent)
-            _ = wiki.write(f"|剧情{index + 1}=")
-            self.__wiki_write_message_single(wiki, next_indent, next_item)
-            self.wiki_iter_message(wiki, next_indent, next_item, confluence_nexts)
+                _ = wiki.write(self.__formatter.format(next_node.option_text))
+            if next_node != confluence:
+                _ = wiki.write(indent)
+                _ = wiki.write(f"|剧情{index + 1}=")
+                self.wiki_iter_message(wiki, next_indent, next_node, confluence)
         _ = wiki.write(indent)
         _ = wiki.write("}}")
 
-    def __wiki_write_message_single(self, wiki: io.StringIO, indent: str, item: MessageItemConfig):
-        """
-        处理当前消息非选项的情况
-        虽然参数差不多，不过不像和当前消息是选项的情况合并，主要是因为处理逻辑大相径庭
-
-        参数 item 是分支开始的选项消息，confluence 是若外面套着一层选项，则传入外层选项的聚合节点
-        """
+    def __wiki_write_message_single(self, wiki: typing.IO[str], indent: str, item: _Message):
+        """处理当前消息非选项部分的情况"""
         contacts_name = ""
         _ = wiki.write(indent)
         match item._excel.sender:
@@ -658,68 +713,21 @@ class MessageSectionConfig(View[excel.MessageSectionConfig]):
                 _ = wiki.write(self.__formatter.format(item.main_text))
                 _ = wiki.write("}}")
 
-    def __wiki_write_message_single_select(self, wiki: io.StringIO, indent: str, item: MessageItemConfig):
-        """
-        假选项，有选项但是无分支
-        只有在父节点只有自己一个后继的时候才会进入本函数
-        """
-        _ = wiki.write(indent)
-        _ = wiki.write("{{短信选项")
-        if item.type is message.ItemType.Sticker:
-            _ = wiki.write("|表情|选项1=")
-            sticker = item.wiki_sticker()
-            assert sticker is not None
-            _ = wiki.write(sticker.wiki())
-        else:
-            _ = wiki.write("|选项1=")
-            _ = wiki.write(self.__formatter.format(item.option_text))
-        _ = wiki.write("}}")
-
-    def wiki_iter_message(
-        self, wiki: io.StringIO, indent: str, parents: Node, confluence_nexts: MessageItemConfig | None
-    ):
+    def wiki_iter_message(self, wiki: typing.IO[str], indent: str, node: _Node, confluence: _Message | None):
         """
         用于生成完整短信内容
         逻辑比较复杂，原因在于数据结构不够解耦，选项和正文是耦合在一起的
-        那么就存在这种情况：
-            某选项的两个分支最后一条 MessageItemConfig 都是一个相同的分支
-            结果因为文案 main_text 不同，这两个最后一句就被分成了两个 MessageItemConfig
-            但是实际上如果分开选项和正文来，就可以简单解析
-
-        另外还有一个问题是没有终止节点，这就带来了这个函数目前的另一个问题
-        （例子见黑塔短信 1217800 和奥列格短信 1113300）
-        如果最后一句话是一个嵌套分支 {A, B}，分别有不同的最后一条 Item A$ 和 B$
-        其中 A$ 也是一个分支 {A1, A2}, 而他们拥有相同的最后一条 Item A1$ == A2$
-        当 A1$ 和 A2$ 相同而均与 B$ 不同的情况下，这时候无法合并 A1$ 和 A2$
         """
-        nexts = self.__nexts(parents)
-        confluence_couples = self.__couples(confluence_nexts)  # 实际终止点
-        if parents in confluence_couples:
+        if node == confluence:
             return
-        if len(nexts) == 0:
-            return
-        if len(nexts) == 1:
-            next_item = nexts[0]
-            if len(confluence_couples) != 0 and all(next_item == couple for couple in confluence_couples):
-                # wiki.write(f"{indent}\x1b[90m<!-- 撞到 confluence_nexts 跳过 -->\x1b[m")
-                return  # 分支不同选项的最后一句，如果几个分支的最后一句都一样，跳过后在外层输出
-            if next_item.option_text != "":
-                self.__wiki_write_message_single_select(wiki, indent, next_item)
-            self.__wiki_write_message_single(wiki, indent, next_item)
-            self.wiki_iter_message(wiki, indent, next_item, confluence_nexts)
-            return
-        next_confluence = self.__find_confluence(parents)
-        self.__wiki_write_message_select(wiki, indent, parents, next_confluence)
-        if (
-            len(couples := self.__couples(next_confluence)) != 0
-            and confluence_nexts not in couples
-            and all(item == couples[0] for item in couples)
-        ):
-            if couples[0].option_text != "":
-                self.__wiki_write_message_single_select(wiki, indent, couples[0])
-            self.__wiki_write_message_single(wiki, indent, couples[0])
+        next_confluence = self.__find_confluence(node)
+        if node._option_half:
+            self.__wiki_write_message_select(wiki, indent, node, next_confluence)
+        else:
+            assert isinstance(node, _Message)
+            self.__wiki_write_message_single(wiki, indent, node)
         if next_confluence is not None:
-            self.wiki_iter_message(wiki, indent, next_confluence, confluence_nexts)
+            self.wiki_iter_message(wiki, indent, next_confluence, confluence)
 
     @functools.cached_property
     def __main_mission(self) -> MainMission | None:
@@ -731,63 +739,35 @@ class MessageSectionConfig(View[excel.MessageSectionConfig]):
         return None if self.__main_mission is None else MainMission(self._game, self.__main_mission._excel)
 
     @functools.cached_property
-    def __items(self) -> tuple[MessageItemConfig, ...]:
-        # 一个简易的广搜, 主要是为了避免存在非联通节点, 导致终点节点判断错误
-        queue: list[MessageItemConfig] = list(self._game.message_item_config(self._excel.start_message_item_id_list))
-        visit = set[int](item.id for item in queue)
-        since = 0
-        while since != len(queue):
-            nexts = list(self._game.message_item_config(next_id for next_id in queue[since].next_ids))
-            queue.extend(visit.add(next_item.id) or next_item for next_item in nexts if next_item.id not in visit)
-            since += 1
-        return tuple(queue)
-
-    @functools.cached_property
-    def __item_dict(self) -> dict[int, MessageItemConfig]:
-        return {item.id: item for item in self.__items}
-
-    @functools.cached_property
-    def __item_prev_dict(self) -> dict[MessageItemConfig | None, list[MessageItemConfig]]:
-        prevs: dict[MessageItemConfig | None, list[MessageItemConfig]] = {}
-        for item in self.__items:
-            nexts = self.__nexts(item)
-            if len(nexts) == 0:  # 表示最后一个节点，也就是终点节点
-                if None in prevs:
-                    prevs[None].append(item)
-                else:
-                    prevs[None] = [item]
+    def __message_dict(self) -> dict[int, _Message]:
+        # 逻辑是这样的
+        # 进入 wiki_iter_message 之后，立刻就会执行 self.__find_confluence(self)
+        # 找 confluence 的时候会找 self 的 _successors，这里就会调用这个 self.__message_dict
+        # 于是所有 _Message 就被初始化了
+        items = self._game._message_section_config_items[self._excel.id_]  # pyright: ignore[reportPrivateUsage]
+        message_dict: dict[int, _Message] = {}
+        messages: list[_Message] = []
+        for item in items:
+            # 用缩写是因为 message 被包名占了，用不了……
+            msg = _Message(self._game, item)
+            message_dict[msg.id] = msg
+            messages.append(msg)
+        for msg in messages:
+            msg.message_dict = message_dict
+            if len(msg._excel.next_item_id_list) == 0:
                 continue
-            for next_node in self.__nexts(item):
-                if next_node in prevs:
-                    prevs[next_node].append(item)
-                else:
-                    prevs[next_node] = [item]
-        return prevs
+            if len(msg._excel.next_item_id_list) > 1:
+                option_message = _Message(self._game, msg._excel, True)
+                msg.neighbour = option_message
+                option_message.message_dict = message_dict
+            else:  # 存在只有一个选项的假选择，需要判断后继的 OptionText 是否非空
+                next_message = message_dict.get(msg._excel.next_item_id_list[0])
+                if next_message is not None and next_message._excel.option_text is not None:
+                    option_message = _Message(self._game, msg._excel, True)
+                    msg.neighbour = option_message
+                    option_message.message_dict = message_dict
 
-    @functools.cached_property
-    def __couples_dict(self) -> dict[MessageItemConfig, tuple[MessageItemConfig, ...]]:
-        couples_dict: dict[MessageItemConfig, tuple[MessageItemConfig, ...]] = {}
-        for item in self.__items:
-            nexts = self.__nexts(item)
-            if len(nexts) == 0:
-                couples_dict[item] = tuple(self.__item_prev_dict[None])
-                continue
-            couples = {prev.id for prev in self.__item_prev_dict[nexts[0]]}
-            for next_node in nexts[1:]:
-                couples.intersection_update(prev.id for prev in self.__item_prev_dict[next_node])
-            couples_dict[item] = tuple(self.__item_dict[item_id] for item_id in couples)
-        return couples_dict
-
-    def __couples(self, node: MessageItemConfig | None) -> tuple[MessageItemConfig, ...]:
-        """所有和 node 后继相同的节点"""
-        if node is None:
-            return ()
-        return self.__couples_dict[node]
-
-    def __nexts(self, node: Node | None) -> tuple[MessageItemConfig, ...]:
-        if node is None:
-            return ()
-        return tuple(filter(None, (self.__item_dict.get(next_id, None) for next_id in node.next_ids)))
+        return message_dict
 
     def wiki(self) -> str:
         wiki = io.StringIO()

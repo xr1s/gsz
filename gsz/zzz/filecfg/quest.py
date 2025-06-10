@@ -73,8 +73,8 @@ QUEST_REWARD = pydantic.Field(
         "APOGDKCNLKK",  # v1.5
         "JCCGMOLGNNA",  # v1.4
         "NHPGJJBILJF",  # v1.3
-        "MCBGAPHPMAO",  # v1.2
-        "LPDGCALINGE",  # v1.1
+        "LIAHOJOIDMJ",  # v1.2
+        "PCBMFGJCLDA",  # v1.1
     )
 )
 

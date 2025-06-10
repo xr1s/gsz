@@ -68,7 +68,7 @@ INTER_KNOT_POST_SCRIPT = pydantic.Field(
         "BIDMADGGDDP",  # v1.1
     )
 )
-INTER_KNOT_SUBSEQUENT_1 = pydantic.Field(
+INTER_KNOT_FOLLOW_UP_1 = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
         "IMPHIHCACEM",  # v2.0
         "ENKGNGGBMFA",  # v1.7
@@ -80,7 +80,7 @@ INTER_KNOT_SUBSEQUENT_1 = pydantic.Field(
         "DAFKKJEMBJK",  # v1.1
     )
 )
-INTER_KNOT_SUBSEQUENT_2 = pydantic.Field(
+INTER_KNOT_FOLLOW_UP_2 = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
         "JHKFKFFGCGM",  # v2.0
         "PDAKHHBCFIE",  # v1.7
@@ -117,10 +117,22 @@ class InterKnotConfig(ModelID):
     text: typing.Annotated[str, INTER_KNOT_POST_TEXT]
     script: typing.Annotated[str, INTER_KNOT_POST_SCRIPT]
     reply_1: typing.Annotated[str, aliases.OPTION_1]
-    subsequent_1: typing.Annotated[int, INTER_KNOT_SUBSEQUENT_1]
+    """玩家评论选项"""
+    follow_up_1: typing.Annotated[int, INTER_KNOT_FOLLOW_UP_1]
+    """
+    含义是玩家做完回复选择后弹出来的，跟在玩家回复之后的新回复
+    """
     reply_2: typing.Annotated[str, aliases.OPTION_2]
-    subsequent_2: typing.Annotated[int, INTER_KNOT_SUBSEQUENT_2]
-    comment_group: typing.Annotated[int, COMMENT_ID]
+    """玩家评论选项"""
+    follow_up_2: typing.Annotated[int, INTER_KNOT_FOLLOW_UP_2]
+    """
+    含义是玩家做完回复选择后弹出来的，跟在玩家回复之后的新回复
+    """
+    comment_id: typing.Annotated[int, COMMENT_ID]
+    """
+    这里的 commentId 虽然和下面的 PostCommentConfig 主字段相同
+    但实际上指的是 PostCommentConfig.groupId，是用于聚合评论的
+    """
 
     @property
     @typing_extensions.override
@@ -181,6 +193,9 @@ COMMENT_TEXT = pydantic.Field(
 class PostCommentConfig(ModelID):
     comment_id: typing.Annotated[int, COMMENT_ID]
     group_id: typing.Annotated[int, aliases.GROUP_ID]
+    """
+    groupId 用于聚合同一个帖子下的不同回复，就是 InterKnot 的 commentId 字段（并非主字段）
+    """
     sort: typing.Annotated[int, COMMENT_SORT]
     icon: typing.Annotated[str, COMMENT_ICON]
     commentator: typing.Annotated[str, COMMENT_COMMENTATOR]

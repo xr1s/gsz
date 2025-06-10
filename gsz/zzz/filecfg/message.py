@@ -1,3 +1,4 @@
+import enum
 import typing
 
 import pydantic
@@ -18,7 +19,6 @@ DIRECTORY_ID = pydantic.Field(
         "AFNOOJLPBNH",  # v1.1
     )
 )
-
 DIRECTORY_IMPRESSION_1 = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
         "AFGALHGAMMI",  # v2.0
@@ -31,7 +31,6 @@ DIRECTORY_IMPRESSION_1 = pydantic.Field(
         "IKKKLNALIMH",  # v1.1
     )
 )
-
 DIRECTORY_IMPRESSION_2 = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
         "JEFDGPADAGF",  # v2.0
@@ -44,7 +43,6 @@ DIRECTORY_IMPRESSION_2 = pydantic.Field(
         "JFPIFDHIDPN",  # v1.1
     )
 )
-
 DIRECTORY_IMPRESSION_3 = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
         "AOBOAEAKMDJ",  # v2.0
@@ -110,23 +108,44 @@ MESSAGE_OPTION_LONG_2 = pydantic.Field(
 )
 MESSAGE_SENDER_ID = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
-        # "PFHPPCKEHCO",  # v2.0
-        # "OPDCEDDFFAG",  # v1.7
-        # "CFIJJNBPFPP",  # v1.6
-        # "EHPIOMJJJHI",  # v1.5
-        # "EPJLJOIDBHI",  # v1.4
-        # "JIKICBFNCDP",  # v1.3
-        # "ADEMJOAEJOL",  # v1.2
-        # "EMFBKODOKLE",  # v1.1
+        "PFHPPCKEHCO",  # v2.0
+        "OPDCEDDFFAG",  # v1.7
+        "CFIJJNBPFPP",  # v1.6
+        "EHPIOMJJJHI",  # v1.5
+        "EPJLJOIDBHI",  # v1.4
+        "JIKICBFNCDP",  # v1.3
+        "ADEMJOAEJOL",  # v1.2
+        "EMFBKODOKLE",  # v1.1
         # 下面的是另一个字段，有些时候是 0，但好像也不是发信人
-        "FJIGNDBDFGH",  # v2.0
-        "JLBFBBIBKFN",  # v1.7
-        "MBEKPIEKHBO",  # v1.6
-        "MEDLNFDMBKE",  # v1.5
-        "IFNFKFHHOMD",  # v1.4
-        "ONIFFJGGOOI",  # v1.3
-        "LKFOPNJCJBA",  # v1.2
-        "FMMIBDPEOHB",  # v1.1
+        # "FJIGNDBDFGH",  # v2.0
+        # "JLBFBBIBKFN",  # v1.7
+        # "MBEKPIEKHBO",  # v1.6
+        # "MEDLNFDMBKE",  # v1.5
+        # "IFNFKFHHOMD",  # v1.4
+        # "ONIFFJGGOOI",  # v1.3
+        # "LKFOPNJCJBA",  # v1.2
+        # "FMMIBDPEOHB",  # v1.1
+    )
+)
+MESSAGE_VOICE = pydantic.Field(
+    validation_alias=pydantic.AliasChoices(
+        "NMAEHDCKFEL",  # v2.0
+        "LANAEOPKBLO",  # v1.7
+        "JCLHDCHMOFH",  # v1.6
+        "BIHFFLMDHIL",  # v1.5
+        "JKBLKDOKGNM",  # v1.4
+        "MDJINNLAJJO",  # v1.3
+        "GOBMMPBNOGE",  # v1.2
+        "OGBAPJEEBLH",  # v1.1
+        # 下面的是另一个字段，但是值完全相同
+        # "DCAPBBIKKDL",  # v2.0
+        # "DFDAJIMKHAP",  # v1.7
+        # "AFJCFEBLLPP",  # v1.6
+        # "PIKOJIKHEBF",  # v1.5
+        # "NJFEGLOMCMD",  # v1.4
+        # "ECBBLGANCKP",  # v1.3
+        # "HPDAHKEKLKI",  # v1.2
+        # "JAFGOFDBJIP",  # v1.1
     )
 )
 MESSAGE_SEGMENT = pydantic.Field(
@@ -141,7 +160,19 @@ MESSAGE_SEGMENT = pydantic.Field(
         "CDHCJFKGIAL",  # v1.1
     )
 )
-MESSAGE_OPTION_SEGMENT_1 = pydantic.Field(
+MESSAGE_TYPE = pydantic.Field(
+    validation_alias=pydantic.AliasChoices(
+        "DCLLHMMFDOG",  # v2.0
+        "PPKFFBLPHDK",  # v1.7
+        "HPNGGPKBBJG",  # v1.6
+        "GNDFAMKDBAA",  # v1.5
+        "FBJOIIJKOKP",  # v1.4
+        "NAPLJAKKKME",  # v1.3
+        "HPEEJOCGJGE",  # v1.2
+        "IDNHILJCENI",  # v1.1
+    )
+)
+MESSAGE_OPTION_SUCCESSOR_1 = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
         "DMPOBPACNFG",  # v2.0
         "ABGCJDOAKHN",  # v1.7
@@ -153,7 +184,19 @@ MESSAGE_OPTION_SEGMENT_1 = pydantic.Field(
         "ABOHGBNOHMA",  # v1.1
     )
 )
-MESSAGE_OPTION_SEGMENT_2 = pydantic.Field(
+MESSAGE_SUCCESSOR = pydantic.Field(
+    validation_alias=pydantic.AliasChoices(
+        "FIAJBANCPMD",  # v2.0
+        "MBPHJOGEKKA",  # v1.7
+        "FDLBBFNBCNP",  # v1.6
+        "GIKJGLJJOFP",  # v1.5
+        "IJJOABHABFO",  # v1.4
+        "IBANEAGGFBO",  # v1.3
+        "OFLBECMHKNM",  # v1.2
+        "ODMLGIECNEE",  # v1.1
+    )
+)
+MESSAGE_OPTION_SUCCESSOR_2 = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
         "CBFAFJMBLDO",  # v2.0
         "HKIPEMBOLEC",  # v1.7
@@ -167,10 +210,22 @@ MESSAGE_OPTION_SEGMENT_2 = pydantic.Field(
 )
 
 
+class Type(enum.Enum):
+    Text = 0
+    """正文，此时只有 text 非空"""
+    Option = 1
+    """选项"""
+    ImageOption = 2
+    """图片选项"""
+    Unknown = 3
+    """是我不知道 3 是啥含义"""
+
+
 class MessageConfig(ModelID):
     id_: typing.Annotated[int, aliases.ID]
     group_id: typing.Annotated[int, aliases.GROUP_ID]
     sender_id: typing.Annotated[int, MESSAGE_SENDER_ID]
+    voice: typing.Annotated[str, MESSAGE_VOICE]
     text: typing.Annotated[str, MESSAGE_TEXT]
     image: typing.Annotated[str, aliases.IMAGE]
     """图片或表情 Emoji"""
@@ -180,17 +235,22 @@ class MessageConfig(ModelID):
     segment 是一个同 group_id 不重复的编号，表示这一条消息属于哪个分段
     在每个 option 之后会出现一个字段，表示选择该选项后继进入哪个分段
     """
+    type: typing.Annotated[Type, MESSAGE_TYPE]
+    successor: typing.Annotated[int, MESSAGE_SUCCESSOR]
+    """
+    表示这条消息结束后跳转到哪个 segment，仅针对非选项消息
+    """
     option_1: typing.Annotated[str, aliases.OPTION_1]
     """第一个选项文案"""
     option_long_1: typing.Annotated[str, MESSAGE_OPTION_LONG_1]
     """表示选择第一个选项后玩家实际发送的文字"""
-    option_segment_1: typing.Annotated[int, MESSAGE_OPTION_SEGMENT_1]
+    option_successor_1: typing.Annotated[int, MESSAGE_OPTION_SUCCESSOR_1]
     """表示选择第一个选项后，后续进入哪个 segment 对应的分支"""
     option_2: typing.Annotated[str, aliases.OPTION_2]
     """第二个选项文案"""
     option_long_2: typing.Annotated[str, MESSAGE_OPTION_LONG_2]
     """表示选择第二个选项后玩家实际发送的文字"""
-    option_segment_2: typing.Annotated[int, MESSAGE_OPTION_SEGMENT_2]
+    option_successor_2: typing.Annotated[int, MESSAGE_OPTION_SUCCESSOR_2]
     """表示选择第二个选项后，后续进入哪个 segment 对应的分支"""
 
     @property

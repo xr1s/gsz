@@ -40,17 +40,19 @@ ID = pydantic.Field(
         "NGPCCDGBLLK",  # v1.1
     )
 )
-# PartnerConfigTemplateTb.json
+
+# AvatarBaseTemplateTb.json
+# ItemTemplateTb.json
 NAME = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
-        "KGACNEEFAFN",  # v2.0
-        "INNAIMOAPID",  # v1.7
-        "EFPJLPJOBFL",  # v1.6
-        "MEIDPJNKIDE",  # v1.5
-        "BBAGGIAJFMD",  # v1.4
-        "MDGBBLDPIPF",  # v1.3
-        "LDPKGDEPFCH",  # v1.2
-        "FAHEPAJDADB",  # v1.1
+        "LMFGBBIIMNL",  # v2.0
+        "MLGCKOOKMHN",  # v1.7
+        "MPHLIEKKFIK",  # v1.6
+        "KMFMLNCJBEG",  # v1.5
+        "JOMJELIIAGO",  # v1.4
+        "FJECNNMMDGH",  # v1.3
+        "DEPJKIPACJK",  # v1.2
+        "EAAFCGPDFAA",  # v1.1
     )
 )
 
@@ -69,7 +71,7 @@ ICON = pydantic.Field(
     )
 )
 
-# 比如作为短信、绳网帖子z中图片字段名
+# 比如作为短信、绳网帖子中图片字段名
 # MessageGroupConfigTemplateTb.json
 # InterKnotConfigTemplateTb.json
 IMAGE = pydantic.Field(
