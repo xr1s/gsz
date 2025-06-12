@@ -336,8 +336,8 @@ class MessageItemConfig(View[excel.MessageItemConfig]):
     def __hash_cache(self) -> int:
         """
         计算并缓存 hash 值
-        需要注意的是最后一项包含了后继 hash 会导致递归
-        可能会导致性能劣化，目前看全部短信算一次加起来总共从 3s 劣化到 5s 左右
+        需要注意的是最后一项包含了后继 hash 会导致递归，所以需要缓存
+        没有缓存会导致性能劣化，目前看全部短信算一次加起来总共从 3s 劣化到 5s 左右
         """
         contacts_name = "" if self.__contacts is None else self.__contacts.name
         nexts = tuple(self._game.message_item_config(next_id) for next_id in self.next_ids)

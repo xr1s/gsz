@@ -30,7 +30,7 @@ class State(enum.Enum):
     """
     除了无格式的纯文本外，主要有三类
     * 格式化字符串，有以下形式 #1 #2[f2]% #3[i] #4[m]
-    * 类似 XML 的某种 DSL，有以下形式 <u> </i> <color=#0000> <size=20> <size=+2>
+    * Unity Rich Text，类似 XML 的 DSL，有以下形式 <u> </i> <color=#0000> <size=20> <size=+2>
     * 某种特殊的变量 DSL，有以下形式
         {BIRTH}
         {F#女性主角分支} {M#男性主角分支}
