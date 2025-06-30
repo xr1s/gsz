@@ -3,6 +3,7 @@ from __future__ import annotations
 import collections.abc
 import functools
 import io
+import re
 import typing
 
 import typing_extensions
@@ -12,6 +13,7 @@ from ..filecfg import message
 from .base import View
 
 if typing.TYPE_CHECKING:
+    from ...format import Formatter
     from ..data import GameData
     from .partner import PartnerConfig
     from .quest import QuestConfig
@@ -95,23 +97,22 @@ class MessageConfig(View[filecfg.MessageConfig]):
     def __npc(self) -> MessageNPC | None:
         return self._game.message_npc(self._filecfg.sender_id)
 
+    def npc(self) -> MessageNPC | None:
+        return MessageNPC(self._game, self.__npc._filecfg) if self.__npc is not None else None
+
     @functools.cached_property
     def sender_name(self) -> str | None:
-        if self._filecfg.sender_id == 0:
-            return None
         if self._filecfg.sender_id == 998:
             return "匿名"
-        if self._filecfg.sender_id == 999:
+        if self._filecfg.sender_id in {0, 999}:
             return "兄妹"
         return self.__npc.name if self.__npc is not None else None
 
     @functools.cached_property
     def sender_icon(self) -> str | None:
-        if self._filecfg.sender_id == 0:
-            return None
         if self._filecfg.sender_id == 998:
             return "匿名"
-        if self._filecfg.sender_id == 999:
+        if self._filecfg.sender_id in {0, 999}:
             return "兄妹"
         return self.__npc.icon if self.__npc is not None else None
 
@@ -139,6 +140,10 @@ class _Message(MessageConfig):
     @property
     def is_option(self) -> bool:
         return self._filecfg.type is message.Type.Option or self._filecfg.type is message.Type.ImageOption
+
+    @property
+    def is_mission(self) -> bool:
+        return self._filecfg.type is message.Type.Mission
 
     @property
     def is_option_root(self) -> bool:
@@ -284,6 +289,10 @@ class MessageGroupConfig(View[filecfg.MessageGroupConfig]):
 
         return (QuestConfig(self._game, quest._filecfg) for quest in self.__quests)
 
+    @property
+    def __formatter(self) -> Formatter:
+        return self._game._mw_formatter  # pyright: ignore[reportPrivateUsage]
+
     @functools.cached_property
     def __segments(self) -> dict[int, list[_Message]]:
         segments: dict[int, list[_Message]] = {}
@@ -336,29 +345,41 @@ class MessageGroupConfig(View[filecfg.MessageGroupConfig]):
         message.confluence = None
         return message.confluence
 
+    def __wiki_write_message_mission(self, wiki: typing.IO[str], indent: str):
+        _ = wiki.write(indent)
+        _ = wiki.write("{{敲敲对话|右|玩家|任务|")
+        # 多任务没法区分，就都写上吧，后续找到区分方法再改
+        _ = wiki.write("、".join(quest.name for quest in self.__quests))
+        _ = wiki.write("|任务类型=}}")
+
+    __ICON_EMOJI: re.Pattern[str] = re.compile(r"^UI/Sprite/A1DynamicLoad/IconEmoji/UnPacker/IconEmoji(\d{2}).png$")
+
     def __wiki_write_message_single(self, wiki: typing.IO[str], indent: str, message: _Message):
         _ = wiki.write(indent)
-        _ = wiki.write("{{短信对话|")
+        _ = wiki.write("{{敲敲对话|")
         _ = wiki.write("左" if message.option_index == 0 else "右")
         _ = wiki.write("|")
         if message.option_index == 0:
             _ = wiki.write(message.sender_name or message.sender_icon or "<未知>")
         else:
-            _ = wiki.write("主角")
+            _ = wiki.write("玩家")
         if message.voice is not None:
             assert message.text is not None
             _ = wiki.write("|语音|")
-            _ = wiki.write(message.text)
+            _ = wiki.write(self.__formatter.format(message.text))
         elif message.image is not None:
-            _ = wiki.write("|图片| <!-- ")
-            _ = wiki.write(message.image)
-            _ = wiki.write("-->")
+            match = self.__ICON_EMOJI.match(message.image)
+            if match is not None:
+                _ = wiki.write("|图片|敲敲表情-00-")
+                _ = wiki.write(match.group(1))
+                _ = wiki.write(".png")
+            else:
+                _ = wiki.write("|图片|<!-- ")
+                _ = wiki.write(message.image)
+                _ = wiki.write(" -->")
         elif message.text is not None:
             _ = wiki.write("|文本|")
-            _ = wiki.write(message.text)
-        else:
-            _ = wiki.write("}}")
-            return
+            _ = wiki.write(self.__formatter.format(message.text))
         _ = wiki.write("}}")
 
     def __wiki_write_message_select(
@@ -367,27 +388,27 @@ class MessageGroupConfig(View[filecfg.MessageGroupConfig]):
         assert item.option_1 is not None
         if item.option_2 is None:
             _ = wiki.write(indent)
-            _ = wiki.write("{{短信对话|右|主角|选项|选项=")
+            _ = wiki.write("{{敲敲选项|选项=")
             _ = wiki.write(item.option_1)
             _ = wiki.write("}}")
             return
         next_indent = indent + "  "
         _ = wiki.write(indent)
-        _ = wiki.write("{{短信对话|右|主角|")
-        if item._filecfg.type is message.Type.Option:
-            _ = wiki.write("选项")
-        elif item._filecfg.type is message.Type.ImageOption:
-            _ = wiki.write("表情选项")
+        _ = wiki.write("{{敲敲选项")
+        if item._filecfg.type is message.Type.ImageOption:
+            _ = wiki.write("|表情")
         _ = wiki.write(indent)
         _ = wiki.write("|选项1=")
-        _ = wiki.write(item.option_1 if item._filecfg.type is message.Type.Option else item._filecfg.option_1)
+        option_1 = item.option_1 if item._filecfg.type is message.Type.Option else item._filecfg.option_1
+        _ = wiki.write(self.__formatter.format(option_1))
         if item.successors[0] != confluence:
             _ = wiki.write(indent)
             _ = wiki.write("|剧情1=")
             self.__wiki_iter_message(wiki, next_indent, item.successors[0], confluence)
         _ = wiki.write(indent)
         _ = wiki.write("|选项2=")
-        _ = wiki.write(item.option_2 if item._filecfg.type is message.Type.Option else item._filecfg.option_2)
+        option_2 = item.option_2 if item._filecfg.type is message.Type.Option else item._filecfg.option_2
+        _ = wiki.write(self.__formatter.format(option_2))
         if item.successors[1] != confluence:
             _ = wiki.write(indent)
             _ = wiki.write("|剧情2=")
@@ -399,19 +420,44 @@ class MessageGroupConfig(View[filecfg.MessageGroupConfig]):
         if message == confluence:
             return
         next_confluence = self.__find_confluence(message)
-        if not message.is_option_root:
+        if message.is_mission:
+            self.__wiki_write_message_mission(wiki, indent)
+        elif not message.is_option_root:
             self.__wiki_write_message_single(wiki, indent, message)
         else:
             self.__wiki_write_message_select(wiki, indent, message, next_confluence)
         if next_confluence is not None:
             self.__wiki_iter_message(wiki, indent, next_confluence, confluence)
 
+    def wiki_write_content(self, wiki: typing.IO[str], indent: str):
+        # 寻找入口的过程
+        # 应该有个字段，之后找找
+        if len(self.__segments) == 0:
+            return
+        segments = sorted(self.__segments.keys())
+        entry = segments[0]
+        for entry in segments:
+            if len(self.__segments[entry]) != 0:
+                break
+        else:
+            return
+        message = self.__segments[entry][0]
+        self.__wiki_iter_message(wiki, indent, message, None)
+
     def wiki(self) -> str:
-        if 1 not in self.__segments or len(self.__segments[1]) == 0:
-            return ""
         wiki = io.StringIO()
-        message = self.__segments[1][0]
-        self.__wiki_iter_message(wiki, "\n  ", message, None)
+        _ = wiki.write("{{敲敲数据\n|标题=")
+        _ = wiki.write("\n|名称=")
+        name = "<未知>"
+        if self.__npc is not None:
+            name = (
+                self.__npc.name if self.__npc._filecfg.id_ not in {0, 999} else "{{敲敲主角|哲|铃}}{{敲敲主角|铃|哲}}"
+            )
+        _ = wiki.write(name)
+        _ = wiki.write("\n|版本=")
+        _ = wiki.write("\n|排序=")
+        self.wiki_write_content(wiki, "\n  ")
+        _ = wiki.write("\n}}")
         return wiki.getvalue()
 
 
@@ -425,3 +471,30 @@ class MessageNPC(View[filecfg.MessageNPC]):
     @property
     def icon(self) -> str:
         return self._filecfg.icon
+
+    @functools.cached_property
+    def __groups(self) -> collections.abc.Sequence[MessageGroupConfig]:
+        groups = self._game._message_group_of_contact.get(self._filecfg.id_)  # pyright: ignore[reportPrivateUsage]
+        if groups is None:
+            return ()
+        return [MessageGroupConfig(self._game, group) for group in groups]
+
+    def wiki(self) -> str:
+        wiki = io.StringIO()
+        _ = wiki.write("{{#subobject:敲敲-")
+        _ = wiki.write(self.name)
+        _ = wiki.write("\n|@category=敲敲头像")
+        _ = wiki.write("\n|名称=")
+        _ = wiki.write(self.name if self._filecfg.id_ not in {0, 999} else "{{敲敲主角|哲|铃}}{{敲敲主角|铃|哲}}")
+        _ = wiki.write("\n|阵营=\n|排序=")  # TODO
+        _ = wiki.write("\n}}")
+        for group in self.__groups:
+            _ = wiki.write("\n\n{{敲敲数据\n|标题=")
+            _ = wiki.write("\n|名称=")
+            _ = wiki.write(self.name if self._filecfg.id_ not in {0, 999} else "{{敲敲主角|哲|铃}}{{敲敲主角|铃|哲}}")
+            _ = wiki.write("\n|版本=")
+            _ = wiki.write("\n|排序=")
+            _ = wiki.write("\n|内容=")
+            group.wiki_write_content(wiki, "\n  ")
+            _ = wiki.write("\n}}")
+        return wiki.getvalue()

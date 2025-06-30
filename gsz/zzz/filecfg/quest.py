@@ -5,7 +5,7 @@ import typing_extensions
 
 from .base import ModelID
 
-QUEST_ID = pydantic.Field(
+ID = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
         "PADEHJEHGLB",  # v2.0
         "JOCMKDOLBPP",  # v1.7
@@ -17,7 +17,7 @@ QUEST_ID = pydantic.Field(
         "PPPBBEOFKCC",  # v1.1
     )
 )
-QUEST_NAME = pydantic.Field(
+NAME = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
         "EKOEHAIFEHN",  # v2.0
         "CNLOKFIHOPC",  # v1.7
@@ -29,7 +29,7 @@ QUEST_NAME = pydantic.Field(
         "PEAELPCHHPG",  # v1.1
     )
 )
-QUEST_DESC = pydantic.Field(
+DESC = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
         "NMMLEAJABJL",  # v2.0
         "IHKFKNPKGNE",  # v1.7
@@ -41,7 +41,7 @@ QUEST_DESC = pydantic.Field(
         "EFCMDFEPABP",  # v1.1
     )
 )
-QUEST_TARGET = pydantic.Field(
+TARGET = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
         "DLJGALBKDAN",  # v2.0
         "LFLPEENMECC",  # v1.7
@@ -53,7 +53,7 @@ QUEST_TARGET = pydantic.Field(
         "IPLPDPFPJGN",  # v1.1
     )
 )
-QUEST_FINISH_DEC = pydantic.Field(
+FINISH_DEC = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
         "OCCMEAFDIIL",  # v2.0
         "KOGJLMNKEEH",  # v1.7
@@ -65,7 +65,7 @@ QUEST_FINISH_DEC = pydantic.Field(
         "OJDIEIJKKML",  # v1.1
     )
 )
-QUEST_REWARD = pydantic.Field(
+REWARD = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
         "DNCPKFPLPIF",  # v2.0
         "EAHEBGIBFMC",  # v1.7
@@ -80,14 +80,14 @@ QUEST_REWARD = pydantic.Field(
 
 
 class QuestConfig(ModelID):
-    quest_id: typing.Annotated[int, QUEST_ID]
-    quest_name: typing.Annotated[str, QUEST_NAME]
-    quest_desc: typing.Annotated[str, QUEST_NAME]
-    quest_target: typing.Annotated[str, QUEST_TARGET]
-    quest_finish_dec: typing.Annotated[str, QUEST_FINISH_DEC]
-    reward: typing.Annotated[int, QUEST_REWARD]  # TODO: OnceRewardConfigTemplateTb.json
+    id_: typing.Annotated[int, ID]
+    name: typing.Annotated[str, NAME]
+    desc: typing.Annotated[str, NAME]
+    target: typing.Annotated[str, TARGET]
+    finish_dec: typing.Annotated[str, FINISH_DEC]
+    reward: typing.Annotated[int, REWARD]  # TODO: OnceRewardConfigTemplateTb.json
 
     @property
     @typing_extensions.override
     def id(self) -> int:
-        return self.quest_id
+        return self.id_

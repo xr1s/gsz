@@ -575,6 +575,10 @@ class RogueTournTitanBless(View[excel.RogueTournTitanBless]):
     def titan_type(self) -> rogue_tourn.TitanType:
         return self._excel.titan_type
 
+    @property
+    def level(self) -> int:
+        return self._excel.titan_bless_level
+
     @functools.cached_property
     def __maze_buff(self) -> MazeBuff:
         buff = self._game.rogue_maze_buff(self._excel.maze_buff_id, 1)

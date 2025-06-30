@@ -199,36 +199,35 @@ class Main:
     def message(self, contacts_name: str | None = None, section_id: int | None = None):
         match self.__game:
             case gsz.sr.GameData():
-                self.__message_sr(self.__game, contacts_name, section_id)
+                self.__message_sr(contacts_name, section_id)
             case gsz.zzz.GameData():
-                self.__message_zzz(self.__game)
+                self.__message_zzz(contacts_name)
             case None:
                 raise ValueError("`--base <GameData> message` required")
 
-    def __message_sr(self, game: gsz.sr.GameData, contacts_name: str | None = None, section_id: int | None = None):
+    def __message_sr(self, contacts_name: str | None = None, section_id: int | None = None):
         assert isinstance(self.__game, gsz.sr.GameData), "`--base <TurnBasedGameData> message` required"
         if section_id is not None:
             assert isinstance(section_id, int)
-            section = game.message_section_config(section_id)
+            section = self.__game.message_section_config(section_id)
             if section is not None:
                 print(section.wiki())
             return
         if contacts_name is not None:
             assert isinstance(contacts_name, str)
-        for contacts in game.message_contacts_config():
+        for contacts in self.__game.message_contacts_config():
             if contacts_name is not None and self.__formatter.format(contacts.name) != contacts_name:
                 continue
             print(contacts.wiki(), end="\n\n")
 
-    def __message_zzz(self, game: gsz.zzz.GameData):
-        """TODO: 完成 ZZZ BWiki 补充后改为模板"""
+    def __message_zzz(self, contacts_name: str | None = None):
         assert isinstance(self.__game, gsz.zzz.GameData), "`--base <ZenlessData> message` required"
-        for group in game.message_group_config():
-            print(f"\n\033[1m{group.contact_name}\033[22m <!-- {group.id} -->", end="")
-            quests = list(group.quests())
-            if len(quests) != 0:
-                print("\n  相关任务:", "、".join(quest.name for quest in quests), end="")
-            print(group.wiki())
+        if contacts_name is not None:
+            assert isinstance(contacts_name, str)
+        for npc in self.__game.message_npc():
+            if contacts_name is not None and self.__formatter.format(npc.name) != contacts_name:
+                continue
+            print(npc.wiki(), end="\n\n")
 
     def rogue_npc(self):
         assert isinstance(self.__game, gsz.sr.GameData), "`--base <TurnBasedGameData> rogue-npc` required"
@@ -421,7 +420,7 @@ class Main:
                             print(f"    - \x1b[1m{comment.commentator}\x1b[m:", comment.text)
 
     def main(self):
-        """调试代码可以放这里"""
+        """调试代码可以放到这里"""
 
 
 if __name__ == "__main__":

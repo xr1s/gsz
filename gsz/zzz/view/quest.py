@@ -10,16 +10,16 @@ class QuestConfig(View[filecfg.QuestConfig]):
 
     @functools.cached_property
     def name(self) -> str:
-        return self._game.text(self._filecfg.quest_name)
+        return self._game.text(self._filecfg.name)
 
     @functools.cached_property
     def desc(self) -> str:
-        return self._game.text(self._filecfg.quest_desc)
+        return self._game.text(self._filecfg.desc)
 
     @functools.cached_property
     def target(self) -> str:
-        return self._game.text(self._filecfg.quest_target)
+        return self._game.text(self._filecfg.target)
 
     @functools.cached_property
     def finish_desc(self) -> str:
-        return self._game.text(self._filecfg.quest_finish_dec)
+        return self._game.text(self._filecfg.finish_dec)

@@ -615,6 +615,15 @@ class Formatter:
                 if len(self.__m_text) == 0:
                     self.__f_text = val
                     return
+                if isinstance(self.__game, ZZZGameData):
+                    _ = self.__texts[-1].write("{{敲敲主角|哲|")
+                    self.__push(self.__m_text)
+                    _ = self.__texts[-1].write("}}")
+                    _ = self.__texts[-1].write("{{敲敲主角|铃|")
+                    self.__push(val)
+                    _ = self.__texts[-1].write("}}")
+                    self.__m_text = ""
+                    return
                 match self.__gender_order:
                     case GenderOrder.Preserve | GenderOrder.Male:
                         self.__push(self.__m_text)
@@ -639,6 +648,15 @@ class Formatter:
             case "M":  # 一般很短，暂时不考虑堆栈
                 if len(self.__f_text) == 0:
                     self.__m_text = val
+                    return
+                if isinstance(self.__game, ZZZGameData):
+                    _ = self.__texts[-1].write("{{敲敲主角|哲|")
+                    self.__push(val)
+                    _ = self.__texts[-1].write("}}")
+                    _ = self.__texts[-1].write("{{敲敲主角|铃|")
+                    self.__push(self.__f_text)
+                    _ = self.__texts[-1].write("}}")
+                    self.__f_text = ""
                     return
                 match self.__gender_order:
                     case GenderOrder.Preserve | GenderOrder.Female:

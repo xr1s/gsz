@@ -172,18 +172,6 @@ MESSAGE_TYPE = pydantic.Field(
         "IDNHILJCENI",  # v1.1
     )
 )
-MESSAGE_OPTION_SUCCESSOR_1 = pydantic.Field(
-    validation_alias=pydantic.AliasChoices(
-        "DMPOBPACNFG",  # v2.0
-        "ABGCJDOAKHN",  # v1.7
-        "GFCBLLMBFEH",  # v1.6
-        "HMLBEODKNID",  # v1.5
-        "NNHNKGHIDAE",  # v1.4
-        "AELKAMJKGBI",  # v1.3
-        "CHHEADLAHID",  # v1.2
-        "ABOHGBNOHMA",  # v1.1
-    )
-)
 MESSAGE_SUCCESSOR = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
         "FIAJBANCPMD",  # v2.0
@@ -194,6 +182,18 @@ MESSAGE_SUCCESSOR = pydantic.Field(
         "IBANEAGGFBO",  # v1.3
         "OFLBECMHKNM",  # v1.2
         "ODMLGIECNEE",  # v1.1
+    )
+)
+MESSAGE_OPTION_SUCCESSOR_1 = pydantic.Field(
+    validation_alias=pydantic.AliasChoices(
+        "DMPOBPACNFG",  # v2.0
+        "ABGCJDOAKHN",  # v1.7
+        "GFCBLLMBFEH",  # v1.6
+        "HMLBEODKNID",  # v1.5
+        "NNHNKGHIDAE",  # v1.4
+        "AELKAMJKGBI",  # v1.3
+        "CHHEADLAHID",  # v1.2
+        "ABOHGBNOHMA",  # v1.1
     )
 )
 MESSAGE_OPTION_SUCCESSOR_2 = pydantic.Field(
@@ -217,8 +217,8 @@ class Type(enum.Enum):
     """选项"""
     ImageOption = 2
     """图片选项"""
-    Unknown = 3
-    """是我不知道 3 是啥含义"""
+    Mission = 3
+    """接取任务按钮，游戏中具体表现形式和任务类型有关"""
 
 
 class MessageConfig(ModelID):

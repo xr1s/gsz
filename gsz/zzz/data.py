@@ -8,6 +8,7 @@ import typing
 
 import pydantic
 
+from ..format import Formatter, Syntax
 from . import filecfg, view
 
 T_co = typing.TypeVar("T_co", covariant=True)
@@ -141,6 +142,10 @@ class GameData:
     def text(self, text: str) -> str:
         return self.__text_map.get(text, "")
 
+    @functools.cached_property
+    def _mw_formatter(self) -> Formatter:
+        return Formatter(syntax=Syntax.MediaWiki, game=self)
+
     ######## message ########
 
     @file_cfg(view.DirectoryConfig)
@@ -169,6 +174,18 @@ class GameData:
     @file_cfg(view.MessageNPC)
     def message_npc(self):
         """knock knock 中的非自机角色联系人"""
+
+    @functools.cached_property
+    def _message_group_of_contact(self) -> dict[int, list[filecfg.MessageGroupConfig]]:
+        """按 NPC 分类短信"""
+        groups: dict[int, list[filecfg.MessageGroupConfig]] = {}
+        for group in self.message_group_config():
+            cfg = group._filecfg  # pyright: ignore[reportPrivateUsage]
+            if cfg.contact_id in groups:
+                groups[cfg.contact_id].append(cfg)
+            else:
+                groups[cfg.contact_id] = [cfg]
+        return groups
 
     ######## partner ########
 

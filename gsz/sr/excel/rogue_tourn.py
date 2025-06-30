@@ -311,7 +311,7 @@ class TitanType(enum.Enum):
             case self.Nikadory:  # 尼卡多利
                 return "万敌"
             case self.Olonyx:  # 欧洛尼斯
-                return "█ █ █"
+                return "███"
             case self.Phageina:  # 法吉娜
                 return "海瑟音"
             case self.Talentum:  # 塔兰顿
