@@ -212,6 +212,7 @@ class MonsterTemplateConfig(ModelID):
     """
 
     monster_template_id: int
+    monster_strategy: list[None] | None = None  # 仅出现于 3.4 版本及之后
     template_group_id: int | None = None  # 敌人种族 ID
     release_in_atlas: bool = False
     atlas_sort_id: int | None = None

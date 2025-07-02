@@ -115,6 +115,12 @@ class SubType(enum.Enum):
     """
     HeadIcon = "HeadIcon"
     """用户头像"""
+    MatchThreeV2 = "MatchThreeV2"
+    """
+    3.4 新增
+    折纸小鸟对对碰相关道具
+    只有一个「啾啾哒哒工具箱」
+    """
     Material = "Material"
     """
     非常杂, ItemMainType 为 Material 的剩下的都在里面
