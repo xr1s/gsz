@@ -126,10 +126,11 @@ class AISkillSequence(Model):
 class MonsterConfig(ModelID):
     """敌人详情"""
 
-    monster_id: int
-    monster_template_id: int
     monster_name: Text
     monster_introduction: Text | None
+    monster_strategy: list[None] | None  # 仅出现于 3.4 版本及之后
+    monster_id: int
+    monster_template_id: int
     monster_battle_introduction: Text | None = None  # 仅出现于 1.0
     hard_level_group: int = 1  # 仅出现在 3.2 版本及之前，全部都是 1
     elite_group: int

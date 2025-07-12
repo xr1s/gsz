@@ -60,6 +60,26 @@ class Path(enum.Enum):
     Warrior = "Warrior"
     """毁灭"""
 
+    @typing_extensions.override
+    def __str__(self) -> str:  # noqa: PLR0911
+        match self:
+            case self.Knight:
+                return "存护"
+            case self.Mage:
+                return "智识"
+            case self.Memory:
+                return "记忆"
+            case self.Priest:
+                return "丰饶"
+            case self.Rogue:
+                return "巡猎"
+            case self.Shaman:
+                return "同谐"
+            case self.Warlock:
+                return "虚无"
+            case self.Warrior:
+                return "毁灭"
+
 
 ABBR_WORDS = {"ai", "bg", "bgm", "hp", "id", "npc", "sp", "sfx", "ui"}
 
@@ -99,8 +119,11 @@ class ModelMainSubID(abc.ABC, Model):
     def sub_id(self) -> int: ...
 
 
-class Text(Model):
+class TextHash(Model):
     hash: int
+
+
+Text = TextHash | str
 
 
 T = typing.TypeVar("T")

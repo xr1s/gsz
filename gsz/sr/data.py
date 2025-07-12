@@ -11,6 +11,7 @@ import typing
 
 import jinja2
 import pydantic
+import xxhash
 
 from ..format import Formatter, Syntax
 from . import view
@@ -455,15 +456,29 @@ class Language(enum.Enum):
 class GameData:
     def __init__(self, base: str | pathlib.Path, *, language: Language = Language.CHS):
         self.base: pathlib.Path = pathlib.Path(base)
+        self.__default_language: Language = language
+        self.__text_map: dict[Language, dict[int, str]] = {}
+
+    def __load_text_map(self, language: Language) -> dict[int, str]:
         candidates = iter(language.candidates())
         text_map_path = self.base / "TextMap" / f"TextMap{next(candidates)}.json"
         while not text_map_path.exists():
             text_map_path: pathlib.Path = self.base / "TextMap" / f"TextMap{next(candidates)}.json"
         text_map = text_map_path.read_bytes()
-        self.__text_map = pydantic.TypeAdapter(dict[int, str]).validate_json(text_map)
+        return pydantic.TypeAdapter(dict[int, str]).validate_json(text_map)
 
-    def text(self, text: Text) -> str:
-        return self.__text_map.get(text.hash, "")
+    def text(self, key: Text, *, language: Language | None = None) -> str:
+        language = language or self.__default_language
+        if language not in self.__text_map:
+            text_map = self.__load_text_map(language)
+            self.__text_map[language] = text_map
+        else:
+            text_map = self.__text_map[language]
+        if isinstance(key, str):
+            # 老版本使用 xxh32，后面改成 xxh64 了，为了兼容两个都试一下
+            xxh64 = xxhash.xxh64_intdigest(key)
+            return text_map.get(xxh64) or text_map.get(xxhash.xxh32_intdigest(key), "")
+        return text_map.get(key.hash, "")
 
     @functools.cached_property
     def _plain_formatter(self) -> Formatter:
@@ -490,14 +505,88 @@ class GameData:
             comment_end_string="\n",
             loader=jinja2.FileSystemLoader(templates_path),
         )
-        env.filters.update(gszformat=self._mw_formatter.format, gszformat_pretty=self._mw_pretty_formatter.format)
+        env.filters.update(
+            gszformat=self._mw_formatter.format,
+            gszformat_pretty=self._mw_pretty_formatter.format,
+            zip=zip,  # pyright: ignore[reportArgumentType]
+        )
         return env
 
     ######## avatar ########
 
+    @excel_output(view.AtlasAvatarChangeInfo)
+    def atlas_avatar_change_info(self):
+        """角色阵营变更，如完成对应任务后，黄泉从巡海游侠变为自灭者，星期日从匹诺康尼变为银河"""
+
+    @functools.cached_property
+    def _atlas_change_info_avatar_config(self) -> dict[int, excel.AtlasAvatarChangeInfo]:
+        return {change._excel.avatar_id: change._excel for change in self.atlas_avatar_change_info()}  # pyright: ignore[reportPrivateUsage]
+
+    @excel_output(view.AvatarAtlas)
+    def avatar_atlas(self):
+        """角色阵营、配音演员"""
+
+    @excel_output(view.AvatarCamp)
+    def avatar_camp(self):
+        """角色阵营"""
+
     @excel_output(view.AvatarConfig)
     def avatar_config(self):
         """角色"""
+
+    @excel_output(view.AvatarPlayerIcon)
+    def avatar_player_icon(self):
+        """角色对应的玩家头像"""
+
+    @excel_output_main_sub(view.AvatarPromotionConfig)
+    def avatar_promotion_config(self):
+        """角色突破需要素材、提升属性"""
+
+    @excel_output(view.AvatarRankConfig)
+    def avatar_rank_config(self):
+        """角色命座"""
+
+    @excel_output_main_sub(view.AvatarSkillConfig)
+    def avatar_servant_skill_config(self):
+        """忆灵技能"""
+
+    @excel_output_main_sub(view.AvatarSkillConfig)
+    def avatar_skill_config(self):
+        """
+        角色的所有技能
+        举例来说：丹恒饮月的普攻和强化普攻这里分两种，AvatarSkillTreeConfig 都算在普攻中
+        """
+
+    @excel_output_main_sub(view.AvatarSkillTreeConfig)
+    def avatar_skill_tree_config(self):
+        """角色详情页的技能树状图"""
+
+    @functools.cached_property
+    def _avatar_config_to_player_icon(self) -> dict[int, excel.AvatarPlayerIcon]:
+        avatars: dict[int, excel.AvatarPlayerIcon] = {}
+        for icon in self.avatar_player_icon():
+            model = icon._excel  # pyright: ignore[reportPrivateUsage]
+            avatars[model.avatar_id] = model
+        return avatars
+
+    @functools.cached_property
+    def _avatar_config_skill_trees(self) -> dict[int, list[excel.AvatarSkillTreeConfig]]:
+        skills: dict[int, list[excel.AvatarSkillTreeConfig]] = {}
+        for skill in self.avatar_skill_tree_config():
+            model = skill._excel  # pyright: ignore[reportPrivateUsage]
+            if model.avatar_id not in skills:
+                skills[model.avatar_id] = [model]
+            else:
+                skills[model.avatar_id].append(model)
+        return skills
+
+    @excel_output_main_sub(view.StoryAtlas)
+    def story_atlas(self):
+        """角色故事"""
+
+    @excel_output_main_sub(view.VoiceAtlas)
+    def voice_atlas(self):
+        """角色语音"""
 
     ######## book ########
 

@@ -50,6 +50,13 @@ class Main:
         self.__formatter = gsz.format.Formatter(game=self.__game, syntax=gsz.format.Syntax.Terminal)
         self.__mwformatter = gsz.format.Formatter(game=self.__game, syntax=gsz.format.Syntax.MediaWiki)
 
+    def avatar(self, name: str | None = None):
+        assert isinstance(self.__game, gsz.sr.GameData)
+        for avatar in self.__game.avatar_config():
+            if name is not None and self.__formatter.format(avatar.name) != name:
+                continue
+            print(avatar.wiki(), end="\n\n")
+
     def monster(self, name: str | None = None):
         assert isinstance(self.__game, gsz.sr.GameData), "`--base <TurnBasedGameData> monster` required"
         monster_name_dedup = set[str]()
@@ -150,7 +157,7 @@ class Main:
         for challenge in self.__game.rogue_tourn_weekly_challenge():
             print(challenge.wiki(), end="\n\n")
 
-    def book(self, title: str | None = None, pretty: bool = False, cure: bool = False):
+    def book(self, title: str | None = None, world: int | str | None = None, pretty: bool = False, cure: bool = False):  # noqa: PLR0912
         """书籍"""
         assert isinstance(self.__game, gsz.sr.GameData), "`--base <TurnBasedGameData> book` required"
         if cure:
@@ -171,7 +178,19 @@ class Main:
                 else:
                     print(series.wiki(), end="\n\n")
             return
+        assert isinstance(world, int | str | None), "--world [WORLD] need to be world number or name"
         for series in self.__game.book_series_config():
+            match world:
+                case int():
+                    book_series_world = series.world()
+                    if world != book_series_world.id:
+                        continue
+                case str():
+                    book_series_world = series.world()
+                    if world != book_series_world.name:
+                        continue
+                case None:
+                    pass
             print(series.wiki(), end="\n\n")
 
     def text(self, *hashes: int | str):
@@ -180,7 +199,7 @@ class Main:
                 for hash in hashes:
                     assert isinstance(hash, int), "SR TextMap only allow int"
                 hashes = typing.cast(tuple[int, ...], hashes)
-                print("\n".join(self.__game.text(gsz.sr.excel.Text(hash=hash)) for hash in hashes))
+                print("\n".join(self.__game.text(gsz.sr.excel.base.TextHash(hash=hash)) for hash in hashes))
             case gsz.zzz.GameData():
                 for hash in hashes:
                     assert isinstance(hash, str), "ZZZ TextMap only allow str"

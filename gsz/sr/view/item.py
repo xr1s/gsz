@@ -31,7 +31,7 @@ class ItemConfig(View[excel.ItemConfig]):
 
     @functools.cached_property
     def icon_path(self) -> str:
-        return self._excel.item_icon_path
+        return self._excel.item_figure_icon_path
 
     @functools.cached_property
     def desc(self) -> str:
@@ -116,6 +116,10 @@ class ItemCureInfoData(View[excel.ItemCureInfoData]):
 
 class ItemPurpose(View[excel.ItemPurpose]):
     ExcelOutput: typing.Final = excel.ItemPurpose
+
+    @property
+    def id(self) -> int:
+        return self._excel.id_
 
     @functools.cached_property
     def text(self) -> str:

@@ -12,6 +12,7 @@ dependencies = [
     "pydantic>=2.10.6",
     "pydantic-extra-types>=2.10.4",
     "typing-extensions>=4.12.2",
+    "xxhash>=3.5.0",
 ]
 
 [tool.setuptools.packages.find]

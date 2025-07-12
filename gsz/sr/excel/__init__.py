@@ -1,4 +1,16 @@
-from .avatar import AvatarConfig
+from .avatar import (
+    AtlasAvatarChangeInfo,
+    AvatarAtlas,
+    AvatarCamp,
+    AvatarConfig,
+    AvatarPlayerIcon,
+    AvatarPromotionConfig,
+    AvatarRankConfig,
+    AvatarSkillConfig,
+    AvatarSkillTreeConfig,
+    StoryAtlas,
+    VoiceAtlas,
+)
 from .base import Element, ModelID, ModelMainSubID, ModelStringID, Path, Text, Value
 from .book import BookDisplayType, BookSeriesConfig, BookSeriesWorld, LocalbookConfig
 from .challenge import (
@@ -116,7 +128,17 @@ from .tutorial import TutorialGuideData, TutorialGuideGroup
 
 __all__ = (
     # avatar
+    "AtlasAvatarChangeInfo",
+    "AvatarAtlas",
+    "AvatarCamp",
     "AvatarConfig",
+    "AvatarPlayerIcon",
+    "AvatarPromotionConfig",
+    "AvatarRankConfig",
+    "AvatarSkillConfig",
+    "AvatarSkillTreeConfig",
+    "StoryAtlas",
+    "VoiceAtlas",
     # book
     "BookDisplayType",
     "BookSeriesConfig",

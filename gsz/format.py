@@ -114,12 +114,23 @@ class Formatter:
         self.__parameter: tuple[float | str, ...] = ()
         self.__is_inline_block: InlineBlock = InlineBlock.Inline
         self.__percent_as_plain: bool = percent_as_plain
+        self.__continuous_white_space: int = 0
         # var 相关状态
         self.__gender_order = gender_order
         self.__f_text = ""
         self.__m_text = ""
         self.__ruby = ""
         self.__localbook_img: list[str] | None = None
+
+    def __push_continuous_white_spaces(self):
+        if self.__continuous_white_space == 0:
+            return
+        if self.__continuous_white_space == 1:
+            _ = self.__texts[-1].write(" ")
+        else:
+            whitespace = "&nbsp;" if self.__syntax in {Syntax.MediaWiki, Syntax.MediaWikiPretty} else " "
+            _ = self.__texts[-1].write(whitespace * self.__continuous_white_space)
+        self.__continuous_white_space = 0
 
     def __push(self, s: str):
         match self.__syntax:
@@ -134,14 +145,18 @@ class Formatter:
                 for char in s:
                     match char:
                         case " " | "\xa0":
-                            _ = self.__texts[-1].write("&nbsp;")
+                            self.__continuous_white_space += 1
                         case "\n":
+                            self.__push_continuous_white_spaces()
                             _ = self.__texts[-1].write("<br />")
                         case "=":
+                            self.__push_continuous_white_spaces()
                             _ = self.__texts[-1].write("{{=}}")
                         case "|":
+                            self.__push_continuous_white_spaces()
                             _ = self.__texts[-1].write("&#x7c;")
                         case _:
+                            self.__push_continuous_white_spaces()
                             _ = self.__texts[-1].write(html.escape(char))
 
     def __display_block_afterward(self):
@@ -216,10 +231,13 @@ class Formatter:
             if self.__is_inline_block == InlineBlock.Block:
                 self.__is_inline_block = InlineBlock.Inline
                 if self.__syntax == Syntax.MediaWikiPretty:
+                    self.__push_continuous_white_spaces()
                     _ = self.__texts[-1].write("\n")
                 return  # 前一个是 block 标签，需要手动无视一次回车
+            self.__push_continuous_white_spaces()
             self.__push("\n")
             if self.__syntax == Syntax.MediaWikiPretty:
+                self.__push_continuous_white_spaces()
                 _ = self.__texts[-1].write("\n")
             self.__is_inline_block = InlineBlock.Inline
             return
@@ -258,12 +276,14 @@ class Formatter:
                 return
             self.__states[-1] = State.TagText
             return
+        self.__push_continuous_white_spaces()
         _ = self.__keys[-1].write(char)
 
     def __feed_tag_l_val(self, char: str) -> None:
         if char == ">":
             self.__states[-1] = State.TagText
             return
+        self.__push_continuous_white_spaces()
         _ = self.__vals[-1].write(char)
 
     def __feed_tag_text(self, char: str) -> None:
@@ -306,6 +326,7 @@ class Formatter:
             self.__push(">")
             self.__states[-1] = State.TagText
             return
+        self.__push_continuous_white_spaces()
         _ = self.__close_tag.write(char)
 
     def __feed_var_key(self, char: str) -> None:
@@ -335,12 +356,14 @@ class Formatter:
             self.__states[-1] = State.VarVal
             self.__push("")
             return
+        self.__push_continuous_white_spaces()
         _ = self.__keys[-1].write(char)
 
     def __feed_var_val(self, char: str) -> None:
         if char == "}":
             self.__flush_var()
             return
+        self.__push_continuous_white_spaces()
         _ = self.__vals[-1].write(char)
 
     def __feed_ansi_seq(self, char: str) -> None:
@@ -348,7 +371,12 @@ class Formatter:
             _ = self.__states.pop()
 
     @staticmethod
-    def __do_format(specifier: str, param: float | str, percent: bool = False) -> str:
+    def __do_format(specifier: str, param: float | str | tuple[float, ...], percent: bool = False) -> str:  # noqa: PLR0911
+        if isinstance(param, tuple):
+            params = [Formatter.__do_format(specifier, p, percent) for p in param]
+            if len(params) != 0 and all(param == params[0] for param in params):
+                return params[0]
+            return "/".join(params)
         if percent:
             param *= 100
         if specifier == "":
@@ -356,19 +384,19 @@ class Formatter:
                 case int():
                     return str(param)
                 case float():
-                    return str(int(param)) if param.is_integer() else str(param).rstrip("0").rstrip(".")
+                    return str(int(param)) if param.is_integer() else str(param).rstrip("0").removesuffix(".")
                 case str():
                     return param
         if specifier.startswith("f"):
             prec = int(specifier[1:])  # may throws ValueError
-            return f"{param:.{prec}f}"
+            return f"{param:.{prec}f}" + ("%" if percent else "")
         if specifier == "i":
             param = round(float(param))
-            return f"{round(float(param)):,}"
+            return f"{round(float(param)):,}" + ("%" if percent else "")
         if specifier == "m":
             # TODO: %1[m] 表示将比如数字 1,000,000 表示成 一百万 等语言对应的缩写形式
             # 仅在罗浮杂俎相关任务和成就中出现，应该暂时用不到
-            return str(round(float(param)))
+            return str(round(float(param))) + ("%" if percent else "")
         raise ValueError(f"invalid specifier {specifier}")
 
     def __flush_format(self, percent: bool = False):
@@ -406,8 +434,8 @@ class Formatter:
             self.__push("[")
             self.__push(self.__specifier)
             self.__push("]")
-        if percent:
-            self.__push("%")
+            if percent:
+                self.__push("%")
         self.__specifier = ""
         self.__param_num = 0
 
@@ -416,6 +444,7 @@ class Formatter:
 
         if text == "":
             return
+        self.__push_continuous_white_spaces()
         match tag:
             case "align":  # 左中右对齐
                 if val == '"left"':
@@ -474,7 +503,7 @@ class Formatter:
                 px = int(val) + (20 if val.startswith(("+", "-")) else 0)
                 em = float(px) / 20.0
                 _ = self.__texts[-1].write('<span style="font-size: ')
-                _ = self.__texts[-1].write(str(round(em, 2)).rstrip("0").rstrip("."))
+                _ = self.__texts[-1].write(str(round(em, 2)).rstrip("0").removesuffix("."))
                 _ = self.__texts[-1].write('em">')
                 _ = self.__texts[-1].write(text)
                 _ = self.__texts[-1].write("</span>")
@@ -520,6 +549,7 @@ class Formatter:
         """简陋的高亮实现，用来调试输出美观"""
         if text == "":
             return
+        self.__push_continuous_white_spaces()
         match tag:
             case "align":  # 左中右对齐
                 self.__is_inline_block = InlineBlock.Block
@@ -605,6 +635,7 @@ class Formatter:
     def __flush_var(self):  # noqa: PLR0911, PLR0912, PLR0915
         from . import SRGameData, ZZZGameData
 
+        self.__push_continuous_white_spaces()
         _state = self.__states.pop()
         var = self.__keys.pop().getvalue()
         val = self.__vals.pop().getvalue()
