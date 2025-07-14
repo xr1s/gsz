@@ -1,0 +1,29 @@
+{{角色语音表头|${ avatar.name | gszformat }|未完善=是}}
+{{切换板|开始}}
+{{切换板|默认显示|互动语音}}
+{{切换板|默认折叠|战斗语音}}
+{{切换板|显示内容}}
+<%- for voice in interactive_voices %>
+  {{角色语音
+  |语音类型=${ voice.title | gszformat }
+  |语音文件=${ avatar.name | gszformat }-${ voice.title | gszformat }
+  |语音内容=${ voice.chinese | gszformat }
+  |语音内容日语=${ voice.japanese | gszformat }
+  |语音内容英语=${ voice.english | gszformat }
+  |语音内容韩语=${ voice.korean | gszformat }
+  }}
+<%- endfor %>
+{{切换板|内容结束}}
+{{切换板|显示内容}}
+<%- for voice in combat_voices %>
+  {{角色语音
+  |语音类型=${ voice.title | gszformat }
+  |语音文件=${ avatar.name | gszformat }-${ voice.title | gszformat }
+  |语音内容=${ voice.chinese | gszformat }
+  |语音内容日语=${ voice.japanese | gszformat }
+  |语音内容英语=${ voice.english | gszformat }
+  |语音内容韩语=${ voice.korean | gszformat }
+  }}
+<%- endfor %>
+{{切换板|内容结束}}
+{{切换板|结束}}

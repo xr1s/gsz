@@ -113,8 +113,8 @@ class AvatarConfig(View[excel.AvatarConfig]):
         return self._excel.damage_type
 
     @functools.cached_property
-    def __ranks(self) -> list[AvatarRankConfig]:
-        return list(self._game.avatar_rank_config(self._excel.rank_id_list))
+    def __ranks(self) -> tuple[AvatarRankConfig, ...]:
+        return tuple(self._game.avatar_rank_config(self._excel.rank_id_list))
 
     def ranks(self) -> collections.abc.Iterable[AvatarRankConfig]:
         return (AvatarRankConfig(self._game, rank._excel) for rank in self.__ranks)
@@ -125,6 +125,13 @@ class AvatarConfig(View[excel.AvatarConfig]):
 
     def atlas(self) -> AvatarAtlas | None:
         return AvatarAtlas(self._game, self.__atlas._excel) if self.__atlas is not None else None
+
+    @functools.cached_property
+    def __camp(self) -> AvatarCamp | None:
+        return self.__atlas.camp() if self.__atlas is not None else None
+
+    def camp(self) -> AvatarCamp | None:
+        return AvatarCamp(self._game, self.__camp._excel) if self.__camp is not None else None
 
     @functools.cached_property
     def __atlas_change_info(self) -> AtlasAvatarChangeInfo | None:
@@ -139,37 +146,37 @@ class AvatarConfig(View[excel.AvatarConfig]):
         return AvatarPlayerIcon(self._game, self.__player_icon._excel)
 
     @functools.cached_property
-    def __skill_tree(self) -> list[AvatarSkillTreeConfig]:
-        return [
+    def __skill_tree(self) -> tuple[AvatarSkillTreeConfig, ...]:
+        return tuple(
             AvatarSkillTreeConfig(self._game, skill)
             for skill in self._game._avatar_config_skill_trees[self._excel.avatar_id]  # pyright: ignore[reportPrivateUsage]
-        ]
+        )
 
     def skill_tree(self) -> collections.abc.Iterable[AvatarSkillTreeConfig]:
         return (AvatarSkillTreeConfig(self._game, skill._excel) for skill in self.__skill_tree)
 
     @functools.cached_property
-    def __normal_skill_tree(self) -> list[AvatarSkillTreeConfig]:
+    def __normal_skill_tree(self) -> tuple[AvatarSkillTreeConfig, ...]:
         """普攻"""
-        return [
+        return tuple(
             point for point in self.__skill_tree if point._excel.point_trigger_key is avatar.PointTriggerKey.PointNormal
-        ]
+        )
 
     @functools.cached_property
-    def __bp_skill_tree(self) -> list[AvatarSkillTreeConfig]:
+    def __bp_skill_tree(self) -> tuple[AvatarSkillTreeConfig, ...]:
         """战技"""
-        return [
+        return tuple(
             point
             for point in self.__skill_tree
             if point._excel.point_trigger_key is avatar.PointTriggerKey.PointBPSkill
-        ]
+        )
 
     @functools.cached_property
-    def __ultra_skill_tree(self) -> list[AvatarSkillTreeConfig]:
+    def __ultra_skill_tree(self) -> tuple[AvatarSkillTreeConfig, ...]:
         """终结技"""
-        return [
+        return tuple(
             point for point in self.__skill_tree if point._excel.point_trigger_key is avatar.PointTriggerKey.PointUltra
-        ]
+        )
 
     @functools.cached_property
     def __maze_skill_tree(self) -> list[AvatarSkillTreeConfig]:
@@ -320,7 +327,6 @@ class AvatarConfig(View[excel.AvatarConfig]):
         )
 
     def wiki(self) -> str:
-        camp = self.__atlas.camp() if self.__atlas is not None else None
         change_camp = self.__atlas_change_info.camp() if self.__atlas_change_info is not None else None
         # 短信联系人，可能为空，比如丹恒饮月没有对应联系人
         contacts = self._game.message_contacts_config(self._excel.avatar_id)
@@ -347,7 +353,7 @@ class AvatarConfig(View[excel.AvatarConfig]):
             avatar=self,
             atlas=self.__atlas,  # 角色配音演员、所属阵营
             change_camp=change_camp,  # 角色所属阵营变更信息
-            camp=camp,  # 角色所属阵营
+            camp=self.__camp,  # 角色所属阵营
             item=self.__item,  # 角色介绍
             contacts=contacts,
             path_material_name=self.__path_material_wiki_category_name(),  # 角色行迹升级素材

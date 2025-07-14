@@ -262,13 +262,13 @@ class NPCMonsterData(ModelID):
     npc_name: Text | None = None
     prefab_path: str | None = None  # 仅出现在 1.1 及之前
     config_entity_path: pathlib.Path
-    npc_icon_path: str
+    npc_icon_path: str | None = None  # 仅出现在 3.3 及之前
     npc_title: Text | None = None
-    board_show_list: list[typing.Literal[2]]
+    board_show_list: list[typing.Literal[2]] | None = None  # 仅出现在 3.3 及之前
     json_path: pathlib.Path
     default_ai_path: pathlib.Path
-    character_type: typing.Literal["NPCMonster"]
-    sub_type: typing.Literal["Monster"]
+    character_type: typing.Literal["NPCMonster"] | None = None  # 仅出现在 3.3 及之前
+    sub_type: typing.Literal["Monster"] | None = None  # 仅出现在 3.3 及之前
     mini_map_icon_type: typing.Literal[5] | None = None
     rank: Rank
     is_maze_link: bool = False

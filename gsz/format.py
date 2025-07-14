@@ -382,11 +382,12 @@ class Formatter:
         if specifier == "":
             match param:
                 case int():
-                    return str(param)
+                    return str(param) + ("%" if percent else "")
                 case float():
-                    return str(int(param)) if param.is_integer() else str(param).rstrip("0").removesuffix(".")
+                    s = str(int(param)) if param.is_integer() else str(param).rstrip("0").removesuffix(".")
+                    return s + ("%" if percent else "")
                 case str():
-                    return param
+                    return param + ("%" if percent else "")
         if specifier.startswith("f"):
             prec = int(specifier[1:])  # may throws ValueError
             return f"{param:.{prec}f}" + ("%" if percent else "")

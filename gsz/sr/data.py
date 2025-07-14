@@ -692,6 +692,21 @@ class GameData:
     def schedule_data_challenge_boss(self):
         """末日幻影持续期间"""
 
+    ######## fate ########
+    # Fate 联动活动
+
+    @excel_output(view.FateHandbookMaster)
+    def fate_handbook_master(self):
+        """Fate 联动敌方从者图鉴"""
+
+    @excel_output(view.FateMaster)
+    def fate_master(self):
+        """Fate 联动敌方从者"""
+
+    @excel_output(view.FateMasterTalk)
+    def fate_master_talk(self):
+        """Fate 联动从者对话"""
+
     ######## item ########
 
     @excel_output(view.ItemConfig)
@@ -1075,6 +1090,7 @@ class GameData:
         """游戏内视频"""
 
     ######## planet fes ########
+    # 二周年活动
 
     @excel_output(view.PlanetFesAvatar)
     def planet_fes_avatar(self):
