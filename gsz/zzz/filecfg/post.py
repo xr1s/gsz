@@ -10,6 +10,7 @@ from .base import ModelID
 
 INTER_KNOT_ICON = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "MPAAKDHGIHE",  # v2.1
         "HJFJBBEKGHB",  # v2.0
         "LLPOAMPGPPF",  # v1.7
         "AFLMBEKEONA",  # v1.6
@@ -22,6 +23,7 @@ INTER_KNOT_ICON = pydantic.Field(
 )
 INTER_KNOT_POSTER = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "BKLCKLBIPAH",  # v2.1
         "PKJGJPNPDGO",  # v2.0
         "PJFJKNAAGNF",  # v1.7
         "PCMCJPCOOBE",  # v1.6
@@ -34,6 +36,7 @@ INTER_KNOT_POSTER = pydantic.Field(
 )
 INTER_KNOT_POST_TITLE = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "BIGDLKBBALP",  # v2.1
         "DEFAFCKGAPJ",  # v2.0
         "KKBHBNIELEC",  # v1.7
         "PGPOIMHKFPL",  # v1.6
@@ -46,6 +49,7 @@ INTER_KNOT_POST_TITLE = pydantic.Field(
 )
 INTER_KNOT_POST_TEXT = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "HKLJIIIPINE",  # v2.1
         "NMMLEAJABJL",  # v2.0
         "IHKFKNPKGNE",  # v1.7
         "CFDDOHAILFB",  # v1.6
@@ -58,6 +62,7 @@ INTER_KNOT_POST_TEXT = pydantic.Field(
 )
 INTER_KNOT_POST_SCRIPT = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "KOICMLBIKOO",  # v2.1
         "HLMAALLJIAL",  # v2.0
         "OEAICGOGGEA",  # v1.7
         "DFFAAGNFLPN",  # v1.6
@@ -70,6 +75,7 @@ INTER_KNOT_POST_SCRIPT = pydantic.Field(
 )
 INTER_KNOT_FOLLOW_UP_1 = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "FJPJJNJIDGK",  # v2.1
         "IMPHIHCACEM",  # v2.0
         "ENKGNGGBMFA",  # v1.7
         "NEBGJHEHOED",  # v1.6
@@ -82,6 +88,7 @@ INTER_KNOT_FOLLOW_UP_1 = pydantic.Field(
 )
 INTER_KNOT_FOLLOW_UP_2 = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "CKLDKBOCJBK",  # v2.1
         "JHKFKFFGCGM",  # v2.0
         "PDAKHHBCFIE",  # v1.7
         "MKAJGILECIP",  # v1.6
@@ -92,10 +99,10 @@ INTER_KNOT_FOLLOW_UP_2 = pydantic.Field(
         "IAPOJENAKIF",  # v1.1
     )
 )
-
 # 不知道为什么 InterKnot 里用这个字段聚合
 COMMENT_ID = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "LBKDMFJENHL",  # v2.1
         "IKJJNJINMGC",  # v2.0
         "ECDKGGOGOGN",  # v1.7
         "KINEKLHNPOO",  # v1.6
@@ -142,6 +149,7 @@ class InterKnotConfig(ModelID):
 
 COMMENT_SORT = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "JIPKKLFNDNK",  # v2.1
         "DHECNJGJAFG",  # v2.0
         "IOINFILNFNF",  # v1.7
         "EBPFNIPBIFM",  # v1.6
@@ -154,6 +162,7 @@ COMMENT_SORT = pydantic.Field(
 )
 COMMENT_ICON = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "AIHMONAHGHC",  # v2.1
         "PJPOOGMGPMF",  # v2.0
         "PFPBGJMJHBD",  # v1.7
         "LGBMNMGIIFK",  # v1.6
@@ -166,6 +175,7 @@ COMMENT_ICON = pydantic.Field(
 )
 COMMENT_COMMENTATOR = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "INOIMGDCLMI",  # v2.1
         "OEIGHCGAMGC",  # v2.0
         "GBJAPHHCFHB",  # v1.7
         "JAGGFFNDJLP",  # v1.6
@@ -178,6 +188,7 @@ COMMENT_COMMENTATOR = pydantic.Field(
 )
 COMMENT_TEXT = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "BLMDAOKBNFP",  # v2.1
         "NFFDLNOFMCA",  # v2.0
         "JCMFPLKOJHG",  # v1.7
         "JNGJIMBEMCN",  # v1.6

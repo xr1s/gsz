@@ -7,6 +7,7 @@ from .base import ModelID
 
 ID = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "DPGJBGIBMJH",  # v2.1
         "PADEHJEHGLB",  # v2.0
         "JOCMKDOLBPP",  # v1.7
         "EKLGNOIEMLA",  # v1.6
@@ -19,6 +20,7 @@ ID = pydantic.Field(
 )
 NAME = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "ANFFBODIJJN",  # v2.1
         "EKOEHAIFEHN",  # v2.0
         "CNLOKFIHOPC",  # v1.7
         "NIGGIDCENCK",  # v1.6
@@ -31,6 +33,7 @@ NAME = pydantic.Field(
 )
 DESC = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "HKLJIIIPINE",  # v2.1
         "NMMLEAJABJL",  # v2.0
         "IHKFKNPKGNE",  # v1.7
         "CFDDOHAILFB",  # v1.6
@@ -43,6 +46,7 @@ DESC = pydantic.Field(
 )
 TARGET = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "HDEMCCKJGBM",  # v2.1
         "DLJGALBKDAN",  # v2.0
         "LFLPEENMECC",  # v1.7
         "HKLIDHMJIGB",  # v1.6
@@ -55,6 +59,7 @@ TARGET = pydantic.Field(
 )
 FINISH_DEC = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "CBMGOMFCDIM",  # v2.1
         "OCCMEAFDIIL",  # v2.0
         "KOGJLMNKEEH",  # v1.7
         "GIIEMDLFLGF",  # v1.6
@@ -67,6 +72,7 @@ FINISH_DEC = pydantic.Field(
 )
 REWARD = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "HBJEOFPHPKB",  # v2.1
         "DNCPKFPLPIF",  # v2.0
         "EAHEBGIBFMC",  # v1.7
         "LHIBKOLGPPI",  # v1.6
@@ -82,7 +88,7 @@ REWARD = pydantic.Field(
 class QuestConfig(ModelID):
     id_: typing.Annotated[int, ID]
     name: typing.Annotated[str, NAME]
-    desc: typing.Annotated[str, NAME]
+    desc: typing.Annotated[str, DESC]
     target: typing.Annotated[str, TARGET]
     finish_dec: typing.Annotated[str, FINISH_DEC]
     reward: typing.Annotated[int, REWARD]  # TODO: OnceRewardConfigTemplateTb.json

@@ -16,6 +16,7 @@ done
 
 EXP_FILE_CONFIG = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "PDHBFPILAJD",  # v2.1
         "LDABBJOAKGJ",  # v2.0
         "MCOOHPLIKCF",  # v1.7
         "GHFLHABGNDH",  # v1.6
@@ -30,6 +31,7 @@ EXP_FILE_CONFIG = pydantic.Field(
 # AvatarBaseTemplateTb.json
 ID = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "CJHNGFMGKGE",  # v2.1
         "JCJHMPOONIA",  # v2.0
         "NHNBEFBOCMH",  # v1.7
         "OPFEAMDPIAG",  # v1.6
@@ -60,6 +62,7 @@ NAME = pydantic.Field(
 # AvatarProfessionTemplateTb.json
 ICON = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "MDHDICACNJE",  # v2.1
         "HNLBNIBLAMJ",  # v2.0
         "BHHCFMLOCNO",  # v1.7
         "LEEEDDIMDGO",  # v1.6
@@ -76,6 +79,7 @@ ICON = pydantic.Field(
 # InterKnotConfigTemplateTb.json
 IMAGE = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "MGPLPJPIJED",  # v2.1
         "KOIJAKALEBB",  # v2.0
         "LMJJHCGEEKH",  # v1.7
         "BKDHNBKMLEH",  # v1.6
@@ -90,6 +94,7 @@ IMAGE = pydantic.Field(
 # MessageGroupConfigTemplateTb.json
 GROUP_ID = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "IIBGABOLBDI",  # v2.1
         "CDBNOFOLHHA",  # v2.0
         "JIODMKLIACL",  # v1.7
         "NJFOLJNDPGG",  # v1.6
@@ -132,6 +137,7 @@ PARTNER_ID = pydantic.Field(
 # MessageConfig PostCommentConfig
 OPTION_1 = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "PJILMILDDBN",  # v2.1
         "ANOGLHNNINL",  # v2.0
         "DPMNGFBMPAI",  # v1.7
         "EKENONMBDFB",  # v1.6
@@ -147,6 +153,7 @@ OPTION_1 = pydantic.Field(
 # PostCommentConfigTemplateTb.json
 OPTION_2 = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "LEACGIIJHHO",  # v2.1
         "IJDJPMIHHEH",  # v2.0
         "GPJNDHPMKIN",  # v1.7
         "MIJDGAIGNCA",  # v1.6

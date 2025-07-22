@@ -72,6 +72,7 @@ class DirectoryConfig(ModelID):
 
 MESSAGE_TEXT = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "DECDHOMFHKM",  # v2.1
         "CGEBBEENHED",  # v2.0
         "LKJJLBFHPHD",  # v1.1
         "OODFKPPKAAG",  # v1.2
@@ -84,6 +85,7 @@ MESSAGE_TEXT = pydantic.Field(
 )
 MESSAGE_OPTION_LONG_1 = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "ODCPPAKEEPM",  # v2.1
         "MDGHOIDHADH",  # v2.0
         "HCMBGLFKOLH",  # v1.7
         "JNPFKHLFHJM",  # v1.6
@@ -96,6 +98,7 @@ MESSAGE_OPTION_LONG_1 = pydantic.Field(
 )
 MESSAGE_OPTION_LONG_2 = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "NGADKHLFKDI",  # v2.1
         "DNNDOHCBDHO",  # v2.0
         "FIIFOCIBPFB",  # v1.7
         "KGAOABEJECO",  # v1.6
@@ -108,6 +111,7 @@ MESSAGE_OPTION_LONG_2 = pydantic.Field(
 )
 MESSAGE_SENDER_ID = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "POAKMNJMIAJ",  # v2.1
         "PFHPPCKEHCO",  # v2.0
         "OPDCEDDFFAG",  # v1.7
         "CFIJJNBPFPP",  # v1.6
@@ -129,6 +133,7 @@ MESSAGE_SENDER_ID = pydantic.Field(
 )
 MESSAGE_VOICE = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "ABAJINNBCEA",  # v2.1
         "NMAEHDCKFEL",  # v2.0
         "LANAEOPKBLO",  # v1.7
         "JCLHDCHMOFH",  # v1.6
@@ -150,6 +155,7 @@ MESSAGE_VOICE = pydantic.Field(
 )
 MESSAGE_SEGMENT = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "BKOAPELPEGL",  # v2.1
         "ILLNMKIDBOC",  # v2.0
         "OPCPFJMMICA",  # v1.7
         "MIMIKGPBOFG",  # v1.6
@@ -162,6 +168,7 @@ MESSAGE_SEGMENT = pydantic.Field(
 )
 MESSAGE_TYPE = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "AAJNLGHFKID",  # v2.1
         "DCLLHMMFDOG",  # v2.0
         "PPKFFBLPHDK",  # v1.7
         "HPNGGPKBBJG",  # v1.6
@@ -174,6 +181,7 @@ MESSAGE_TYPE = pydantic.Field(
 )
 MESSAGE_SUCCESSOR = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "AFNINBBDCOF",  # v2.1
         "FIAJBANCPMD",  # v2.0
         "MBPHJOGEKKA",  # v1.7
         "FDLBBFNBCNP",  # v1.6
@@ -186,6 +194,7 @@ MESSAGE_SUCCESSOR = pydantic.Field(
 )
 MESSAGE_OPTION_SUCCESSOR_1 = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "PFEFHIBHJDL",  # v2.1
         "DMPOBPACNFG",  # v2.0
         "ABGCJDOAKHN",  # v1.7
         "GFCBLLMBFEH",  # v1.6
@@ -198,6 +207,7 @@ MESSAGE_OPTION_SUCCESSOR_1 = pydantic.Field(
 )
 MESSAGE_OPTION_SUCCESSOR_2 = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "KBIFFIEJJMO",  # v2.1
         "CBFAFJMBLDO",  # v2.0
         "HKIPEMBOLEC",  # v1.7
         "AHPEAHJMJGC",  # v1.6
@@ -222,8 +232,8 @@ class Type(enum.Enum):
 
 
 class MessageConfig(ModelID):
-    id_: typing.Annotated[int, aliases.ID]
     group_id: typing.Annotated[int, aliases.GROUP_ID]
+    id_: typing.Annotated[int, aliases.ID]
     sender_id: typing.Annotated[int, MESSAGE_SENDER_ID]
     voice: typing.Annotated[str, MESSAGE_VOICE]
     text: typing.Annotated[str, MESSAGE_TEXT]
@@ -261,6 +271,7 @@ class MessageConfig(ModelID):
 
 MESSAGE_GROUP_CONTACT_ID = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "JJFNJOLFJMD",  # v2.1
         "BOKBNFBPHHM",  # v2.0
         "MECCALDLPJB",  # v1.7
         "HBHCMOIIIKN",  # v1.6
@@ -273,6 +284,7 @@ MESSAGE_GROUP_CONTACT_ID = pydantic.Field(
 )
 MESSAGE_GROUP_QUEST_IDS = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "LOFIBCAAGBD",  # v2.1
         "DCAPBBIKKDL",  # v2.0
         "DFDAJIMKHAP",  # v1.7
         "AFJCFEBLLPP",  # v1.6
@@ -298,6 +310,7 @@ class MessageGroupConfig(ModelID):
 
 MESSAGE_NPC_NAME = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "LNCODBGHFKM",  # v2.1
         "LMFGBBIIMNL",  # v2.0
         "MLGCKOOKMHN",  # v1.7
         "MPHLIEKKFIK",  # v1.6
