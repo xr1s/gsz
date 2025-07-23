@@ -24,7 +24,7 @@ from .challenge import (
     ChallengeTargetConfig,
     RewardLine,
 )
-from .fate import FateHandbookMaster, FateMaster, FateMasterTalk
+from .fate import FateBuff, FateHandbookMaster, FateMaster, FateMasterTalk, FateReiju, FateTrait, FateTraitBuff
 from .item import ItemConfig, ItemCureInfoData, ItemPurpose, ItemUseData
 from .message import (
     EmojiConfig,
@@ -151,9 +151,13 @@ __all__ = (
     "ChallengeTargetConfig",
     "RewardLine",
     # fate
+    "FateBuff",
     "FateHandbookMaster",
     "FateMaster",
     "FateMasterTalk",
+    "FateReiju",
+    "FateTrait",
+    "FateTraitBuff",
     # book
     "BookDisplayType",
     "BookSeriesConfig",

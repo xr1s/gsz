@@ -42,6 +42,10 @@ class LoopCGConfig(View[excel.LoopCGConfig]):
 class MazeBuff(View[excel.MazeBuff]):
     ExcelOutput: typing.Final = excel.MazeBuff
 
+    @property
+    def id(self) -> int:
+        return self._excel.id_
+
     @functools.cached_property
     def name(self) -> str:
         return self._game.text(self._excel.buff_name)

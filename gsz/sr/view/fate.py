@@ -7,8 +7,60 @@ from .. import excel
 from .base import View
 
 if typing.TYPE_CHECKING:
+    import collections.abc
+
     from ..excel import fate
     from .avatar import AvatarConfig
+    from .misc import MazeBuff
+
+
+class FateBuff(View[excel.FateBuff]):
+    ExcelOutput: typing.Final = excel.FateBuff
+
+    @property
+    def name(self) -> str:
+        assert all(buff.name == self.__maze_buff[0].name for buff in self.__maze_buff)
+        return self.__maze_buff[0].name
+
+    @property
+    def icon(self) -> str:
+        return self._excel.icon
+
+    @property
+    def rarity(self) -> fate.BuffRarity:
+        return self._excel.rarity
+
+    @property
+    def class_trait_id(self) -> int:
+        return self._excel.class_trait_id
+
+    @functools.cached_property
+    def __class_trait(self) -> FateTrait:
+        trait = self._game.fate_trait(self._excel.class_trait_id)
+        assert trait is not None
+        return trait
+
+    @property
+    def skill_trait_id(self) -> int:
+        return self._excel.skill_trait_id
+
+    @functools.cached_property
+    def __skill_trait(self) -> FateTrait:
+        trait = self._game.fate_trait(self._excel.skill_trait_id)
+        assert trait is not None
+        return trait
+
+    def traits(self) -> tuple[FateTrait, FateTrait]:
+        return (self.__class_trait, self.__skill_trait)
+
+    @functools.cached_property
+    def __maze_buff(self) -> tuple[MazeBuff, ...]:
+        return tuple(self._game.fate_maze_buff(self._excel.maze_buff))
+
+    def maze_buff(self) -> collections.abc.Iterable[MazeBuff]:
+        from .misc import MazeBuff
+
+        return (MazeBuff(self._game, maze_buff._excel) for maze_buff in self.__maze_buff)
 
 
 class FateHandbookMaster(View[excel.FateHandbookMaster]):
@@ -143,3 +195,91 @@ class FateMasterTalk(View[excel.FateMasterTalk]):
     @functools.cached_property
     def that_talk(self) -> str:
         return self._game.text(self._excel.that_avatar_talk) if self._excel.that_avatar_talk is not None else ""
+
+
+class FateReiju(View[excel.FateReiju]):
+    ExcelOutput: typing.Final = excel.FateReiju
+
+    @property
+    def id(self) -> int:
+        return self._excel.id_
+
+    @functools.cached_property
+    def name(self) -> str:
+        return self._game.text(self._excel.name)
+
+    @property
+    def days(self) -> tuple[int, ...]:
+        return tuple(self._excel.days)
+
+    @property
+    def corruption(self) -> int | None:
+        return self._excel.corruption
+
+    @property
+    def category(self) -> fate.ReijuCategory:
+        return self._excel.category
+
+    @functools.cached_property
+    def desc(self) -> str:
+        return self._game.text(self._excel.desc)
+
+    @functools.cached_property
+    def desc_simple(self) -> str:
+        return self._game.text(self._excel.desc_simple)
+
+    @functools.cached_property
+    def params(self) -> tuple[float, ...]:
+        return tuple(param.value for param in self._excel.params)
+
+
+class FateTrait(View[excel.FateTrait]):
+    ExcelOutput: typing.Final = excel.FateTrait
+
+    @property
+    def id(self) -> int:
+        return self._excel.id_
+
+    @functools.cached_property
+    def name(self) -> str:
+        return self._game.text(self._excel.name)
+
+    @functools.cached_property
+    def desc(self) -> str:
+        return self._game.text(self._excel.desc)
+
+    @functools.cached_property
+    def params(self) -> tuple[float, ...]:
+        return tuple(param.value for param in self._excel.params)
+
+    @functools.cached_property
+    def tag_1(self) -> str:
+        return self._game.text(self._excel.tag_1)
+
+    @functools.cached_property
+    def tag_2(self) -> str | None:
+        return self._game.text(self._excel.tag_2) if self._excel.tag_2 is not None else None
+
+    @property
+    def type(self) -> fate.TraitType:
+        return self._excel.type_
+
+
+class FateTraitBuff(View[excel.FateTraitBuff]):
+    ExcelOutput: typing.Final = excel.FateTraitBuff
+
+    @property
+    def trait_id(self) -> int:
+        return self._excel.trait_id
+
+    @property
+    def require(self) -> int:
+        return self._excel.require
+
+    @functools.cached_property
+    def desc(self) -> str:
+        return self._game.text(self._excel.desc)
+
+    @functools.cached_property
+    def params(self) -> tuple[float, ...]:
+        return tuple(param.value for param in self._excel.params)

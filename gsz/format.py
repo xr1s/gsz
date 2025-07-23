@@ -111,7 +111,7 @@ class Formatter:
         self.__keys: list[io.StringIO] = []
         self.__vals: list[io.StringIO] = []
         self.__close_tag: io.StringIO = io.StringIO()
-        self.__parameter: tuple[float | str, ...] = ()
+        self.__parameter: tuple[float | str | tuple[float | str, ...], ...] = ()
         self.__is_inline_block: InlineBlock = InlineBlock.Inline
         self.__percent_as_plain: bool = percent_as_plain
         self.__continuous_white_space: int = 0
@@ -371,7 +371,7 @@ class Formatter:
             _ = self.__states.pop()
 
     @staticmethod
-    def __do_format(specifier: str, param: float | str | tuple[float, ...], percent: bool = False) -> str:  # noqa: PLR0911
+    def __do_format(specifier: str, param: float | str | tuple[float | str, ...], percent: bool = False) -> str:  # noqa: PLR0911
         if isinstance(param, tuple):
             params = [Formatter.__do_format(specifier, p, percent) for p in param]
             if len(params) != 0 and all(param == params[0] for param in params):
@@ -815,12 +815,12 @@ class Formatter:
     def format(
         self,
         format: str,
-        argument: float | str | tuple[float | str, ...] | collections.abc.Sequence[float | str] = (),
+        argument: float | str | collections.abc.Iterable[float | str | tuple[float | str, ...]] = (),
         /,
         *args: float | str,
         image_path: list[str] | None = None,
     ) -> str:
-        if isinstance(argument, tuple | collections.abc.Sequence):
+        if isinstance(argument, tuple | collections.abc.Iterable):
             self.__parameter = tuple(argument)
         else:
             self.__parameter = (argument,) + args

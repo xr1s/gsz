@@ -695,6 +695,10 @@ class GameData:
     ######## fate ########
     # Fate 联动活动
 
+    @excel_output(view.FateBuff)
+    def fate_buff(self):
+        """Fate 棋子"""
+
     @excel_output(view.FateHandbookMaster)
     def fate_handbook_master(self):
         """Fate 联动敌方从者图鉴"""
@@ -706,6 +710,22 @@ class GameData:
     @excel_output(view.FateMasterTalk)
     def fate_master_talk(self):
         """Fate 联动从者对话"""
+
+    @excel_output_main_sub(view.MazeBuff)
+    def fate_maze_buff(self):
+        """Fate 棋子"""
+
+    @excel_output(view.FateReiju)
+    def fate_reiju(self):
+        """Fate 令咒"""
+
+    @excel_output(view.FateTrait)
+    def fate_trait(self):
+        """Fate 棋子组合增益"""
+
+    @excel_output(view.FateTraitBuff)
+    def fate_trait_buff(self):
+        """Fate 棋子组合增益不同等级的效果"""
 
     ######## item ########
 
