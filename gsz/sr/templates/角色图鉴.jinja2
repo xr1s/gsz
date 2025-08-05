@@ -34,20 +34,20 @@
 |英文CV=<% if atlas.cv_en is not none %>${ atlas.cv_en }<% endif %>
 |介绍=<% if item.bg_desc != avatar.story(1) %>${ item.bg_desc | gszformat }<% endif %>
 |卷首语=<!-- 目前只知道在这里找 https://sr.mihoyo.com/?nav=character -->
-|角色详情=${ avatar.story_final(0) | gszformat_pretty }
-|角色故事1=${ stories[0] | gszformat_pretty }
-|角色故事2=${ stories[1] | gszformat_pretty }
-|角色故事3=${ stories[2] | gszformat_pretty }
-|角色故事4=${ stories[3] | gszformat_pretty }
+|角色详情=${ avatar.story_final(0) | gszformat }
+|角色故事1=${ stories[0] | gszformat }
+|角色故事2=${ stories[1] | gszformat }
+|角色故事3=${ stories[2] | gszformat }
+|角色故事4=${ stories[3] | gszformat }
 <%- if stories != stories_final %>
 |角色故事解锁条件=
-|角色故事1改=${ stories_final[0] | gszformat_pretty }
-|角色故事2改=${ stories_final[1] | gszformat_pretty }
-|角色故事3改=${ stories_final[2] | gszformat_pretty }
-|角色故事4改=${ stories_final[3] | gszformat_pretty }
+|角色故事1改=${ stories_final[0] | gszformat }
+|角色故事2改=${ stories_final[1] | gszformat }
+|角色故事3改=${ stories_final[2] | gszformat }
+|角色故事4改=${ stories_final[3] | gszformat }
 <%- endif %>
 |速度=${ promotions[0].speed_base }
-|能量上限=${ avatar.sp_need or "" }<% if avatar.sp_need is none or avatar.sp_need <= 20 %>点【】<% endif %>
+|能量上限=${ skill_need | gszformat(avatar.sp_need, avatar.sp_need, avatar.sp_need, avatar.sp_need) }
 |80生命值=${ avatar.hp(80) | round(2) | int }
 |80攻击力=${ avatar.attack(80) | round(2) | int }
 |80防御力=${ avatar.defence(80) | round(2) | int }
@@ -69,7 +69,7 @@
   |能量=<% if zero_skill.sp_base or 0 != 0 %>${ zero_skill.sp_base }<% endif %>
   |战技点=<% if zero_skill.bp_add != 0 %>${ zero_skill.bp_add }<% endif %>
   |削韧值=<% if zero_skill.stance_damage_display or 0 != 0 %>${ zero_skill.stance_damage_display }<% endif %>
-  |描述=${ zero_skill.desc | gszformat(zero_skill.param_list | zip(full_skill.param_list) | list) }
+  |描述=${ zero_skill.desc | default("", true) | gszformat(zero_skill.param_list | zip(full_skill.param_list) | list) }
   }}
 <%- endfor %>
 |战技效果加成=${ bp_skill_rated | join("、") }
@@ -82,7 +82,7 @@
   |能量=<% if zero_skill.sp_base or 0 != 0 %>${ zero_skill.sp_base }<% endif %>
   |战技点=<% if zero_skill.bp_add != 0 %>${ zero_skill.bp_add }<% endif %>
   |削韧值=<% if zero_skill.stance_damage_display or 0 != 0 %>${ zero_skill.stance_damage_display }<% endif %>
-  |描述=${ zero_skill.desc | gszformat(zero_skill.param_list | zip(full_skill.param_list) | list) }
+  |描述=${ zero_skill.desc | default("", true) | gszformat(zero_skill.param_list | zip(full_skill.param_list) | list) }
   }}
 <%- endfor %>
 |终结技效果加成=${ ultra_skill_rated | join("、") }
@@ -95,7 +95,7 @@
   |能量=<% if zero_skill.sp_base or 0 != 0 %>${ zero_skill.sp_base }<% endif %>
   |战技点=<% if zero_skill.bp_add != 0 %>${ zero_skill.bp_add }<% endif %>
   |削韧值=<% if zero_skill.stance_damage_display or 0 != 0 %>${ zero_skill.stance_damage_display }<% endif %>
-  |描述=${ zero_skill.desc | gszformat(zero_skill.param_list | zip(full_skill.param_list) | list) }
+  |描述=${ zero_skill.desc | default("", true) | gszformat(zero_skill.param_list | zip(full_skill.param_list) | list) }
   }}
 <%- endfor %>
 |天赋效果加成=${ passive_skill_rated | join("、") }
@@ -107,7 +107,7 @@
   |TAG=${ zero_skill.tag }
   |战技点=<% if zero_skill.bp_add != 0 %>${ zero_skill.bp_add }<% endif %>
   |削韧值=<% if zero_skill.stance_damage_display or 0 != 0 %>${ zero_skill.stance_damage_display }<% endif %>
-  |描述=${ zero_skill.desc | gszformat(zero_skill.param_list | zip(full_skill.param_list) | list) }
+  |描述=${ zero_skill.desc | default("", true) | gszformat(zero_skill.param_list | zip(full_skill.param_list) | list) }
   }}
 <%- endfor %>
 |秘技=
@@ -118,7 +118,7 @@
   |TAG=${ zero_skill.tag }
   |战技点=<% if zero_skill.bp_add != 0 %>${ zero_skill.bp_add }<% endif %>
   |削韧值=<% if zero_skill.stance_damage_display or 0 != 0 %>${ zero_skill.stance_damage_display }<% endif %>
-  |描述=${ zero_skill.desc | gszformat(zero_skill.param_list | zip(full_skill.param_list) | list) }
+  |描述=${ zero_skill.desc | default("", true) | gszformat(zero_skill.param_list | zip(full_skill.param_list) | list) }
   }}
 <%- endfor %>
 <%- for k in range(3) %>

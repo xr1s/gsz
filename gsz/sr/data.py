@@ -467,6 +467,17 @@ class GameData:
         text_map = text_map_path.read_bytes()
         return pydantic.TypeAdapter(dict[int, str]).validate_json(text_map)
 
+    @staticmethod
+    def __int32(integer: int) -> int:
+        return (integer & 0xFFFFFFFF ^ 0x80000000) - 0x80000000
+
+    @staticmethod
+    def __stable_hash(key: str) -> int:
+        hashes = [5381, 5381]
+        for index, char in enumerate(key):
+            hashes[index & 1] = GameData.__int32(hashes[index & 1] << 5) + hashes[index & 1] ^ ord(char)
+        return GameData.__int32(hashes[0] + hashes[1] * 1566083941)
+
     def text(self, key: Text, *, language: Language | None = None) -> str:
         language = language or self.__default_language
         if language not in self.__text_map:
@@ -477,7 +488,7 @@ class GameData:
         if isinstance(key, str):
             # 老版本使用 xxh32，后面改成 xxh64 了，为了兼容两个都试一下
             xxh64 = xxhash.xxh64_intdigest(key)
-            return text_map.get(xxh64) or text_map.get(xxhash.xxh32_intdigest(key), "")
+            return text_map.get(xxh64) or text_map.get(self.__stable_hash(key), "")
         return text_map.get(key.hash, "")
 
     @functools.cached_property

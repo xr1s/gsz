@@ -158,41 +158,27 @@ class AvatarConfig(View[excel.AvatarConfig]):
     @functools.cached_property
     def __normal_skill_tree(self) -> tuple[AvatarSkillTreeConfig, ...]:
         """普攻"""
-        return tuple(
-            point for point in self.__skill_tree if point._excel.point_trigger_key is avatar.PointTriggerKey.PointNormal
-        )
+        return tuple(point for point in self.__skill_tree if point._excel.anchor_type is avatar.AnchorType.Point01)
 
     @functools.cached_property
     def __bp_skill_tree(self) -> tuple[AvatarSkillTreeConfig, ...]:
         """战技"""
-        return tuple(
-            point
-            for point in self.__skill_tree
-            if point._excel.point_trigger_key is avatar.PointTriggerKey.PointBPSkill
-        )
+        return tuple(point for point in self.__skill_tree if point._excel.anchor_type is avatar.AnchorType.Point02)
 
     @functools.cached_property
     def __ultra_skill_tree(self) -> tuple[AvatarSkillTreeConfig, ...]:
         """终结技"""
-        return tuple(
-            point for point in self.__skill_tree if point._excel.point_trigger_key is avatar.PointTriggerKey.PointUltra
-        )
+        return tuple(point for point in self.__skill_tree if point._excel.anchor_type is avatar.AnchorType.Point03)
+
+    @functools.cached_property
+    def __passive_skill_tree(self) -> list[AvatarSkillTreeConfig]:
+        """被动"""
+        return [point for point in self.__skill_tree if point._excel.anchor_type is avatar.AnchorType.Point04]
 
     @functools.cached_property
     def __maze_skill_tree(self) -> list[AvatarSkillTreeConfig]:
         """秘技"""
-        return [
-            point for point in self.__skill_tree if point._excel.point_trigger_key is avatar.PointTriggerKey.PointMaze
-        ]
-
-    @functools.cached_property
-    def __passive_skill_tree(self) -> list[AvatarSkillTreeConfig]:
-        """秘技"""
-        return [
-            point
-            for point in self.__skill_tree
-            if point._excel.point_trigger_key is avatar.PointTriggerKey.PointPassive
-        ]
+        return [point for point in self.__skill_tree if point._excel.anchor_type is avatar.AnchorType.Point05]
 
     @functools.cached_property
     def __promotions(self) -> list[AvatarPromotionConfig]:
@@ -327,38 +313,53 @@ class AvatarConfig(View[excel.AvatarConfig]):
         )
 
     def wiki(self) -> str:
+        # 改变后的阵营，代表角色阵营随着剧情进展发生了变化，如黄泉从出场的巡海游侠阵营变为自灭者，星期日从出场匹诺康尼变为银河
         change_camp = self.__atlas_change_info.camp() if self.__atlas_change_info is not None else None
         # 短信联系人，可能为空，比如丹恒饮月没有对应联系人
         contacts = self._game.message_contacts_config(self._excel.avatar_id)
         # 角色晋阶材料
         promotion_material_item = self.__promotions[-2].promotion_material()
-        assert promotion_material_item is not None
+        promotion_material_name = promotion_material_item.name if promotion_material_item is not None else ""
+        # 天赋额外技能
         bonus_abilities = [
             skill for skill in self.__skill_tree if skill._excel.point_type is avatar.PointType.BonusAbility
         ]
+        # 角色天赋的周本材料
         weekly_material = bonus_abilities[0].weekly_material()
         assert weekly_material is not None
+        # 角色背景故事
         stories = [self.story(k) for k in range(2, 6)]
+        # 角色变更后的背景故事，代表角色故事随着故事进展有发生变化、解锁，如黄泉、白厄等
         stories_final = [self.story_final(k) for k in range(2, 6)]
+        # 角色技能树上的属性值加成
         stat_bonuses = [skill for skill in self.__skill_tree if skill._excel.point_type is avatar.PointType.StatBonus]
+        # 角色技能树上的普攻技能对应战斗技能（就是普攻、强化普攻、二段三段强普等）
         normal_skill = next(iter(self.__normal_skill_tree[-1].skills()))
+        # 给普攻属性、机制加成的星魂、天赋
         normal_skill_rated = itertools.chain(normal_skill.rated_ranks(), normal_skill.rated_skill_tree())
+        # 角色技能树上的普攻技能对应战斗技能（就是普攻、强化战技等）
         bp_skill = next(iter(self.__bp_skill_tree[-1].skills()))
+        # 给战技属性、机制加成的星魂、额外能力
         bp_skill_rated = itertools.chain(bp_skill.rated_ranks(), bp_skill.rated_skill_tree())
+        # 角色技能树上的终结技对应战斗技能
         ultra_skill = next(iter(self.__ultra_skill_tree[-1].skills()))
+        # 给终结技属性、机制加成的星魂、额外能力
         ultra_skill_rated = itertools.chain(ultra_skill.rated_ranks(), ultra_skill.rated_skill_tree())
+        # 被动
         passive_skill = next(iter(self.__passive_skill_tree[-1].skills()))
+        # 给被动属性、机制加成的星魂、额外能力
         passive_skill_rated = itertools.chain(passive_skill.rated_ranks(), passive_skill.rated_skill_tree())
-        main_page = self._game._template_environment.get_template("角色.jinja2").render(  # pyright: ignore[reportPrivateUsage]
+        skill_need = "#1" if ultra_skill._excel.skill_need is None else self._game.text(ultra_skill._excel.skill_need)
+        main_page = self._game._template_environment.get_template("角色图鉴.jinja2").render(  # pyright: ignore[reportPrivateUsage]
             avatar=self,
             atlas=self.__atlas,  # 角色配音演员、所属阵营
             change_camp=change_camp,  # 角色所属阵营变更信息
             camp=self.__camp,  # 角色所属阵营
             item=self.__item,  # 角色介绍
-            contacts=contacts,
+            contacts=contacts,  # 角色短信账号信息
             path_material_name=self.__path_material_wiki_category_name(),  # 角色行迹升级素材
             loot_material_name=self.__loot_material_wiki_category_name(),  # 角色行迹、晋阶素材
-            promotion_material_name=promotion_material_item.name,  # 角色晋阶素材
+            promotion_material_name=promotion_material_name,  # 角色晋阶素材
             weekly_material_name=weekly_material.name,  # 周本材料
             stories=stories,  # 角色故事
             stories_final=stories_final,  # 角色故事
@@ -369,19 +370,25 @@ class AvatarConfig(View[excel.AvatarConfig]):
             normal_skill_tree=self.__normal_skill_tree,  # 普攻
             bp_skill_tree=self.__bp_skill_tree,  # 战技
             ultra_skill_tree=self.__ultra_skill_tree,  # 终结技
-            passive_skill_tree=self.__passive_skill_tree,  # 天赋
+            passive_skill_tree=self.__passive_skill_tree,  # 被动
             maze_skill_tree=self.__maze_skill_tree,  # 秘技
             normal_skill_rated=(rated.wiki_bonus_effect_name() for rated in normal_skill_rated),  # 普攻效果加成
             bp_skill_rated=(rated.wiki_bonus_effect_name() for rated in bp_skill_rated),  # 战技效果加成
             ultra_skill_rated=(rated.wiki_bonus_effect_name() for rated in ultra_skill_rated),  # 终结技效果加成
             passive_skill_rated=(rated.wiki_bonus_effect_name() for rated in passive_skill_rated),  # 终结技效果加成
+            skill_need=skill_need,  # 特殊技能点数
         )
+        # 配音演员相关信息
         voices = list(self._game.voice_atlas(self._excel.avatar_id))
+        # 交互语音
         interactive_voices = sorted(
-            (voice for voice in voices if not voice._excel.is_battle_voice), key=lambda voice: voice._excel.sort_id
+            (voice for voice in voices if not voice._excel.is_battle_voice),
+            key=lambda voice: voice._excel.sort_id or voice._excel.voice_id,
         )
+        # 战斗语音
         combat_voices = sorted(
-            (voice for voice in voices if voice._excel.is_battle_voice), key=lambda voice: voice._excel.sort_id
+            (voice for voice in voices if voice._excel.is_battle_voice),
+            key=lambda voice: voice._excel.sort_id or voice._excel.voice_id,
         )
         voices_page = self._game._template_environment.get_template("角色语音.jinja2").render(  # pyright: ignore[reportPrivateUsage]
             avatar=self, interactive_voices=interactive_voices, combat_voices=combat_voices
@@ -629,12 +636,12 @@ class AvatarSkillTreeConfig(View[excel.AvatarSkillTreeConfig]):
         return ItemConfig(self._game, self.__weekly_material._excel) if self.__weekly_material is not None else None
 
     def wiki_bonus_effect_name(self) -> str:
-        match self._excel.point_trigger_key:
-            case avatar.PointTriggerKey.PointB1:
+        match self._excel.anchor_type:
+            case avatar.AnchorType.Point06:
                 return "额外能力1"
-            case avatar.PointTriggerKey.PointB2:
+            case avatar.AnchorType.Point07:
                 return "额外能力2"
-            case avatar.PointTriggerKey.PointB3:
+            case avatar.AnchorType.Point08:
                 return "额外能力3"
             case _:
                 return ""
