@@ -35,6 +35,24 @@ class MainType(enum.Enum):
 
 
 class SubType(enum.Enum):
+    T610 = 610
+    """3.5 新增，从 SubType.Material 拆出来的。「黄金迷境大饭店」活动道具"""
+    T651 = 651
+    """3.5 新增，从 SubType.Material 拆出来的。角色经验书"""
+    T652 = 652
+    """3.5 新增，从 SubType.Material 拆出来的。大世界凝滞虚影掉落的角色突破素材"""
+    T653 = 653
+    """3.5 新增，从 SubType.Material 拆出来的。拟造花萼（赤）掉落的角色天赋、光锥突破材料"""
+    T654 = 654
+    """3.5 新增，从 SubType.Material 拆出来的。周本 BOSS 掉落的天赋突破材料，包括「命运的足迹」"""
+    T655 = 655
+    """3.5 新增，从 SubType.Material 拆出来的。光锥经验书"""
+    T656 = 656
+    """3.5 新增，从 SubType.Material 拆出来的。遗器经验书"""
+    T657 = 657
+    """3.5 新增，从 SubType.Material 拆出来的。大世界游荡敌人掉落的天赋、角色突破素材，包括「梦之珠泪」"""
+    T658 = 658
+    """3.5 新增，从 SubType.Material 拆出来的。大世界破坏物掉落的普通合成台材料"""
     AetherSkill = "AetherSkill"
     """
     1.4 新增，以太战线技能芯片

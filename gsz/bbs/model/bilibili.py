@@ -96,6 +96,7 @@ class Video(Model):
     vt_display: typing.Literal[""]
     playback_position: typing.Literal[0]
     is_self_view: bool
+    view_self_type: typing.Literal[0]
 
     @pydantic.field_validator("length", mode="before")
     @classmethod

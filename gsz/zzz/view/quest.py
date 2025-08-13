@@ -8,6 +8,10 @@ from .base import View
 class QuestConfig(View[filecfg.QuestConfig]):
     FileCfg: typing.Final = filecfg.QuestConfig
 
+    @property
+    def id(self) -> int:
+        return self._filecfg.id_
+
     @functools.cached_property
     def name(self) -> str:
         return self._game.text(self._filecfg.name)
