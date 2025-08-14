@@ -2,7 +2,7 @@
 |名称=${monster.wiki_name}
 |实装版本=<!-- 实装版本 -->
 |系列=<!-- 系列，同系列会被放到顶部同义词中，建议将名称或头像相同设置为相同系列 -->
-|分类=${ monster.template().camp().name | default("", true) }<!-- 选填：反物质军团、裂界造物、雅利洛-Ⅵ、仙舟「罗浮」、虫群、星际和平公司、惊梦剧团、忆域迷因、泰坦眷属、晨昏奇兽、银河、模拟宇宙、星核猎手 -->
+|分类=${ camp.name | default("", true) }<!-- 选填：反物质军团、裂界造物、雅利洛-Ⅵ、仙舟「罗浮」、虫群、星际和平公司、惊梦剧团、忆域迷因、泰坦眷属、晨昏奇兽、银河、模拟宇宙、星核猎手 -->
 |类型=${ monster.wiki_rank | default("", true) }<!-- 选填：普通、强敌、剧情BOSS、周本BOSS、模拟宇宙精英、模拟宇宙首领、末日幻影周本、末日幻影首领、召唤物 -->
 |TAG=${ tags | join("、") }
 |速度=<% set speed = monster.speed(1) | round | int %><% if speed != 0 %>${speed}~${ monster.speed(95) | int }<% endif %>

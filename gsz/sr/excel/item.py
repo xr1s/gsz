@@ -35,74 +35,97 @@ class MainType(enum.Enum):
 
 
 class SubType(enum.Enum):
-    T610 = 610
-    """3.5 新增，从 SubType.Material 拆出来的。「黄金迷境大饭店」活动道具"""
-    T651 = 651
-    """3.5 新增，从 SubType.Material 拆出来的。角色经验书"""
-    T652 = 652
-    """3.5 新增，从 SubType.Material 拆出来的。大世界凝滞虚影掉落的角色突破素材"""
-    T653 = 653
-    """3.5 新增，从 SubType.Material 拆出来的。拟造花萼（赤）掉落的角色天赋、光锥突破材料"""
-    T654 = 654
-    """3.5 新增，从 SubType.Material 拆出来的。周本 BOSS 掉落的天赋突破材料，包括「命运的足迹」"""
-    T655 = 655
-    """3.5 新增，从 SubType.Material 拆出来的。光锥经验书"""
-    T656 = 656
-    """3.5 新增，从 SubType.Material 拆出来的。遗器经验书"""
-    T657 = 657
-    """3.5 新增，从 SubType.Material 拆出来的。大世界游荡敌人掉落的天赋、角色突破素材，包括「梦之珠泪」"""
-    T658 = 658
-    """3.5 新增，从 SubType.Material 拆出来的。大世界破坏物掉落的普通合成台材料"""
     AetherSkill = "AetherSkill"
     """
-    1.4 新增，以太战线技能芯片
-    对应 ItemMainType 为 Material
+    以太战线技能芯片
+    1.4 新增
+    对应 MainType 为 Material
     """
     AetherSpirit = "AetherSpirit"
     """
-    1.4 新增，以太战线宠物
-    对应 ItemMainType 为 Material
+    以太战线宠物
+    1.4 新增
+    对应 MainType 为 Material
     """
     AvatarCard = "AvatarCard"
     """
     角色
     仅出现在 ItemConfigAvatar.json 和 ActivityItemConfigAvatar.json 中
-    对应 ItemMainType 为 AvatarCard
+    对应 MainType 为 AvatarCard
+    """
+    AvatarExp = "AvatarExp"
+    """
+    角色经验书
+    3.5 新增，从 SubType.Material 拆出来的
+    对应 MainType 为 Material
+    """
+    AvatarRank = "AvatarRank"
+    """
+    大世界凝滞虚影掉落的角色突破素材
+    3.5 新增，从 SubType.Material 拆出来的
+    对应 MainType 为 Material
     """
     AvatarSkin = "AvatarSkin"
     """
-    3.0 新增，角色皮肤
+    角色实装
+    3.0 新增
     仅出现在 ItemConfigAvatarSkin.json 中
+    对应 MainType 为 Usable
     """
     Book = "Book"
     """
     书籍
-    对应 ItemMainType 为 Usable
+    对应 MainType 为 Usable
     对应 UseMethod 为 AutoConversionItem 自动转换
     """
     ChatBubble = "ChatBubble"
     """
     对话框
-    对应 ItemMainType 为 Usable
+    对应 MainType 为 Usable
     对应 UseMethod 为 AutoConversionItem 自动转换
     """
     ChessRogueDiceSurface = "ChessRogueDiceSurface"
     """
-    1.6 新增，黄金与机械骰面
-    对应 ItemMainType 为 Usable
+    黄金与机械骰面
+    1.6 新增
+    对应 MainType 为 Usable
     对应 UseMethod 为 AutoConversionItem 自动转换
+    """
+    CommonMonsterDrop = "CommonMonsterDrop"
+    """
+    大世界游荡敌人掉落的天赋、角色突破素材，包括「灵之珠泪」
+    3.5 新增，从 SubType.Material 拆出来的
+    对应 MainType 为 Material
+    """
+    ComposeMaterial = "ComposeMaterial"
+    """
+    大世界破坏物掉落的普通合成台材料
+    3.5 新增，从 SubType.Material 拆出来的
+    对应 MainType 为 Material
     """
     Eidolon = "Eidolon"
     """星魂, 仅出现在 ItemConfigAvatarRank.json 中"""
+    ElfRestaurantItem = "ElfRestaurantItem"
+    """
+    「黄金迷境大饭店」活动道具
+    3.5 新增
+    """
     Equipment = "Equipment"
     """光锥, 仅出现在 ItemConfigEquipment.json 中"""
+    EquipmentExp = "EquipmentExp"
+    """
+    光锥经验书
+    3.5 新增，从 SubType.Material 拆出来的
+    对应 MainType 为 Material
+    """
     FightFestSkill = "FightFestSkill"
     """
-    2.5 新增，星天演武仪典技能和饮料
+    星天演武仪典技能和饮料
+    2.5 新增
     对应 ItemMainType 为 Material
     """
     FindChest = "FindChest"
-    """3.0 新增，寻找宝箱用的道具"""
+    """寻找宝箱用的道具，3.0 新增"""
     Food = "Food"
     """
     食品
@@ -135,49 +158,55 @@ class SubType(enum.Enum):
     """用户头像"""
     MatchThreeV2 = "MatchThreeV2"
     """
-    3.4 新增
     折纸小鸟对对碰相关道具
+    3.4 新增
     只有一个「啾啾哒哒工具箱」
     """
     Material = "Material"
     """
-    非常杂, ItemMainType 为 Material 的剩下的都在里面
-    包括但不限于角色, 天赋, 武器的突破材料, 周本材料; 遗器, 角色, 武器经验等
-    抽卡用的专票、通票等，各种活动积分等
+    非常杂, MainType 为 Material 的剩下的都在里面
+    包括但不限于角色, 天赋, 武器的突破材料, 周本材料; 遗器, 角色, 武器经验等 (3.5 之后拆分出了 SubType)
+    抽卡用的专票、通票等，各种活动积分、道具等
     """
     Mission = "Mission"
-    """任务道具, ItemMainType 为 Mission 的都在这里"""
+    """任务道具, MainType 为 Mission 的都在这里"""
     MuseumExhibit = "MuseumExhibit"
     """
-    1.1 新增，冬城博物馆活动的展览品
+    冬城博物馆活动的展览品
+    1.1 新增
     对应 ItemMainType 为 Material
     """
     MuseumStuff = "MuseumStuff"
     """
-    1.1 新增，冬城博物馆活动的员工
+    冬城博物馆活动的员工
+    1.1 新增
     对应 ItemMainType 为 Material
     """
     MusicAlbum = "MusicAlbum"
     """碟片（音乐专辑）"""
     NormalPet = "NormalPet"
     """
-    2.5 新增，随宠
+    随宠
+    2.5 新增
     对应 ItemMainType 为 Pet
     """
     PamSkin = "PamSkin"
     """
-    2.7 新增，帕姆皮肤，派对车厢皮肤
+    帕姆皮肤，派对车厢皮肤
+    2.7 新增
     对应的 ItemMainType 为 Usable
     """
     PersonalCard = "PersonalCard"
     """
-    3.2 新增，角色名片
+    角色名片，展示在好友列表里的
+    3.2 新增
     对应 ItemMainType 为 Usable
     对应 UseMethod 为 AutoConversionItem 自动转换
     """
     PhoneCase = "PhoneCase"
     """
-    3.2 新增，手机壳
+    手机壳
+    3.2 新增
     对应 ItemMainType 为 Usabe
     对应 UseMethod 为 AutoConversionItem 自动转换
     """
@@ -189,38 +218,57 @@ class SubType(enum.Enum):
     """
     PlanetFesItem = "PlanetFesItem"
     """
-    3.2 新增，周年庆活动相关道具
+    二周年庆活动相关道具
+    3.2 新增
     对应 ItemMainType 为 Material
     """
     Relic = "Relic"
     """遗器"""
+    RelicExp = "RelicExp"
+    """
+    遗器经验书
+    3.5 新增，从 SubType.Material 拆出来的
+    对应 MainType 是 Material
+    """
     RelicRarityShowOnly = "RelicRarityShowOnly"
     """
     图标展示用, 位面饰品套装图，代表任意的位面饰品
     出现在黑塔空间站地图上黑塔办公室传送点的沉浸奖励一栏
-    对应 ItemMainType 为 Display
+    对应 MainType 为 Display
     """
     RelicSetShowOnly = "RelicSetShowOnly"
     """
     图标展示用, 位面饰品套装图，不是绳球分别的遗器
     出现在模拟宇宙主界面提示每个宇宙能获得哪种套装的沉浸奖励处
-    对应 ItemMainType 为 Display
+    对应 MainType 为 Display
     """
     RogueMedal = "RogueMedal"
     """差分宇宙概率艺术馆展品"""
+    TracePath = "TracePath"
+    """
+    拟造花萼（赤）掉落的角色天赋、光锥突破材料，包括「梦之珠泪」
+    3.5 新增
+    """
     TrainPartyDiyMaterial = "TrainPartyDiyMaterial"
     """
-    2.7 新增，开拓者房间装饰品（宇宙家装指南活动）
+    开拓者房间装饰品（宇宙家装指南活动）
+    2.7 新增
     """
     TravelBrochurePaster = "TravelBrochurePaster"
     """
-    2.0 新增，匹诺康尼梦境护照上的贴纸
+    匹诺康尼梦境护照上的贴纸
+    2.0 新增
     对应 ItemMainType 是 Usable
     """
     Virtual = "Virtual"
     """
     各种不占据背包格子的数值项
     比如星琼、信用点、经验、开拓力、各类活动金币等
+    """
+    WeeklyMonsterDrop = "WeeklyMonsterDrop"
+    """
+    从 SubType.Material 拆出来的。周本 BOSS 掉落的天赋突破材料，包括「命运的足迹」
+    3.5 新增
     """
 
 

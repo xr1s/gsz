@@ -235,7 +235,11 @@ class MonsterConfig(View[excel.MonsterConfig]):
 
     @functools.cached_property
     def __skills(self) -> list[MonsterSkillConfig]:
-        return list(self._game.monster_skill_config(self._excel.skill_list))
+        return list(
+            self._game.monster_skill_config(
+                skill_id for skill_id in self._excel.skill_list if skill_id not in {801201101, 801201102, 801201103}
+            )
+        )
 
     def skills(self) -> collections.abc.Iterable[MonsterSkillConfig]:
         return (MonsterSkillConfig(self._game, skill._excel) for skill in self.__skills)
@@ -338,8 +342,10 @@ class MonsterConfig(View[excel.MonsterConfig]):
             tags.append("错误")
         if self.name.endswith("（完整）"):
             tags.append("完整")
+        camp = self.__template.camp() if self.__template is not None else None
         return self._game._template_environment.get_template("敌人.jinja2").render(  # pyright: ignore[reportPrivateUsage]
             monster=self,
+            camp=camp,
             damage_type_resistance=damage_type_resistance,
             element_resistance=element_resistance,
             debuff_resistance=debuff_resistance,
