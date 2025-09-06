@@ -20,6 +20,8 @@ class ModelID(abc.ABC, Model):
     def id(self) -> int: ...
 
 
+Text = str
+
 T = typing.TypeVar("T")
 
 

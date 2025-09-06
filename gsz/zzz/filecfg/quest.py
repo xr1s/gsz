@@ -7,6 +7,7 @@ from .base import ModelID
 
 ID = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "ABBNJFKJGPN",  # v2.2
         "DPGJBGIBMJH",  # v2.1
         "PADEHJEHGLB",  # v2.0
         "JOCMKDOLBPP",  # v1.7
@@ -20,6 +21,7 @@ ID = pydantic.Field(
 )
 NAME = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "ADFCCBMJLPC",  # v2.2
         "ANFFBODIJJN",  # v2.1
         "EKOEHAIFEHN",  # v2.0
         "CNLOKFIHOPC",  # v1.7
@@ -33,6 +35,7 @@ NAME = pydantic.Field(
 )
 DESC = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "NFMGDJDFKHH",  # v2.2
         "HKLJIIIPINE",  # v2.1
         "NMMLEAJABJL",  # v2.0
         "IHKFKNPKGNE",  # v1.7
@@ -46,6 +49,7 @@ DESC = pydantic.Field(
 )
 TARGET = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "GOCGHFIOPCI",  # v2.2
         "HDEMCCKJGBM",  # v2.1
         "DLJGALBKDAN",  # v2.0
         "LFLPEENMECC",  # v1.7
@@ -59,6 +63,7 @@ TARGET = pydantic.Field(
 )
 FINISH_DEC = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "AFIHOKHLCDI",  # v2.2
         "CBMGOMFCDIM",  # v2.1
         "OCCMEAFDIIL",  # v2.0
         "KOGJLMNKEEH",  # v1.7
@@ -72,6 +77,7 @@ FINISH_DEC = pydantic.Field(
 )
 REWARD = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "BDHJDAMJAII",  # v2.2
         "HBJEOFPHPKB",  # v2.1
         "DNCPKFPLPIF",  # v2.0
         "EAHEBGIBFMC",  # v1.7
