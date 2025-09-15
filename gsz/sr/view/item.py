@@ -46,6 +46,10 @@ class ItemConfig(View[excel.ItemConfig]):
         return self._game.text(self._excel.item_bg_desc)
 
     @property
+    def icon(self) -> str:
+        return self._excel.item_figure_icon_path
+
+    @property
     def rarity(self) -> item.Rarity:
         return self._excel.rarity
 
@@ -104,7 +108,7 @@ class ItemCureInfoData(View[excel.ItemCureInfoData]):
 
     def wiki(self) -> str:
         wiki = io.StringIO()
-        _ = wiki.write("<!-- 剧情 -->\n{{书籍/分卷|\n名称=")
+        _ = wiki.write("<!-- 剧情 -->\n{{书籍/分卷\n|名称=")
         _ = wiki.write(self.title)
         _ = wiki.write("\n|卷数=1\n|实装版本=\n|获取方式=\n|内容=\n")
         if self.img_path != "":

@@ -288,15 +288,15 @@ class Rarity(enum.Enum):
     def __str__(self) -> str:
         match self:
             case self.Normal:
-                return "一星"
+                return "1星"
             case self.NotNormal:
-                return "二星"
+                return "2星"
             case self.Rare:
-                return "三星"
+                return "3星"
             case self.VeryRare:
-                return "四星"
+                return "4星"
             case self.SuperRare:
-                return "五星"
+                return "5星"
 
 
 class UseMethod(enum.Enum):

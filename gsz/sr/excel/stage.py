@@ -19,6 +19,7 @@ class Type(enum.Enum):
     EvolveBuildActivity = "EvolveBuildActivity"
     FantasticStory = "FantasticStory"
     FarmElement = "FarmElement"
+    FateActivity = "FateActivity"
     FeverTimeActivity = "FeverTimeActivity"
     FightActivity = "FightActivity"
     FightFest = "FightFest"
@@ -41,6 +42,7 @@ class Type(enum.Enum):
 
 class DataKey(enum.Enum):
     BattleCondition = "_BattleCondition"
+    BattlePerformStage = "_BattlePerformStage"
     BattleTarget = "_BattleTarget"
     BGM = "_BGM"
     BindingMazeBuff = "_BindingMazeBuff"

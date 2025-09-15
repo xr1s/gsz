@@ -370,7 +370,7 @@ class MessageItemConfig(View[excel.MessageItemConfig]):
             emoji_id=self.content_id,
             gender=message.EmojiGender.All,
             emoji_group_id=None,
-            key_words=excel.Text(hash=0),
+            key_words="",
             emoji_path="",
             same_group_order=None,
             gender_link=None,

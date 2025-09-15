@@ -56,7 +56,10 @@ class MainMission(View[excel.MainMission]):
             sub_mission_list: typing.Annotated[list[ActSubMission], pydantic.Field(alias="SubMissionList")]
 
         path = MainMission.__MISSION_INFO_PATH.format(main_mission_id=self._excel.main_mission_id)
-        act_main_mission = ActMissionInfo.model_validate_json(self._game.base.joinpath(path).read_bytes())
+        path = self._game.base.joinpath(path)
+        if not path.exists():
+            return []
+        act_main_mission = ActMissionInfo.model_validate_json(path.read_bytes())
         return list(filter(None, (self._game.sub_mission(sub.id) for sub in act_main_mission.sub_mission_list)))
 
     def sub_missions(self) -> collections.abc.Iterable[SubMission]:

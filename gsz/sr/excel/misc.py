@@ -92,6 +92,7 @@ class MazeBuff(ModelMainSubID):
     maze_buff_icon_type: MazeBuffIcon | None = None
     maze_buff_pool: int | None = None
     is_display: bool = False
+    display_type: typing.Literal["Fixed"] | None = None
     is_display_env_in_level: bool = False
 
     @property
