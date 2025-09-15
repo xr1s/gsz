@@ -10,7 +10,7 @@ import typing
 import unicodedata
 
 if typing.TYPE_CHECKING:
-    from . import SRGameData, ZZZGameData
+    from . import GIGameData, SRGameData, ZZZGameData
 
 
 def is_hexdigit(s: str) -> bool:
@@ -98,7 +98,7 @@ class Formatter:
         self,
         *,
         syntax: Syntax | None = None,
-        game: SRGameData | ZZZGameData | None = None,
+        game: GIGameData | SRGameData | ZZZGameData | None = None,
         gender_order: GenderOrder = GenderOrder.Preserve,
         percent_as_plain: bool = False,
     ):
@@ -336,7 +336,6 @@ class Formatter:
                 _ = self.__states.pop()
                 _ = self.__keys.pop()
                 _ = self.__vals.pop()
-                _ = self.__texts.pop()
                 self.__push("{")
                 self.__push(var)
                 self.__push("}")

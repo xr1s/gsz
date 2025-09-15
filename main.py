@@ -15,6 +15,7 @@ import fire
 
 import gsz.bbs
 import gsz.format
+import gsz.gi
 import gsz.sr
 import gsz.sr.excel
 import gsz.sr.view
@@ -42,7 +43,7 @@ class Main:
         assert isinstance(base, pathlib.Path | str)
         self.base = pathlib.Path(base)
         if self.base.joinpath("ExcelBinOutput").exists():  # Genshin Impact
-            raise NotImplementedError("AnimeGameData not implemented")
+            self.__game = gsz.gi.GameData(base)
         if self.base.joinpath("ExcelOutput").exists():
             self.__game = gsz.sr.GameData(base)
         if self.base.joinpath("FileCfg").exists():
