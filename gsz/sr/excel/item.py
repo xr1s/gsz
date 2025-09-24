@@ -156,6 +156,10 @@ class SubType(enum.Enum):
     """
     HeadIcon = "HeadIcon"
     """用户头像"""
+    HeadIconFrame = "HeadIconFrame"
+    """用户头像框，3.6 新增"""
+    HipplenOutfit = "HipplenOutfit"
+    """大地兽活动大地兽装扮，3.6 新增"""
     MatchThreeV2 = "MatchThreeV2"
     """
     折纸小鸟对对碰相关道具

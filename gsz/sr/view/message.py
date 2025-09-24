@@ -155,7 +155,7 @@ class EmojiConfig(View[excel.EmojiConfig]):
             # 从「帕姆展览馆第13弹」开始
             # 因为 Wiki 中间插入了一个不属于游戏的表情包系列（来自微信）
             # 因此需要 group_id 要从 -100 变成 -99 才是 Wiki 顺序
-            case id_ if 114000 <= id_ < 124000 or 131000 <= id_ < 132000:
+            case id_ if 114000 <= id_ < 125000 or 131000 <= id_ < 132000:
                 # 131000 是第 13 弹，给我整不会了
                 # 114000 是第 14 弹
                 # 115000 是第 15 弹
@@ -167,6 +167,7 @@ class EmojiConfig(View[excel.EmojiConfig]):
                 # 121000 是第 21 弹
                 # 122000 是第 22 弹
                 # 123000 是第 23 弹
+                # 124000 是第 24 弹
                 assert self._excel.emoji_group_id is not None
                 assert self._excel.same_group_order is not None
                 return wiki_id(self._excel.emoji_group_id - 99, self._excel.same_group_order)

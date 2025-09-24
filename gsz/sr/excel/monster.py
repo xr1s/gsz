@@ -35,7 +35,7 @@ class HardLevelGroup(ModelMainSubID):
     hp_ratio: Value[float]
     speed_ratio: Value[float]
     stance_ratio: Value[float]
-    combat_power_list: list[Value[int]]
+    combat_power_list: tuple[Value[int], ...]
     status_probability: Value[float] | None = None
     status_resistance: Value[float] | None = None
 
@@ -123,12 +123,24 @@ class AISkillSequence(Model):
     id: typing.Annotated[int, pydantic.Field(validation_alias=aliases.ID)]
 
 
+class OverrideSkillParam(Model):
+    id: typing.Annotated[int, pydantic.Field(alias="NOCBBALICHO")]
+    unknown_1: typing.Annotated[Value[typing.Literal[-1]], pydantic.Field(alias="KCOABCKCMPK")]
+    unknown_2: typing.Annotated[Value[typing.Literal[-1]], pydantic.Field(alias="MLDFNFLLGJB")]
+    unknown_3: typing.Annotated[Value[float], pydantic.Field(alias="LHDMDABFIDN")]
+    unknown_4: typing.Annotated[Value[float], pydantic.Field(alias="NCLOMNEHPMJ")]
+    unknown_5: typing.Annotated[Value[typing.Literal[-1]], pydantic.Field(alias="JELMCJBICJN")]
+    unknown_6: typing.Annotated[Value[typing.Literal[-1]], pydantic.Field(alias="EKCDEGCMDHG")]
+    unknown_7: typing.Annotated[Value[typing.Literal[-1]], pydantic.Field(alias="LIKKJIAOACA")]
+    unknown_8: typing.Annotated[Value[typing.Literal[-1]], pydantic.Field(alias="CGHDHAMLJJB")]
+
+
 class MonsterConfig(ModelID):
     """敌人详情"""
 
     monster_name: Text
     monster_introduction: Text | None
-    monster_strategy: list[None] | None  # 仅出现于 3.4 版本及之后
+    monster_strategy: tuple[()] | None  # 仅出现于 3.4 版本及之后
     monster_id: int
     monster_template_id: int
     monster_battle_introduction: Text | None = None  # 仅出现于 1.0
@@ -141,18 +153,18 @@ class MonsterConfig(ModelID):
     stance_modify_ratio: Value[typing.Literal[1]]
     speed_modify_value: Value[float] = Value[float](value=0)  # 仅出现在 3.1
     stance_modify_value: Value[int] = Value[int](value=0)  # 仅出现在 3.1
-    skill_list: list[int]
-    summon_id_list: list[int] | None = None  # 仅出现于 3.1 版本及之后；3.1 版本均为空，3.2 起出现数据
-    custom_values: list[CustomValue]
-    dynamic_values: list[None]  # 目前只有空 []
-    debuff_resist: list[DebuffResist]
-    custom_value_tags: list[str]
-    stance_weak_list: list[Element]
-    damage_type_resistance: list[DamageTypeResistance]
-    ability_name_list: list[str]
+    skill_list: tuple[int, ...]
+    summon_id_list: tuple[int, ...] | None = None  # 仅出现于 3.1 版本及之后；3.1 版本均为空，3.2 起出现数据
+    custom_values: tuple[CustomValue, ...]
+    dynamic_values: tuple[()]
+    debuff_resist: tuple[DebuffResist, ...]
+    custom_value_tags: tuple[str, ...]
+    stance_weak_list: tuple[Element, ...]
+    damage_type_resistance: tuple[DamageTypeResistance, ...]
+    ability_name_list: tuple[str, ...]
     override_ai_path: pathlib.Path
-    override_ai_skill_sequence: list[AISkillSequence]
-    override_skill_params: list[None] | None = None
+    override_ai_skill_sequence: tuple[AISkillSequence, ...]
+    override_skill_params: tuple[OverrideSkillParam, ...] | None = None
 
     @property
     @typing_extensions.override
@@ -169,21 +181,21 @@ class MonsterSkillConfig(ModelID):
     skill_desc: Text
     skill_type_desc: Text
     skill_tag: Text | None = None  # 仅出现于 1.1 版本及之后
-    phase_list: list[int]
+    phase_list: tuple[int, ...]
     is_threat: bool = False
     """是否大招（游戏中详情页展示为渐变红底）"""
-    extra_effect_id_list: list[int]
+    extra_effect_id_list: tuple[int, ...]
     damage_type: Element | None = None
     """技能伤害元素，非攻击技能为 None"""
     skill_trigger_key: str
     sp_hit_base: Value[int] | None = None
     """敌方攻击施放后，会给命中角色增加多少充能。非攻击技能为 None"""
     delay_ratio: Value[float] | None = None
-    param_list: list[Value[float]]
+    param_list: tuple[Value[float], ...]
     attack_type: typing.Literal["Normal"]
     ai_cd: typing.Annotated[typing.Literal[1], pydantic.Field(alias="AI_CD")] = 1  # 仅出现于 3.2 版本及之前
     ai_icd: typing.Annotated[typing.Literal[1], pydantic.Field(alias="AI_ICD")] = 1  # 仅出现于 3.2 版本及之前
-    modifier_list: list[str] = []  # 2.0 无此字段
+    modifier_list: tuple[str, ...] = []  # 2.0 无此字段
 
     @property
     @typing_extensions.override
@@ -213,7 +225,7 @@ class MonsterTemplateConfig(ModelID):
     """
 
     monster_template_id: int
-    monster_strategy: list[None] | None = None  # 仅出现于 3.4 版本及之后
+    monster_strategy: tuple[()] | None = None  # 仅出现于 3.4 版本及之后
     template_group_id: int | None = None  # 敌人种族 ID
     release_in_atlas: bool = False
     atlas_sort_id: int | None = None
@@ -244,8 +256,8 @@ class MonsterTemplateConfig(ModelID):
     ai_path: pathlib.Path
     stance_count: int | None = None
     initial_delay_ratio: Value[float] | None = None
-    ai_skill_sequence: list[AISkillSequence]
-    npc_monster_list: list[int]
+    ai_skill_sequence: tuple[AISkillSequence, ...]
+    npc_monster_list: tuple[int, ...]
 
     @property
     @typing_extensions.override
@@ -264,7 +276,7 @@ class NPCMonsterData(ModelID):
     config_entity_path: pathlib.Path
     npc_icon_path: str | None = None  # 仅出现在 3.3 及之前
     npc_title: Text | None = None
-    board_show_list: list[typing.Literal[2]] | None = None  # 仅出现在 3.3 及之前
+    board_show_list: tuple[typing.Literal[2], ...] | None = None  # 仅出现在 3.3 及之前
     json_path: pathlib.Path
     default_ai_path: pathlib.Path
     character_type: typing.Literal["NPCMonster"] | None = None  # 仅出现在 3.3 及之前
