@@ -738,6 +738,12 @@ class GameData:
     def fate_trait_buff(self):
         """Fate 棋子组合增益不同等级的效果"""
 
+    ######## hipplen ########
+
+    @excel_output(view.ActivityHipplenTrait)
+    def activity_hipplen_trait(self):
+        """大地兽活动"""
+
     ######## item ########
 
     @excel_output(view.ItemConfig)

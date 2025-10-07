@@ -334,7 +334,7 @@ class MonsterConfig(View[excel.MonsterConfig]):
             for resistance in self._excel.damage_type_resistance
             if resistance.value.value > 0.2
         ]
-        debuff_resistance = [debuff.key for debuff in self._excel.debuff_resist]
+        debuff_resistance = [f"{debuff.key}抵抗" for debuff in self._excel.debuff_resist]
         tags: list[str] = []
         if len(self.__summons) != 0:
             tags.append("召唤")
@@ -366,7 +366,7 @@ class MonsterSkillConfig(View[excel.MonsterSkillConfig]):
         return self._excel.damage_type
 
     @property
-    def phase_list(self) -> list[int]:
+    def phase_list(self) -> tuple[int, ...]:
         """敌人的哪几个阶段会有本技能"""
         return self._excel.phase_list
 

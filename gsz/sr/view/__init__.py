@@ -25,6 +25,7 @@ from .challenge import (
     RewardLine,
 )
 from .fate import FateBuff, FateHandbookMaster, FateMaster, FateMasterTalk, FateReiju, FateTrait, FateTraitBuff
+from .hipplen import ActivityHipplenTrait
 from .item import ItemConfig, ItemCureInfoData, ItemPurpose, ItemUseData
 from .message import (
     EmojiConfig,
@@ -158,6 +159,8 @@ __all__ = (
     "FateReiju",
     "FateTrait",
     "FateTraitBuff",
+    # hipplen
+    "ActivityHipplenTrait",
     # book
     "BookDisplayType",
     "BookSeriesConfig",
