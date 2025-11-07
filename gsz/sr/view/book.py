@@ -88,8 +88,10 @@ class BookSeriesConfig(View[excel.BookSeriesConfig]):
                 return "录像带"
             case 190019:  # 只出现在翁法罗斯
                 return "回响"
+            case 191935:  # 只出现在翁法罗斯 一页寄语 系列阅读物
+                return "寄语"
             case _:
-                raise ValueError("可能是新版本新增不同类型的图书 {} {}", self.name, file_stem)
+                raise ValueError(f"可能是新版本新增不同类型的图书 {self.name!r} {file_stem}")
 
     def wiki(self) -> str:
         return self._game._template_environment.get_template("书籍.jinja2").render(  # pyright: ignore[reportPrivateUsage]

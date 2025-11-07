@@ -70,6 +70,11 @@ class CustomValue(Model):
     val: typing.Annotated[int, pydantic.Field(validation_alias=aliases.VAL)] = 0
 
 
+class DynamicValue(Model):
+    key: typing.Annotated[str, pydantic.Field(validation_alias=aliases.KEY)]
+    val: typing.Annotated[Value[int], pydantic.Field(validation_alias=aliases.VAL)]
+
+
 class Debuff(enum.Enum):
     Confine = "STAT_Confine"
     """禁锢"""
@@ -125,14 +130,14 @@ class AISkillSequence(Model):
 
 class OverrideSkillParam(Model):
     id: typing.Annotated[int, pydantic.Field(alias="NOCBBALICHO")]
-    unknown_1: typing.Annotated[Value[typing.Literal[-1]], pydantic.Field(alias="KCOABCKCMPK")]
+    unknown_1: typing.Annotated[Value[int], pydantic.Field(alias="KCOABCKCMPK")]
     unknown_2: typing.Annotated[Value[typing.Literal[-1]], pydantic.Field(alias="MLDFNFLLGJB")]
     unknown_3: typing.Annotated[Value[float], pydantic.Field(alias="LHDMDABFIDN")]
     unknown_4: typing.Annotated[Value[float], pydantic.Field(alias="NCLOMNEHPMJ")]
-    unknown_5: typing.Annotated[Value[typing.Literal[-1]], pydantic.Field(alias="JELMCJBICJN")]
-    unknown_6: typing.Annotated[Value[typing.Literal[-1]], pydantic.Field(alias="EKCDEGCMDHG")]
-    unknown_7: typing.Annotated[Value[typing.Literal[-1]], pydantic.Field(alias="LIKKJIAOACA")]
-    unknown_8: typing.Annotated[Value[typing.Literal[-1]], pydantic.Field(alias="CGHDHAMLJJB")]
+    unknown_5: typing.Annotated[Value[float], pydantic.Field(alias="JELMCJBICJN")]
+    unknown_6: typing.Annotated[Value[float], pydantic.Field(alias="EKCDEGCMDHG")]
+    unknown_7: typing.Annotated[Value[float] | None, pydantic.Field(alias="LIKKJIAOACA")] = None
+    unknown_8: typing.Annotated[Value[float], pydantic.Field(alias="CGHDHAMLJJB")]
 
 
 class MonsterConfig(ModelID):
@@ -156,7 +161,7 @@ class MonsterConfig(ModelID):
     skill_list: tuple[int, ...]
     summon_id_list: tuple[int, ...] | None = None  # 仅出现于 3.1 版本及之后；3.1 版本均为空，3.2 起出现数据
     custom_values: tuple[CustomValue, ...]
-    dynamic_values: tuple[()]
+    dynamic_values: tuple[DynamicValue, ...]
     debuff_resist: tuple[DebuffResist, ...]
     custom_value_tags: tuple[str, ...]
     stance_weak_list: tuple[Element, ...]

@@ -379,6 +379,8 @@ class PointType(enum.Enum):
     """天赋"""
     Memosprite = 4
     """忆灵相关"""
+    MainCharacter = 5
+    """记忆主专属技能"""
 
 
 class AnchorType(enum.Enum):
@@ -402,6 +404,8 @@ class AnchorType(enum.Enum):
     Point18 = "Point18"
     Point19 = "Point19"
     Point20 = "Point20"
+    Point21 = "Point21"
+    """记忆主专属技能"""
 
 
 class PointTriggerKey(enum.Enum):

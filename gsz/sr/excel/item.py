@@ -226,6 +226,11 @@ class SubType(enum.Enum):
     3.2 新增
     对应 ItemMainType 为 Material
     """
+    PlayerOutfit = "PlayerOutfit"
+    """
+    开拓者外观
+    3.7 新增
+    """
     Relic = "Relic"
     """遗器"""
     RelicExp = "RelicExp"

@@ -31,6 +31,15 @@ class MetaContent(Model):
         return MetaContent.model_validate_json(value)
 
 
+class UgcMasterPostExtra(Model):
+    game_uid: int
+    game_region: typing.Literal[""]
+
+
+class PostExtra(Model):
+    ugc_master_post_extra: UgcMasterPostExtra
+
+
 class Post(Model):
     game_id: GameId
     post_id: int
@@ -70,6 +79,7 @@ class Post(Model):
     meta_content: typing.Annotated[MetaContent | None, pydantic.BeforeValidator(MetaContent.validate_twice)]
     block_latest_reply_time: typing.Literal[0]
     selected_comment: int
+    post_extra: PostExtra
 
 
 class ForumCate(Model):
@@ -187,6 +197,9 @@ class UserPost(Model):
     is_has_lottery: bool
     text_summary: typing.Literal[""]
     brief_structured_content: typing.Literal[""]
+    post_full_extra_info: None
+    post_attachment_info: None
+    feed_attachment_info: None
 
 
 class UserPostList(Model):

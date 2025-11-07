@@ -128,7 +128,7 @@ class EmojiConfig(View[excel.EmojiConfig]):
             return f"{group:02}-{order:02}"
 
         match self.id:
-            case id_ if 107001 <= id_ <= 107007:
+            case id_ if 107001 <= id_ <= 107008:
                 # 107000 是第7弹
                 assert self._excel.emoji_group_id is not None
                 assert self._excel.same_group_order is not None
@@ -247,6 +247,8 @@ class MessageContactsConfig(View[excel.MessageContactsConfig]):
     def wiki(self) -> str:
         name = self.__formatter.format(self.name)
         wiki = io.StringIO()
+        # 下面两个 write 是故意放到同一行的，如果需要美观，复制到 Wiki 的时候再手动添加换行
+        _ = wiki.write("{{提示|蓝色|此为数据储存区域，如果您是不小心进入此页面的，请返回[[短信|主页面]]。}}")
         _ = wiki.write("{{#subobject:")
         _ = wiki.write(name)
         _ = wiki.write("-短信内容")

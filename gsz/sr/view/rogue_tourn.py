@@ -604,12 +604,16 @@ class RogueTournWeeklyChallenge(View[excel.RogueTournWeeklyChallenge]):
 
     ASIA_SHANGHAI: datetime.timezone = datetime.timezone(datetime.timedelta(hours=8))
     FIRST_CHALLENGE_MONDAY: datetime.datetime = datetime.datetime(2024, 6, 17, 4, tzinfo=ASIA_SHANGHAI)
+    V37_CHALLENGE_MONDAY: datetime.datetime = datetime.datetime(2024, 11, 3, 4, tzinfo=ASIA_SHANGHAI)
+    """3.7 版本开始，周期演算变成两周一次，和货币战争轮替更新"""
 
     @functools.cached_property
     def __begin_time(self) -> datetime.datetime:
         if self.id == 1:
             return self.FIRST_CHALLENGE_MONDAY + datetime.timedelta(days=2, hours=7)
-        return self.FIRST_CHALLENGE_MONDAY + datetime.timedelta(weeks=self.id - 1)
+        if self.id < 73:
+            return self.FIRST_CHALLENGE_MONDAY + datetime.timedelta(weeks=self.id - 1)
+        return self.V37_CHALLENGE_MONDAY + datetime.timedelta(weeks=2 * self.id - 146)
 
     def begin_time(self) -> datetime.datetime:
         return self.__begin_time
@@ -619,7 +623,9 @@ class RogueTournWeeklyChallenge(View[excel.RogueTournWeeklyChallenge]):
 
     @functools.cached_property
     def __end_time(self) -> datetime.datetime:
-        return self.FIRST_CHALLENGE_MONDAY + datetime.timedelta(weeks=self.id, milliseconds=-1)
+        if self.id < 73:
+            return self.FIRST_CHALLENGE_MONDAY + datetime.timedelta(weeks=self.id, milliseconds=-1)
+        return self.V37_CHALLENGE_MONDAY + datetime.timedelta(weeks=2 * self.id - 144)
 
     def end_time(self) -> datetime.datetime:
         return self.__end_time
