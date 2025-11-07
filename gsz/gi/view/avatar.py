@@ -14,6 +14,10 @@ if typing.TYPE_CHECKING:
 class Avatar(View[excel.Avatar]):
     ExcelBinOutput: typing.Final = excel.Avatar
 
+    @property
+    def id(self) -> int:
+        return self._excel.id_
+
     @functools.cached_property
     def name(self) -> str:
         return self._game.text(self._excel.name_text_map_hash)

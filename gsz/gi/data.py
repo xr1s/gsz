@@ -48,7 +48,7 @@ class GameDataFunction(typing.Protocol[T_co]):
     def __call__(self, game: GameData, id: collections.abc.Iterable[int]) -> collections.abc.Iterable[T_co]: ...
 
 
-ABBR_WORDS = {"npc", "cg"}
+ABBR_WORDS = {"cg"}
 
 
 def file_name_generator(method_name: str) -> str:
@@ -499,3 +499,9 @@ class GameData:
     @excel_bin_output(view.AvatarSkillDepot)
     def avatar_skill_depot(self):
         """角色技能组"""
+
+    ######## npc ########
+
+    @excel_bin_output(view.Npc)
+    def npc(self):
+        """NPC"""
