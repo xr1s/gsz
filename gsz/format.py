@@ -187,6 +187,9 @@ class Formatter:
                 self.__push(" ")
             case "\x1b" if self.__syntax == Syntax.Plain:
                 self.__states.append(State.AnsiEscape)
+            case "·": # 特殊情况，如果出现了 U+00B7 将它改为 U+2022
+                self.__display_block_afterward()
+                self.__push("•")
             case _:
                 self.__display_block_afterward()
                 self.__push(char)
