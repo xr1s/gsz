@@ -509,9 +509,12 @@ class PropertyType(enum.Enum):
                 return str(round(value))
 
 
-class StatusAdd(Model):
-    property_type: PropertyType
-    value: Value[float]
+_P = typing.TypeVar("_P", bound=enum.Enum)
+
+
+class Property(Model, typing.Generic[_P]):
+    property_type: _P
+    value: Value[float] = Value(value=0)
 
 
 class AvatarSkillTreeConfig(ModelMainSubID):
@@ -526,7 +529,7 @@ class AvatarSkillTreeConfig(ModelMainSubID):
     max_level: typing.Literal[1, 10, 6]
     default_unlock: bool = False
     pre_point: tuple[int, ...]
-    status_add_list: tuple[StatusAdd, ...]
+    status_add_list: tuple[Property[PropertyType], ...]
     material_list: tuple[item.Pair, ...]
     avatar_level_limit: int | None = None
     avatar_promotion_limit: int | None = None

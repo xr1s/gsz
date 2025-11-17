@@ -25,6 +25,15 @@ from .challenge import (
     RewardLine,
 )
 from .fate import FateBuff, FateHandbookMaster, FateMaster, FateMasterTalk, FateReiju, FateTrait, FateTraitBuff
+from .grid_fight import (
+    GridFightAugment,
+    GridFightBackRoleRank,
+    GridFightFrontSkill,
+    GridFightRoleBasicInfo,
+    GridFightRoleSkillDisplay,
+    GridFightRoleStar,
+    GridFightTraitBasicInfo,
+)
 from .hipplen import ActivityHipplenTrait
 from .item import ItemConfig, ItemCureInfoData, ItemPurpose, ItemUseData
 from .message import (
@@ -159,6 +168,14 @@ __all__ = (
     "FateReiju",
     "FateTrait",
     "FateTraitBuff",
+    # grid fight
+    "GridFightAugment",
+    "GridFightBackRoleRank",
+    "GridFightFrontSkill",
+    "GridFightRoleBasicInfo",
+    "GridFightRoleSkillDisplay",
+    "GridFightRoleStar",
+    "GridFightTraitBasicInfo",
     # hipplen
     "ActivityHipplenTrait",
     # book

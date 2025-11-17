@@ -545,6 +545,10 @@ class GameData:
     def avatar_config(self):
         """角色"""
 
+    @excel_output(view.AvatarConfig, "AvatarConfigLD")
+    def avatar_config_ld(self):
+        """Fate 联动自机角色"""
+
     @excel_output(view.AvatarPlayerIcon)
     def avatar_player_icon(self):
         """角色对应的玩家头像"""
@@ -567,6 +571,10 @@ class GameData:
         角色的所有技能
         举例来说：丹恒饮月的普攻和强化普攻这里分两种，AvatarSkillTreeConfig 都算在普攻中
         """
+
+    @excel_output_main_sub(view.AvatarSkillConfig, "AvatarSkillConfigLD")
+    def avatar_skill_config_ld(self):
+        """联动角色的所有技能"""
 
     @excel_output_main_sub(view.AvatarSkillTreeConfig)
     def avatar_skill_tree_config(self):
@@ -737,6 +745,37 @@ class GameData:
     @excel_output(view.FateTraitBuff)
     def fate_trait_buff(self):
         """Fate 棋子组合增益不同等级的效果"""
+
+    ######## grid fight ########
+    # 货币战争
+
+    @excel_output(view.GridFightAugment)
+    def grid_fight_augment(self):
+        """货币战争投资策略"""
+
+    @excel_output(view.GridFightBackRoleRank)
+    def grid_fight_back_role_rank(self):
+        """货币战争后台角色星魂效果"""
+
+    @excel_output_main_sub(view.GridFightFrontSkill)
+    def grid_fight_front_skill(self):
+        """货币战争前台角色技能详情"""
+
+    @excel_output(view.GridFightRoleBasicInfo)
+    def grid_fight_role_basic_info(self):
+        """货币战争角色"""
+
+    @excel_output_main_sub(view.GridFightRoleSkillDisplay)
+    def grid_fight_role_skill_display(self):
+        """货币战争首页展示的技能方格，无详情"""
+
+    @excel_output_main_sub(view.GridFightRoleStar)
+    def grid_fight_role_star(self):
+        """货币战争角色升星后属性变化"""
+
+    @excel_output(view.GridFightTraitBasicInfo)
+    def grid_fight_trait_basic_info(self):
+        """货币战争羁绊"""
 
     ######## hipplen ########
 
