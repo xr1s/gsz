@@ -9,7 +9,7 @@ from .base import View
 if typing.TYPE_CHECKING:
     import collections.abc
 
-    from ..excel.grid_fight import Quality
+    from ..excel.grid_fight import FrontBackType, Quality
     from .avatar import AvatarConfig, AvatarSkillConfig
 
 
@@ -80,6 +80,10 @@ class GridFightRoleBasicInfo(View[excel.GridFightRoleBasicInfo]):
     def rarity(self) -> typing.Literal[1, 2, 3, 4, 5]:
         return self._excel.rarity
 
+    @property
+    def front_back_type(self) -> FrontBackType | None:
+        return self._excel.front_back_type
+
     @functools.cached_property
     def __avatar(self) -> AvatarConfig:
         avatar = self._game.avatar_config(self._excel.avatar_id)
@@ -92,6 +96,20 @@ class GridFightRoleBasicInfo(View[excel.GridFightRoleBasicInfo]):
         from .avatar import AvatarConfig
 
         return AvatarConfig(self._game, self.__avatar._excel)
+
+    @functools.cached_property
+    def __skill_display(self) -> tuple[GridFightRoleSkillDisplay, ...]:
+        return tuple(self._game.grid_fight_role_skill_display(self._excel.id_))
+
+    @functools.cached_property
+    def tags(self) -> tuple[str, ...]:
+        tags: set[str] = set[str]()
+        for skill_display in self.__skill_display:
+            for tag_name in skill_display._excel.category_tag_list:
+                tag = self._game.grid_fight_role_tag_info(tag_name)
+                assert tag is not None
+                tags.add(tag.desc)
+        return tuple(tags)
 
     @functools.cached_property
     def __traits(self) -> tuple[GridFightTraitBasicInfo, ...]:
@@ -146,6 +164,14 @@ class GridFightRoleStar(View[excel.GridFightRoleStar]):
             )
             for src, dst in self.__skill_overrides
         )
+
+
+class GridFightRoleTagInfo(View[excel.GridFightRoleTagInfo]):
+    ExcelOutput: typing.Final = excel.GridFightRoleTagInfo
+
+    @functools.cached_property
+    def desc(self) -> str:
+        return self._game.text(self._excel.tag_desc)
 
 
 class GridFightTraitBasicInfo(View[excel.GridFightTraitBasicInfo]):

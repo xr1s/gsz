@@ -32,6 +32,7 @@ from .grid_fight import (
     GridFightRoleBasicInfo,
     GridFightRoleSkillDisplay,
     GridFightRoleStar,
+    GridFightRoleTagInfo,
     GridFightTraitBasicInfo,
 )
 from .hipplen import ActivityHipplenTrait
@@ -180,6 +181,7 @@ __all__ = (
     "GridFightRoleBasicInfo",
     "GridFightRoleSkillDisplay",
     "GridFightRoleStar",
+    "GridFightRoleTagInfo",
     "GridFightTraitBasicInfo",
     # hipplen
     "ActivityHipplenTrait",

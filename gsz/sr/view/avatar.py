@@ -68,6 +68,10 @@ class AvatarCamp(View[excel.AvatarCamp]):
 class AvatarConfig(View[excel.AvatarConfig]):
     ExcelOutput: typing.Final = excel.AvatarConfig
 
+    @property
+    def id(self) -> int:
+        return self._excel.avatar_id
+
     @functools.cached_property
     def name(self) -> str:
         return self._game.text(self._excel.avatar_name)

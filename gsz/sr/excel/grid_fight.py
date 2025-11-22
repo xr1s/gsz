@@ -5,7 +5,7 @@ import pydantic
 import typing_extensions
 
 from . import avatar
-from .base import Element, ModelID, ModelMainSubID, Text, Value
+from .base import Element, ModelID, ModelMainSubID, ModelStringID, Text, Value
 
 
 class Quality(enum.Enum):
@@ -143,7 +143,7 @@ class GridFightRoleBasicInfo(ModelID):
     rarity: typing.Literal[1, 2, 3, 4, 5]
     heal_or_shield_display: HealOrShieldDisplay
     charge_type: tuple[ChargeType, ...]
-    max_s_p_icon: str
+    max_sp_icon: str
     trait_list: tuple[int, ...]
     is_in_pool: typing.Literal[True]
     backend_rank_list: tuple[int, ...]
@@ -159,17 +159,11 @@ class GridFightRoleBasicInfo(ModelID):
 
 
 class GridFightRoleSkillDisplay(ModelMainSubID):
-    class CategoryTag(enum.Enum):
-        Assist = "Assist"
-        DPS = "DPS"
-        Healer = "Healer"
-        Shield = "Shield"
-
     role_id: int
     front_back_type: FrontBackType
     name: Text
     icon_path: str
-    category_tag_list: tuple[CategoryTag, ...]
+    category_tag_list: tuple[str, ...]
 
     @property
     @typing_extensions.override
@@ -184,6 +178,16 @@ class GridFightRoleSkillDisplay(ModelMainSubID):
                 return 0
             case FrontBackType.Back:
                 return 1
+
+
+class GridFightRoleTagInfo(ModelStringID):
+    id_: str
+    tag_desc: Text
+
+    @property
+    @typing_extensions.override
+    def id(self) -> str:
+        return self.id_
 
 
 class GridFightRoleStar(ModelMainSubID):
@@ -208,8 +212,8 @@ class GridFightRoleStar(ModelMainSubID):
     show_stance_list: tuple[Value[int], ...]
     stance_damage_display: Value[typing.Literal[20]] | None = None
     back_energy_bar: Value[int] | None = None
-    back_max_s_p: Value[int] | None = None
-    back_initial_s_p: Value[int] | None = None
+    back_max_sp: Value[int] | None = None
+    back_initial_sp: Value[int] | None = None
     back_initial_energy_bar: Value[int] | None = None
     front_power_base: Value[float]
     back_power_base: Value[float] | None = None

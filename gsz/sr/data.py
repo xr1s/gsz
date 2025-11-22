@@ -773,6 +773,10 @@ class GameData:
     def grid_fight_role_star(self):
         """货币战争角色升星后属性变化"""
 
+    @excel_output_string(view.GridFightRoleTagInfo)
+    def grid_fight_role_tag_info(self):
+        """货币战争角色 Tag（输出、辅助、奶妈、护盾）"""
+
     @excel_output(view.GridFightTraitBasicInfo)
     def grid_fight_trait_basic_info(self):
         """货币战争羁绊"""
