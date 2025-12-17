@@ -226,9 +226,9 @@ class RogueTournFormula(View[excel.RogueTournFormula]):
     @functools.cached_property
     def wiki_name(self) -> str:
         name = self._game._mw_formatter.format(self.name)  # pyright: ignore[reportPrivateUsage]
-        if self.category == rogue_tourn.FormulaCategory.PathEcho and self.mode == rogue_tourn.Mode.TournMode1:
+        if self.category is rogue_tourn.FormulaCategory.PathEcho and self.mode is rogue_tourn.Mode.TournMode1:
             return name + "（方程）"
-        if self.name in ("赏金猎人", "混沌医师", "黑潮朽弓"):
+        if self.name in {"赏金猎人", "混沌医师", "黑潮朽弓", "天谴哲人"}:
             return name + "（方程）"
         return name
 
@@ -356,13 +356,17 @@ class RogueTournHandBookEvent(View[excel.RogueTournHandBookEvent]):
 
     @functools.cached_property
     def __dialogues(self) -> list[act.Dialogue]:
-        dialogues: list[act.Dialogue] = []
-        for prog_id, npc in zip(self._excel.unlock_npc_progress_id_list, self.__npcs, strict=True):
-            dialogue = next(
-                dialogue for dialogue in npc.dialogue_list() if dialogue.progress == prog_id.unlock_progress
-            )
-            dialogues.append(dialogue)
-        return dialogues
+        try:
+            dialogues: list[act.Dialogue] = []
+            for prog_id, npc in zip(self._excel.unlock_npc_progress_id_list, self.__npcs, strict=True):
+                dialogue = next(
+                    dialogue for dialogue in npc.dialogue_list() if dialogue.progress == prog_id.unlock_progress
+                )
+                dialogues.append(dialogue)
+            return dialogues
+        except FileNotFoundError:
+            print("解包不完整，路径缺失")
+            return []
 
     def dialogues(self) -> collections.abc.Iterable[act.Dialogue]:
         from ..act import Dialogue
@@ -604,7 +608,7 @@ class RogueTournWeeklyChallenge(View[excel.RogueTournWeeklyChallenge]):
 
     ASIA_SHANGHAI: datetime.timezone = datetime.timezone(datetime.timedelta(hours=8))
     FIRST_CHALLENGE_MONDAY: datetime.datetime = datetime.datetime(2024, 6, 17, 4, tzinfo=ASIA_SHANGHAI)
-    V37_CHALLENGE_MONDAY: datetime.datetime = datetime.datetime(2024, 11, 3, 4, tzinfo=ASIA_SHANGHAI)
+    V37_CHALLENGE_MONDAY: datetime.datetime = datetime.datetime(2025, 11, 3, 4, tzinfo=ASIA_SHANGHAI)
     """3.7 版本开始，周期演算变成两周一次，和货币战争轮替更新"""
 
     @functools.cached_property

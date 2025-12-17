@@ -116,6 +116,7 @@ class EmotionState(enum.Enum):
 
 class SubType(enum.Enum):
     Activity = "Activity"
+    Endmost = "Endmost"
     Game = "Game"
     Rogue = "Rogue"
     System = "System"
@@ -151,7 +152,7 @@ class MainMission(ModelID):
     display_reward_id: int | None = None
     audio_emotion_state: EmotionState | None = None  # 仅在 1.4 及之前出现
     mission_pack: int | None = None
-    mission_story_event: typing.Literal[1, 2, 3] | None = None  # 仅在 3.3 及之后出现
+    mission_story_event: typing.Literal[1, 2, 3, 4] | None = None  # 仅在 3.3 及之后出现
     chapter_id: int | None = None
     sub_reward_list: list[int]
     story_line_id_list: list[None] | None = None  # 仅在 2.0 出现

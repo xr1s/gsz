@@ -280,8 +280,10 @@ class RogueEventSpecialOption(View[excel.RogueEventSpecialOption]):
                 return "泰坦日"
             case 202:  # 出现于千面英雄
                 return "泰坦月"
+            case 203:  # 出现于昔涟事件
+                return "昔涟"
             case _:
-                raise ValueError("unknown special option {self}")
+                raise ValueError(f"unknown special option {self._excel}")
 
 
 class RogueHandBookEvent(View[excel.RogueHandBookEvent]):

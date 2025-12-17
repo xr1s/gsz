@@ -10,6 +10,7 @@ from .base import Element, Model, ModelID, ModelMainSubID, Path, Text, Value
 
 CHANGE_INFO_ID = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "GMLBHCFGKJM",  # v3.8
         "OELNFIJLCOL",  # v3.1
         "IGHDLNOGKLC",  # v3.0
         "IJJNCPBDOKC",  # v2.7
@@ -23,6 +24,7 @@ CHANGE_INFO_ID = pydantic.Field(
 )
 CHANGE_INFO_UNLOCK = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "GACICPLOKNF",  # v3.8
         "CCOFCKBMMMI",  # v3.1
         "LDNIPIFDOPM",  # v3.0
         "HHKNJLIBFLL",  # v2.7
@@ -36,6 +38,7 @@ CHANGE_INFO_UNLOCK = pydantic.Field(
 )
 CHANGE_AVATAR_ID = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "EKGLJCKKFFP",  # v3.8
         "DJPCAIKIONP",  # v3.1
         "KOBDFDHBFGN",  # v3.0
         "NJIKGMAJKPM",  # v2.7
@@ -49,6 +52,7 @@ CHANGE_AVATAR_ID = pydantic.Field(
 )
 CHANGE_CAMP_ID = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "ADLEONICBGO",  # v3.8
         "EBBHGBKEPAA",  # v3.1
         "DLKMBMBEOIA",  # v3.0
         "APHCIBECBLI",  # v2.7

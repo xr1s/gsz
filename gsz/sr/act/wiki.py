@@ -163,7 +163,10 @@ class Dialogue(abc.ABC):
             else:
                 assert option.option_textmap_id is not None
                 _ = wiki.write(self._formatter.format(self._game.text(option.option_textmap_id)))
-            if option.option_icon_type not in (None, model.talk.OptionIconType.ChatContinueIcon):
+            if (
+                option.option_icon_type is not model.talk.OptionIconType.ChatContinueIcon  # 调教 formatter
+                and not isinstance(option.option_icon_type, model.talk.EnumIndex | None)
+            ):
                 _ = wiki.write(f"|图标{number}={option.option_icon_type.wiki()}")
         _ = wiki.write("}}")
         if options[0].trigger_custom_string is not None:
@@ -188,7 +191,10 @@ class Dialogue(abc.ABC):
             else:
                 assert option.option_textmap_id is not None
                 _ = wiki.write(self._formatter.format(self._game.text(option.option_textmap_id)))
-            if option.option_icon_type not in (None, model.talk.OptionIconType.ChatContinueIcon):
+            if (
+                option.option_icon_type is not model.talk.OptionIconType.ChatContinueIcon  # 调教 formatter
+                and not isinstance(option.option_icon_type, model.talk.EnumIndex | None)
+            ):
                 _ = wiki.write(indent)
                 _ = wiki.write(f"|图标{number}={option.option_icon_type.wiki()}")
             if option.trigger_custom_string is None or option.trigger_custom_string == "":

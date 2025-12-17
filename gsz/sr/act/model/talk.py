@@ -105,11 +105,19 @@ class OptionIconType(enum.Enum):
                 return "TriggerProp <!-- 未上传，齿轮形状，地图解谜交互图标 -->"
 
 
+class EnumIndex(BaseModel):
+    enum_index: int
+    value: int
+
+    def wiki(self) -> str:
+        return ""
+
+
 class RogueOptionTalk(BaseModel):
     rogue_option_id: int | None = None
     talk_sentence_id: int | None = None
     option_textmap_id: Text | None = None
-    option_icon_type: OptionIconType | None = None
+    option_icon_type: OptionIconType | EnumIndex | None = None
     trigger_custom_string: str | None = None
     delete_after_selection: bool = False
     has_triggered: bool = False
@@ -133,7 +141,7 @@ class OptionTalkInfo(BaseModel):
 class OptionTalk(typing.Protocol):
     talk_sentence_id: int | None
     option_textmap_id: Text | None
-    option_icon_type: OptionIconType | None
+    option_icon_type: OptionIconType | EnumIndex | None
     trigger_custom_string: str | None
 
 
