@@ -56,6 +56,7 @@ class VideoMeta(Model):
     first_aid: int
     ptime: datetime.datetime
     ep_num: int
+    show: typing.Literal[1] | None = None
 
 
 class Video(Model):
@@ -112,9 +113,9 @@ class Search(Model):
         name: str
 
     class List(Model):
-        slist: list[None] | None = None
+        slist: tuple[()]
         tlist: dict[int, "Search.T"] | None = None
-        vlist: list[Video]
+        vlist: tuple[Video, ...]
 
     class Page(Model):
         pn: int

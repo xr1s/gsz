@@ -109,6 +109,8 @@ class UserPost(collections.abc.AsyncIterator[Post]):
         res = model.Response[model.user_post.UserPostList].model_validate_json(res.content)
         if res.retcode != 0:
             raise exception.APIException(API, self.__params, res.retcode, res.message)
+        if len(res.data.list) == 0:
+            raise StopAsyncIteration
         self.__user_posts = res.data.list
         self.__iter_index = 1
         self.__params["offset"] = res.data.next_offset
