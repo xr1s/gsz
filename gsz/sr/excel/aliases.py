@@ -145,10 +145,9 @@ UNLOCK_PROGRESS = pydantic.AliasChoices(
 )
 
 # jq -Cc '.[].SubLevelGraphs[] | keys[]' StageConfig.json | sort -u
-STAGE_SUBLEVELGRAPH_DEFAULT_SUB_STAGE = pydantic.AliasChoices("KDPPOPPKFAM")
-
-# jq -Cc '.[].SubLevelGraphs[] | keys[]' StageConfig.json | sort -u
-STAGE_SUBLEVELGRAPH_UNKOWN_1 = pydantic.AliasChoices("PEMNGOFOKLJ")
-
-# jq -Cc '.[].SubLevelGraphs[] | keys[]' StageConfig.json | sort -u
-STAGE_SUBLEVELGRAPH_UNKOWN_2 = pydantic.AliasChoices("DMNAIOFLJNC")
+STAGE_SUBLEVELGRAPH_UNKNOW0 = pydantic.AliasChoices("KDPPOPPKFAM", "JKJIKCPOENJ")
+STAGE_SUBLEVELGRAPH_UNKNOW1 = pydantic.AliasChoices("PEMNGOFOKLJ", "EDGBKLAOIKD")
+STAGE_SUBLEVELGRAPH_UNKOWN2 = pydantic.AliasChoices("DMNAIOFLJNC", "JCLEKCFPDJK")
+STAGE_SUBLEVELGRAPH_UNKOWN3 = pydantic.AliasChoices("MNKCMBDMGNB")
+STAGE_SUBLEVELGRAPH_UNKOWN4 = pydantic.AliasChoices("MDIPBLCKGIG")
+STAGE_SUBLEVELGRAPH_UNKOWN5 = pydantic.AliasChoices("HFIFCMOGPFC")
