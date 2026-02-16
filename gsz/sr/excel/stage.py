@@ -71,12 +71,12 @@ class Data(Model):
 
 class SubLevelGraph(Model):
     key: typing.Annotated[typing.Literal["_DefaultSubStage"], pydantic.Field(validation_alias=aliases.KEY)]
-    unknown_0: typing.Annotated[str, pydantic.Field(validation_alias=aliases.STAGE_SUBLEVELGRAPH_UNKNOW0)]
-    unknown_1: typing.Annotated[str | None, pydantic.Field(validation_alias=aliases.STAGE_SUBLEVELGRAPH_UNKNOW1)] = None
-    unknown_2: typing.Annotated[str | None, pydantic.Field(validation_alias=aliases.STAGE_SUBLEVELGRAPH_UNKOWN2)] = None
-    unknown_3: typing.Annotated[str | None, pydantic.Field(validation_alias=aliases.STAGE_SUBLEVELGRAPH_UNKOWN3)] = None
-    unknown_4: typing.Annotated[str | None, pydantic.Field(validation_alias=aliases.STAGE_SUBLEVELGRAPH_UNKOWN4)] = None
-    unknown_5: typing.Annotated[str | None, pydantic.Field(validation_alias=aliases.STAGE_SUBLEVELGRAPH_UNKOWN5)] = None
+    unknown_0: typing.Annotated[str, pydantic.Field(validation_alias=aliases.STAGE_SUBLEVELGRAPH_UNKNOW_0)]
+    unknown_1: typing.Annotated[str | None, pydantic.Field(validation_alias=aliases.STAGE_SUBLEVELGRAPH_UNKNOW_1)] = None
+    unknown_2: typing.Annotated[str | None, pydantic.Field(validation_alias=aliases.STAGE_SUBLEVELGRAPH_UNKOWN_2)] = None
+    unknown_3: typing.Annotated[str | None, pydantic.Field(validation_alias=aliases.STAGE_SUBLEVELGRAPH_UNKOWN_3)] = None
+    unknown_4: typing.Annotated[str | None, pydantic.Field(validation_alias=aliases.STAGE_SUBLEVELGRAPH_UNKOWN_4)] = None
+    unknown_5: typing.Annotated[str | None, pydantic.Field(validation_alias=aliases.STAGE_SUBLEVELGRAPH_UNKOWN_5)] = None
 
 
 class StageConfig(ModelID):

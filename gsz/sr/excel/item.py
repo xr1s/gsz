@@ -103,6 +103,16 @@ class SubType(enum.Enum):
     3.5 新增，从 SubType.Material 拆出来的
     对应 MainType 为 Material
     """
+    DiceCombatAvatar = "DiceCombatAvatar"
+    """
+    「上骰了！战力党！」活动
+    4.0 新增
+    """
+    DiceCombatDice = "DiceCombatDice"
+    """
+    「上骰了！战力党！」活动
+    4.0 新增
+    """
     Eidolon = "Eidolon"
     """星魂, 仅出现在 ItemConfigAvatarRank.json 中"""
     ElfRestaurantItem = "ElfRestaurantItem"
@@ -225,6 +235,11 @@ class SubType(enum.Enum):
     二周年庆活动相关道具
     3.2 新增
     对应 ItemMainType 为 Material
+    """
+    PlatformBoundGift = "PlatformBoundGift"
+    """
+    头饰「加载中」
+    4.0 新增
     """
     PlayerOutfit = "PlayerOutfit"
     """

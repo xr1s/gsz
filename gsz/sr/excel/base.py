@@ -42,6 +42,8 @@ class Element(enum.Enum):
 
 
 class Path(enum.Enum):
+    Elation = "Elation"
+    """欢愉"""
     Knight = "Knight"
     """存护"""
     Mage = "Mage"
@@ -62,6 +64,8 @@ class Path(enum.Enum):
     @typing_extensions.override
     def __str__(self) -> str:  # noqa: PLR0911
         match self:
+            case self.Elation:
+                return "欢愉"
             case self.Knight:
                 return "存护"
             case self.Mage:

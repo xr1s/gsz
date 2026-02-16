@@ -68,11 +68,14 @@ class BookSeriesConfig(View[excel.BookSeriesConfig]):
         match int(file_stem):
             # 按顺序分别是 雅利洛 | 空间站黑塔 | 仙舟罗浮 | 匹诺康尼
             # 特殊图标单独备注
-            case 190001 | 190004 | 190007 | 190016 | 190017:
+            case 190001 | 190004 | 190007 | 190016 | 190017 | 190023:
+                # 雅利洛   黑塔     罗浮   匹诺康尼 翁法罗斯 二相乐园
                 return "书籍"
             case 190002 | 190005 | 190008 | 190015 | 190018:
+                # 雅利洛   黑塔     罗浮   匹诺康尼 翁法罗斯
                 return "资料"
             case 190003 | 190006 | 190009:
+                # 雅利洛   黑塔     罗浮
                 return "信件"
             case 140236:  # 目前只有罗浮的《钟珊的来信》和匹诺康尼的《关于财富学院代表的联名投诉信》
                 return "信件2"
@@ -90,6 +93,10 @@ class BookSeriesConfig(View[excel.BookSeriesConfig]):
                 return "回响"
             case 191935:  # 只出现在翁法罗斯 一页寄语 系列阅读物
                 return "寄语"
+            case 190022:  # 二相乐园
+                return "磁带"
+            case 190021:  # 二相乐园
+                return "卡带"
             case _:
                 raise ValueError(f"可能是新版本新增不同类型的图书 {self.name!r} {file_stem}")
 

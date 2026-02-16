@@ -128,27 +128,36 @@ class AISkillSequence(Model):
     id: typing.Annotated[int, pydantic.Field(validation_alias=aliases.ID)]
 
 
-OVERRIDE_SKILL_PARAM_ID = pydantic.Field(validation_alias=pydantic.AliasChoices("NOCBBALICHO", "HEOJGOIDCCD"))
-OVERRIDE_SKILL_PARAM_UNKNOWN_1 = pydantic.Field(validation_alias=pydantic.AliasChoices("EADHAKNLILJ", "EADHAKNLILJ"))
-OVERRIDE_SKILL_PARAM_UNKNOWN_2 = pydantic.Field(validation_alias=pydantic.AliasChoices("MLDFNFLLGJB", "KFFBBHGEEMI"))
-OVERRIDE_SKILL_PARAM_UNKNOWN_3 = pydantic.Field(validation_alias=pydantic.AliasChoices("LHDMDABFIDN", "MMAGIKIGINE"))
-OVERRIDE_SKILL_PARAM_UNKNOWN_4 = pydantic.Field(validation_alias=pydantic.AliasChoices("NCLOMNEHPMJ", "PHPJNBBAIGG"))
-OVERRIDE_SKILL_PARAM_UNKNOWN_5 = pydantic.Field(validation_alias=pydantic.AliasChoices("JELMCJBICJN", "IHLPJJMJLNG"))
-OVERRIDE_SKILL_PARAM_UNKNOWN_6 = pydantic.Field(validation_alias=pydantic.AliasChoices("EKCDEGCMDHG", "PAIMJGMDCJO"))
-OVERRIDE_SKILL_PARAM_UNKNOWN_7 = pydantic.Field(validation_alias=pydantic.AliasChoices("LIKKJIAOACA", "IDADABMBMMO"))
-OVERRIDE_SKILL_PARAM_UNKNOWN_8 = pydantic.Field(validation_alias=pydantic.AliasChoices("CGHDHAMLJJB", "CKGMPABJFGA"))
+OVERRIDE_SKILL_PARAM_ID = pydantic.Field(
+    validation_alias=pydantic.AliasChoices("BGKKGHGEFCE", "HEOJGOIDCCD", "NOCBBALICHO")
+)
+OVERRIDE_SKILL_PARAM_UNKNOWN_1 = pydantic.Field(
+    validation_alias=pydantic.AliasChoices("DOHNADCAOAP", "EADHAKNLILJ", "EADHAKNLILJ")
+)
+OVERRIDE_SKILL_PARAM_UNKNOWN_2 = pydantic.Field(
+    validation_alias=pydantic.AliasChoices("IGEGFLALOLF", "KFFBBHGEEMI", "MLDFNFLLGJB")
+)
+OVERRIDE_SKILL_PARAM_UNKNOWN_3 = pydantic.Field(validation_alias=pydantic.AliasChoices("MMAGIKIGINE", "LHDMDABFIDN"))
+OVERRIDE_SKILL_PARAM_UNKNOWN_4 = pydantic.Field(validation_alias=pydantic.AliasChoices("PHPJNBBAIGG", "NCLOMNEHPMJ"))
+OVERRIDE_SKILL_PARAM_UNKNOWN_5 = pydantic.Field(validation_alias=pydantic.AliasChoices("IHLPJJMJLNG", "JELMCJBICJN"))
+OVERRIDE_SKILL_PARAM_UNKNOWN_6 = pydantic.Field(validation_alias=pydantic.AliasChoices("PAIMJGMDCJO", "EKCDEGCMDHG"))
+OVERRIDE_SKILL_PARAM_UNKNOWN_7 = pydantic.Field(validation_alias=pydantic.AliasChoices("IDADABMBMMO", "LIKKJIAOACA"))
+OVERRIDE_SKILL_PARAM_UNKNOWN_8 = pydantic.Field(validation_alias=pydantic.AliasChoices("CKGMPABJFGA", "CGHDHAMLJJB"))
+OVERRIDE_SKILL_PARAM_UNKNOWN_9 = pydantic.Field(validation_alias=pydantic.AliasChoices("FDKCKECMFHL"))
 
 
 class OverrideSkillParam(Model):
     id: typing.Annotated[int, OVERRIDE_SKILL_PARAM_ID]
     unknown_1: typing.Annotated[Value[int], OVERRIDE_SKILL_PARAM_UNKNOWN_1]
     unknown_2: typing.Annotated[Value[typing.Literal[-1, 2]], OVERRIDE_SKILL_PARAM_UNKNOWN_2]
-    unknown_3: typing.Annotated[Value[float], OVERRIDE_SKILL_PARAM_UNKNOWN_3]
-    unknown_4: typing.Annotated[Value[float], OVERRIDE_SKILL_PARAM_UNKNOWN_4]
-    unknown_5: typing.Annotated[Value[float], OVERRIDE_SKILL_PARAM_UNKNOWN_5]
-    unknown_6: typing.Annotated[Value[float], OVERRIDE_SKILL_PARAM_UNKNOWN_6]
+    unknown_3: typing.Annotated[Value[float] | None, OVERRIDE_SKILL_PARAM_UNKNOWN_3] = None
+    unknown_4: typing.Annotated[Value[float] | None, OVERRIDE_SKILL_PARAM_UNKNOWN_4] = None
+    unknown_5: typing.Annotated[Value[float] | None, OVERRIDE_SKILL_PARAM_UNKNOWN_5] = None
+    unknown_6: typing.Annotated[Value[float] | None, OVERRIDE_SKILL_PARAM_UNKNOWN_6] = None
     unknown_7: typing.Annotated[Value[float] | None, OVERRIDE_SKILL_PARAM_UNKNOWN_7] = None
-    unknown_8: typing.Annotated[Value[float], OVERRIDE_SKILL_PARAM_UNKNOWN_8]
+    unknown_8: typing.Annotated[Value[float] | None, OVERRIDE_SKILL_PARAM_UNKNOWN_8] = None
+    unknown_9: typing.Annotated[list[Value[float]], OVERRIDE_SKILL_PARAM_UNKNOWN_9]
+    """unknown_9 是 4.0 新增替代（聚合）之前 unknown_3 ~ unknown_8 字段的列表"""
 
 
 class MonsterConfig(ModelID):

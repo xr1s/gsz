@@ -1,7 +1,10 @@
 import pydantic
 
+# 3.2 ~ 3.7 的都和 3.1 一样没变过
+
 # jq -Cc '.[].AISkillSequence[] | keys[]' MonsterTemplateConfig.json | sort -u
 ID = pydantic.AliasChoices(
+    "PMLIMKCDNJP",  # 4.0
     "JAJOONLKLBO",  # 3.8
     "BMEJEMLFEIO",  # 3.1
     "LDKCGGLDKCK",  # 3.0
@@ -24,6 +27,7 @@ ID = pydantic.AliasChoices(
 
 # jq -Cc '.[].CustomValues[] | keys[]' MonsterConfig.json | sort -u
 KEY = pydantic.AliasChoices(
+    "MHHHCIPKDHL",  # v4.0
     "CHEAIJFINAB",  # v3.8
     "HEIKKHLKMOA",  # 3.1
     "EGIHHBKIHAK",  # 3.0
@@ -46,6 +50,7 @@ KEY = pydantic.AliasChoices(
 
 # jq -Cc '.[].CustomValues[] | keys[]' MonsterConfig.json | sort -u
 VAL = pydantic.AliasChoices(
+    "JOJNNKEPPLI",  # v4.0
     "GAGPCFOFKCN",  # v3.8
     "MBMDOCJIMEJ",  # 3.1
     "CPPHDJHHGGN",  # 3.0
@@ -68,6 +73,7 @@ VAL = pydantic.AliasChoices(
 
 # jq -Cc '.[].DescParams[] | keys[]' RogueTournWeeklyDisplay.json | sort -u
 ROGUE_WEEKLY_TYP = pydantic.AliasChoices(
+    "ICMHAGLCJII",  # 4.0
     "EJAEDHBFJGI",  # 3.8
     "PICHIHHCOCB",  # 3.1
     "PGCFPBGPDGG",  # 3.0
@@ -80,6 +86,7 @@ ROGUE_WEEKLY_TYP = pydantic.AliasChoices(
 
 # jq -Cc '.[].DescParams[] | keys[]' RogueTournWeeklyDisplay.json | sort -u
 ROGUE_WEEKLY_VAL = pydantic.AliasChoices(
+    "IFIENLNPIJA",  # 4.0
     "CPALPNDAGBG",  # 3.8
     "HMCDHMFHABF",  # 3.1
     "CPPHDJHHGGN",  # 3.0
@@ -145,9 +152,9 @@ UNLOCK_PROGRESS = pydantic.AliasChoices(
 )
 
 # jq -Cc '.[].SubLevelGraphs[] | keys[]' StageConfig.json | sort -u
-STAGE_SUBLEVELGRAPH_UNKNOW0 = pydantic.AliasChoices("KDPPOPPKFAM", "JKJIKCPOENJ")
-STAGE_SUBLEVELGRAPH_UNKNOW1 = pydantic.AliasChoices("PEMNGOFOKLJ", "EDGBKLAOIKD")
-STAGE_SUBLEVELGRAPH_UNKOWN2 = pydantic.AliasChoices("DMNAIOFLJNC", "JCLEKCFPDJK")
-STAGE_SUBLEVELGRAPH_UNKOWN3 = pydantic.AliasChoices("MNKCMBDMGNB")
-STAGE_SUBLEVELGRAPH_UNKOWN4 = pydantic.AliasChoices("MDIPBLCKGIG")
-STAGE_SUBLEVELGRAPH_UNKOWN5 = pydantic.AliasChoices("HFIFCMOGPFC")
+STAGE_SUBLEVELGRAPH_UNKNOW_0 = pydantic.AliasChoices("AIOKHBKLIFC", "JKJIKCPOENJ", "KDPPOPPKFAM")
+STAGE_SUBLEVELGRAPH_UNKNOW_1 = pydantic.AliasChoices("COLFEFDGFLG", "EDGBKLAOIKD", "PEMNGOFOKLJ")
+STAGE_SUBLEVELGRAPH_UNKOWN_2 = pydantic.AliasChoices("LADCKGAMEEN", "JCLEKCFPDJK", "DMNAIOFLJNC")
+STAGE_SUBLEVELGRAPH_UNKOWN_3 = pydantic.AliasChoices("ALCCFKDDOIE", "MNKCMBDMGNB")
+STAGE_SUBLEVELGRAPH_UNKOWN_4 = pydantic.AliasChoices("MMHHFHAFJPP", "MDIPBLCKGIG")
+STAGE_SUBLEVELGRAPH_UNKOWN_5 = pydantic.AliasChoices("JLKMCEEILEP", "HFIFCMOGPFC")
