@@ -523,6 +523,26 @@ class GameData:
         )
         return env
 
+    ######## achievement ########
+
+    @excel_output(view.AchievementData)
+    def achievement_data(self):
+        """成就列表"""
+
+    @excel_output(view.AchievementSeries)
+    def achievement_series(self):
+        """成就系列"""
+
+    @functools.cached_property
+    def _achievement_series_achievements(self) -> dict[int, list[view.AchievementData]]:
+        mappings: dict[int, list[view.AchievementData]] = {}
+        for achievement in self.achievement_data():
+            if achievement.series_id in mappings:
+                mappings[achievement.series_id].append(achievement)
+            else:
+                mappings[achievement.series_id] = [achievement]
+        return mappings
+
     ######## avatar ########
 
     @excel_output(view.AtlasAvatarChangeInfo)

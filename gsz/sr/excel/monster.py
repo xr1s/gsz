@@ -156,7 +156,7 @@ class OverrideSkillParam(Model):
     unknown_6: typing.Annotated[Value[float] | None, OVERRIDE_SKILL_PARAM_UNKNOWN_6] = None
     unknown_7: typing.Annotated[Value[float] | None, OVERRIDE_SKILL_PARAM_UNKNOWN_7] = None
     unknown_8: typing.Annotated[Value[float] | None, OVERRIDE_SKILL_PARAM_UNKNOWN_8] = None
-    unknown_9: typing.Annotated[list[Value[float]], OVERRIDE_SKILL_PARAM_UNKNOWN_9]
+    unknown_9: typing.Annotated[list[Value[float]] | None, OVERRIDE_SKILL_PARAM_UNKNOWN_9] = None
     """unknown_9 是 4.0 新增替代（聚合）之前 unknown_3 ~ unknown_8 字段的列表"""
 
 

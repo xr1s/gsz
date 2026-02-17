@@ -27,8 +27,8 @@ ID = pydantic.AliasChoices(
 
 # jq -Cc '.[].CustomValues[] | keys[]' MonsterConfig.json | sort -u
 KEY = pydantic.AliasChoices(
-    "MHHHCIPKDHL",  # v4.0
-    "CHEAIJFINAB",  # v3.8
+    "MHHHCIPKDHL",  # 4.0
+    "CHEAIJFINAB",  # 3.8
     "HEIKKHLKMOA",  # 3.1
     "EGIHHBKIHAK",  # 3.0
     "BNCHHJCHKON",  # 2.7
@@ -50,8 +50,8 @@ KEY = pydantic.AliasChoices(
 
 # jq -Cc '.[].CustomValues[] | keys[]' MonsterConfig.json | sort -u
 VAL = pydantic.AliasChoices(
-    "JOJNNKEPPLI",  # v4.0
-    "GAGPCFOFKCN",  # v3.8
+    "JOJNNKEPPLI",  # 4.0
+    "GAGPCFOFKCN",  # 3.8
     "MBMDOCJIMEJ",  # 3.1
     "CPPHDJHHGGN",  # 3.0
     "ODPKJEJKOIH",  # 2.7

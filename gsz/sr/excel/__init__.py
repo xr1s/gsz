@@ -1,3 +1,4 @@
+from .achievement import AchievementData, AchievementLevel, AchievementSeries
 from .avatar import (
     AtlasAvatarChangeInfo,
     AvatarAtlas,
@@ -139,6 +140,10 @@ from .talk import HeartDialTalk, TalkSentenceConfig, VoiceConfig
 from .tutorial import TutorialGuideData, TutorialGuideGroup
 
 __all__ = (
+    # achievement
+    "AchievementData",
+    "AchievementLevel",
+    "AchievementSeries",
     # avatar
     "AtlasAvatarChangeInfo",
     "AvatarAtlas",
