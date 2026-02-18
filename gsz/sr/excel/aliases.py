@@ -129,6 +129,7 @@ ROGUE_BUFF_DROP = pydantic.AliasChoices(
 
 # jq -Cc '.[].UnlockNPCProgressIDList[] | keys[]' RogueHandBookEvent.json | sort -u
 UNLOCK_NPC_ID = pydantic.AliasChoices(
+    "PJNADGENKDA",  # 4.0
     "HHGAFBNILGL",  # 3.8
     "MBNKLBEBOHB",  # 3.1
     "HLNMOFDGLAA",  # 3.0
@@ -141,7 +142,8 @@ UNLOCK_NPC_ID = pydantic.AliasChoices(
 
 # jq -Cc '.[].UnlockNPCProgressIDList[] | keys[]' RogueHandBookEvent.json | sort -u
 UNLOCK_PROGRESS = pydantic.AliasChoices(
-    "ANLHDPFLCBM",  # 3.1
+    "ELAPDEBKHLC",  # 4.0
+    "ANLHDPFLCBM",  # 3.8
     "NNDEOKKKKPE",  # 3.1
     "AFMKGEHANLM",  # 3.0
     "FINLPBFNLHP",  # 2.7
