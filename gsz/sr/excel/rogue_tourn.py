@@ -19,7 +19,7 @@ class RogueTournBuff(ModelMainSubID):
     rogue_buff_type: int
     rogue_buff_category: BuffCategory | None = None
     rogue_buff_tag: int
-    extra_effect_id_list: list[int]
+    extra_effect_id_list: tuple[int, ...]
     unlock_display: int
     is_in_handbook: bool = False
 
@@ -81,7 +81,7 @@ class Mode(enum.Enum):
 class RogueTournBuffGroup(ModelID):
     rogue_buff_group_id: int
     tourn_mode: Mode | None = None
-    rogue_buff_drop: list[int]
+    rogue_buff_drop: tuple[int, ...]
 
     @property
     @typing_extensions.override
@@ -177,7 +177,7 @@ class RogueTournFormulaDisplay(ModelID):
     formula_display_id: int
     formula_type_display: int | None = None
     formula_story: Text
-    extra_effect: list[int]
+    extra_effect: tuple[int, ...]
     handbook_unlock_display_id: int | None = None
 
     @property
@@ -215,7 +215,7 @@ class MiracleCategory(enum.Enum):
 
 class RogueTournHandBookEvent(ModelID):
     event_handbook_id: int
-    unlock_npc_progress_id_list: list[UnlockNPCProgressID]
+    unlock_npc_progress_id_list: tuple[UnlockNPCProgressID, ...]
     event_title: Text
     type_display_id: int
     unlock_display_id: int
@@ -334,10 +334,10 @@ class RogueTournTitanBless(ModelID):
     titan_type: TitanType
     titan_bless_level: int
     maze_buff_id: int
-    extra_effect_id_list: list[int]
+    extra_effect_id_list: tuple[int, ...]
     speed_up_ratio: int | None = None  # 仅出现于 3.3 版本及之后
     bless_ratio: int | None = None
-    bless_battle_display_category_list: list[BlessBattleDisplayCategory] | None = None
+    bless_battle_display_category_list: tuple[BlessBattleDisplayCategory, ...] | None = None
 
     @property
     @typing_extensions.override
@@ -350,8 +350,8 @@ class RogueTournWeeklyChallenge(ModelID):
 
     challenge_id: int
     weekly_name: Text
-    weekly_content_list: list[int]
-    weekly_content_detail_list: list[int]
+    weekly_content_list: tuple[int, ...]
+    weekly_content_detail_list: tuple[int, ...]
     reward_id: int
     display_final_monster_groups: dict[typing.Literal["0"], int]
     display_monster_groups_1: dict[typing.Literal["0", "3"], int]
@@ -383,7 +383,7 @@ class DescParam(Model):
 class RogueTournWeeklyDisplay(ModelID):
     weekly_display_id: int
     weekly_display_content: Text
-    desc_params: list[DescParam]
+    desc_params: tuple[DescParam, ...]
 
     @property
     @typing_extensions.override

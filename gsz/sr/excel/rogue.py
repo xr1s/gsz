@@ -106,10 +106,10 @@ class RogueBuff(ModelMainSubID):
     # 祝福稀有度，仅出现在 2.2 及之前，2.3 被 RogueBuffCategory 取代
     rogue_buff_category: BuffCategory | None = None
     rogue_buff_tag: int
-    extra_effect_id_list: list[int]
+    extra_effect_id_list: tuple[int, ...]
     aeon_id: AeonID | None = None
     rogue_version: typing.Literal[1]
-    unlock_id_list: list[int]
+    unlock_id_list: tuple[int, ...]
     is_show: bool = False
     battle_event_buff_type: BattleEventBuffType | None = None
     activity_module_id: int | None = None  #  仅出现在 1.3 及之后
@@ -129,7 +129,7 @@ class RogueBuff(ModelMainSubID):
 
 class RogueBuffGroup(ModelID):
     rogue_buff_group_id: typing.Annotated[int, pydantic.Field(validation_alias=aliases.ROGUE_BUFF_GROUP_ID)]
-    rogue_buff_drop: typing.Annotated[list[int], pydantic.Field(validation_alias=aliases.ROGUE_BUFF_DROP)]
+    rogue_buff_drop: typing.Annotated[tuple[int, ...], pydantic.Field(validation_alias=aliases.ROGUE_BUFF_DROP)]
 
     @property
     @typing_extensions.override
@@ -142,7 +142,7 @@ class RogueBuffType(ModelID):
     rogue_buff_type_textmap_id: Text
     rogue_buff_type_icon: str
     rogue_buff_type_title: Text
-    rugue_buff_type_reward_quest_list: list[int]
+    rugue_buff_type_reward_quest_list: tuple[int, ...]
     rogue_buff_type_sub_title: Text | None = None
     hint_desc: Text | None = None
 
@@ -194,12 +194,12 @@ class RogueHandBookEvent(ModelID):
     event_handbook_id: typing.Annotated[
         int, pydantic.Field(validation_alias=pydantic.AliasChoices("EventHandbookID", "EventID"))
     ]
-    unlock_npc_progress_id_list: list[UnlockNPCProgressID]
+    unlock_npc_progress_id_list: tuple[UnlockNPCProgressID, ...]
     event_title: Text
     event_type: Text
     event_reward: int
     order: int
-    event_type_list: list[int]
+    event_type_list: tuple[int, ...]
     unlock_hint_desc: Text
     image_id: int
 
@@ -226,7 +226,7 @@ class RogueHandbookMiracle(ModelID):
 
     miracle_handbook_id: int
     miracle_reward: int
-    miracle_type_list: list[int]
+    miracle_type_list: tuple[int, ...]
     miracle_display_id: int
     miracle_effect_display_id: int | None = None
     order: int
@@ -258,7 +258,7 @@ class RogueMiracle(ModelID):
     miracle_id: int
     miracle_display_id: int | None = None  # 仅出现于 1.3 及之后
     miracle_effect_display_id: int | None = None  # 仅出现于 3.1 及之后
-    unlock_id_list: list[int] | None = None  # 仅出现于 2.3 及之前
+    unlock_id_list: tuple[int, ...] | None = None  # 仅出现于 2.3 及之前
     use_effect: Text | None = None
     """无尽活动的特殊字段，之前之后都没有了"""
     is_show: bool = False
@@ -269,12 +269,12 @@ class RogueMiracle(ModelID):
     # 1.3 之后拆出 RogueMiracleDisplay.json 后便没有了, 2.6 ~ 3.0 短暂重新出现过但均为空，3.1 又没了
     miracle_name: Text | None = None  # 仅出现在 1.2 及之前
     miracle_desc: Text | None = None  # 仅出现在 1.2 及之前
-    desc_param_list: list[Value[float]] | None = None  # 仅出现在 1.2 及之前
+    desc_param_list: tuple[Value[float], ...] | None = None  # 仅出现在 1.2 及之前
     miracle_bg_desc: Text | None = None  # 仅出现在 1.2 及之前
     miracle_tag: Text | None = None  # 仅出现在 1.2 及之前
     miracle_icon_path: str | None = None  # 仅出现在 1.2 及之前
     miracle_figure_icon_path: str | None = None  # 仅出现在 1.2 及之前
-    extra_effect: list[int] | None = None  # 仅出现在 2.6 到 3.0，但均为空
+    extra_effect: tuple[int, ...] | None = None  # 仅出现在 2.6 到 3.0，但均为空
     broken_change_miracle_id: int | None = None  # 2.3 及之后无此字段
     """损坏后会变成什么样, 目前看都是「乱七八糟的代码」系列奇物"""
 
@@ -290,8 +290,8 @@ class RogueMiracleDisplay(ModelID):
     miracle_display_id: int
     miracle_name: Text
     miracle_desc: Text | None = None
-    desc_param_list: list[Value[float]] | None = None
-    extra_effect: list[int] | None = None
+    desc_param_list: tuple[Value[float], ...] | None = None
+    extra_effect: tuple[int, ...] | None = None
     miracle_bg_desc: Text | None = None
     miracle_tag: Text | None = None
     miracle_icon_path: str
@@ -312,8 +312,8 @@ class RogueMiracleEffectDisplay(ModelID):
     miracle_effect_display_id: int
     miracle_desc: Text | None = None
     miracle_simple_desc: Text | None = None
-    desc_param_list: list[Value[float]]
-    extra_effect: list[int]
+    desc_param_list: tuple[Value[float], ...]
+    extra_effect: tuple[int, ...]
 
     @property
     @typing_extensions.override
