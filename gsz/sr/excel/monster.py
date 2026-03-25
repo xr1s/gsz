@@ -129,13 +129,13 @@ class AISkillSequence(Model):
 
 
 OVERRIDE_SKILL_PARAM_ID = pydantic.Field(
-    validation_alias=pydantic.AliasChoices("BGKKGHGEFCE", "HEOJGOIDCCD", "NOCBBALICHO")
+    validation_alias=pydantic.AliasChoices("CEANENGNODF", "BGKKGHGEFCE", "HEOJGOIDCCD", "NOCBBALICHO")
 )
 OVERRIDE_SKILL_PARAM_UNKNOWN_1 = pydantic.Field(
-    validation_alias=pydantic.AliasChoices("DOHNADCAOAP", "EADHAKNLILJ", "EADHAKNLILJ")
+    validation_alias=pydantic.AliasChoices("ECEBNPLAEJD", "DOHNADCAOAP", "EADHAKNLILJ", "EADHAKNLILJ")
 )
 OVERRIDE_SKILL_PARAM_UNKNOWN_2 = pydantic.Field(
-    validation_alias=pydantic.AliasChoices("IGEGFLALOLF", "KFFBBHGEEMI", "MLDFNFLLGJB")
+    validation_alias=pydantic.AliasChoices("KGBGCIFKFBJ", "IGEGFLALOLF", "KFFBBHGEEMI", "MLDFNFLLGJB")
 )
 OVERRIDE_SKILL_PARAM_UNKNOWN_3 = pydantic.Field(validation_alias=pydantic.AliasChoices("MMAGIKIGINE", "LHDMDABFIDN"))
 OVERRIDE_SKILL_PARAM_UNKNOWN_4 = pydantic.Field(validation_alias=pydantic.AliasChoices("PHPJNBBAIGG", "NCLOMNEHPMJ"))
@@ -143,7 +143,7 @@ OVERRIDE_SKILL_PARAM_UNKNOWN_5 = pydantic.Field(validation_alias=pydantic.AliasC
 OVERRIDE_SKILL_PARAM_UNKNOWN_6 = pydantic.Field(validation_alias=pydantic.AliasChoices("PAIMJGMDCJO", "EKCDEGCMDHG"))
 OVERRIDE_SKILL_PARAM_UNKNOWN_7 = pydantic.Field(validation_alias=pydantic.AliasChoices("IDADABMBMMO", "LIKKJIAOACA"))
 OVERRIDE_SKILL_PARAM_UNKNOWN_8 = pydantic.Field(validation_alias=pydantic.AliasChoices("CKGMPABJFGA", "CGHDHAMLJJB"))
-OVERRIDE_SKILL_PARAM_UNKNOWN_9 = pydantic.Field(validation_alias=pydantic.AliasChoices("FDKCKECMFHL"))
+OVERRIDE_SKILL_PARAM_UNKNOWN_9 = pydantic.Field(validation_alias=pydantic.AliasChoices("JNMAMOELCIB", "FDKCKECMFHL"))
 
 
 class OverrideSkillParam(Model):

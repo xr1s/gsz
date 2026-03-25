@@ -74,7 +74,7 @@ class MazeBuff(ModelMainSubID):
     id_: int
     buff_series: typing.Literal[1]
     buff_rarity: typing.Literal[1]
-    lv: int
+    lv: int | None = None
     lv_max: int
     modifier_name: str
     in_battle_binding_type: InBattleBindingType | None = None
@@ -103,7 +103,7 @@ class MazeBuff(ModelMainSubID):
     @property
     @typing_extensions.override
     def sub_id(self) -> int:
-        return self.lv
+        return self.lv if self.lv is not None else 0
 
 
 class RewardData(ModelID):

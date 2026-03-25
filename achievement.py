@@ -112,7 +112,9 @@ def assemble_wikitext(
     titles: list[str] = []
     descs: list[str] = []
     hide_descs: list[str] = []
-    for sub in game.achievement_data(sub_achievement_map[achievement.id]):
+    subs = list(game.achievement_data(sub_achievement_map[achievement.id]))
+    subs.sort(key=lambda achv: -achv.priority)
+    for sub in subs:
         title, desc, hide_desc = achievement_title_descs(sub, formatter)
         titles.append(title)
         descs.append(desc)
@@ -120,7 +122,10 @@ def assemble_wikitext(
             hide_descs.append(hide_desc)
     title = "/".join(titles)
     wiki.append(title)
-    desc = "/".join(descs)
+    prefix = ""
+    if len(subs) > 1:
+        prefix = f"{{{{颜色|描述2|【{'二三四五六七八九十'[len(subs) - 2]}选一】}}}}"
+    desc = prefix + "/".join(descs)
     wiki.append("说明=" + desc)
     if len(hide_descs) != 0:
         hide_desc = "/".join(hide_descs)
@@ -157,10 +162,13 @@ def main():
         achv.id: tuple(sub.id for sub in itertools.chain((achv,), achv.sub_achievements))
         for achv in cultivate_achievement(arguments.e_hkrpg_token)
     }
-    achievements = arguments.game.achievement_data()
+    achievements = list(arguments.game.achievement_data())
+    # 用于 BWIKI 主键（成就名）冲突提示
+    achievements_titles: dict[str, AchievementData] = {
+        achievement.title: achievement for achievement in reversed(achievements)
+    }
     if arguments.series is not None:
-        achievements = (achievement for achievement in achievements if achievement.series_id == arguments.series.id)
-    achievements = list(achievements)
+        achievements = [achievement for achievement in achievements if achievement.series_id == arguments.series.id]
     achievements.sort(key=lambda achievement: -achievement.priority)
     # 用于判断成就是否必要特定角色和敌人
     avatars = tuple(itertools.chain(arguments.game.avatar_config(), arguments.game.avatar_config_ld()))
@@ -175,6 +183,16 @@ def main():
     for achievement in achievements:
         if achievement.id not in sub_achievement_map:
             continue
+        if (old := achievements_titles[achievement.title]).id != achievement.id:
+            old = achievements_titles[achievement.title]
+            new = achievement
+            print(
+                "",
+                f"\x1b[1;33m主键冲突警告\x1b[m {new.title}",
+                f"旧 {old.id}：{old.desc}",
+                f"新 {new.id}：{new.desc}",
+                sep="\n",
+            )
         print(assemble_wikitext(arguments.game, achievement, sub_achievement_map, avatars, monsters))
 
 

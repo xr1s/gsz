@@ -58,18 +58,22 @@ class TestPath(enum.Enum):
 
 
 class Mode(enum.Enum):
-    TournMode1 = "Tourn1"
+    Tourn1 = "Tourn1"
     """人间喜剧"""
-    TournMode2 = "Tourn2"
+    Tourn2 = "Tourn2"
+    """千面英雄"""
+    Tourn3 = "Tourn3"
     """千面英雄"""
 
     @typing_extensions.override
     def __str__(self):
         match self:
-            case self.TournMode1:
+            case self.Tourn1:
                 return "人间喜剧"
-            case self.TournMode2:
+            case self.Tourn2:
                 return "千面英雄"
+            case self.Tourn3:
+                return "乐园漫记"
 
     def __lt__(self, value: "Mode") -> bool:
         return int(self.value.removeprefix("Tourn")) < int(value.value.removeprefix("Tourn"))
@@ -256,9 +260,11 @@ class RogueTournMiracle(ModelID):
 
     miracle_id: int
     tourn_mode: Mode
-    miracle_category: MiracleCategory
+    miracle_category: MiracleCategory | None = None
     miracle_display_id: int
     miracle_effect_display_id: int | None = None
+    miracle_effect_id: int | None = None
+    """4.1 乐园漫记新增，疑似取代 MiracleEffectDisplayID"""
     handbook_miracle_id: int | None = None
 
     @property
@@ -352,7 +358,7 @@ class RogueTournWeeklyChallenge(ModelID):
     weekly_name: Text
     weekly_content_list: tuple[int, ...]
     weekly_content_detail_list: tuple[int, ...]
-    reward_id: int
+    reward_id: int | None = None
     display_final_monster_groups: dict[typing.Literal["0"], int]
     display_monster_groups_1: dict[typing.Literal["0", "3"], int]
     display_monster_groups_2: dict[typing.Literal["0", "3"], int]
@@ -373,6 +379,10 @@ class DescParamType(enum.Enum):
     """奇物"""
     TitanBless = "TitanBless"
     """金血祝颂"""
+    Hex = "Hex"
+    """加权奇物"""
+    PersonaStyle = "PersonaStyle"
+    """面具"""
 
 
 class DescParam(Model):

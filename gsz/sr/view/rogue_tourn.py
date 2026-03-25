@@ -363,10 +363,11 @@ class RogueTournHandBookEvent(View[excel.RogueTournHandBookEvent]):
                     dialogue for dialogue in npc.dialogue_list() if dialogue.progress == prog_id.unlock_progress
                 )
                 dialogues.append(dialogue)
-            return dialogues
-        except FileNotFoundError:
-            print("解包不完整，路径缺失")
+        except FileNotFoundError as e:
+            print(f"解包不完整，路径缺失 {e}")
             return []
+        else:
+            return dialogues
 
     def dialogues(self) -> collections.abc.Iterable[act.Dialogue]:
         from ..act import Dialogue
@@ -495,7 +496,7 @@ class RogueTournMiracle(View[excel.RogueTournMiracle]):
         return self.__rogue_tourn_miracle_display.desc_param_list
 
     @property
-    def category(self) -> rogue_tourn.MiracleCategory:
+    def category(self) -> rogue_tourn.MiracleCategory | None:
         """稀有度"""
         return self._excel.miracle_category
 
@@ -787,6 +788,10 @@ class RogueTournWeeklyDisplay(View[excel.RogueTournWeeklyDisplay]):
                     value = self._game.rogue_tourn_titan_bless(param.value)
                     assert value is not None
                     params.append(value)
+                case rogue_tourn.DescParamType.Hex:
+                    pass  # TODO
+                case rogue_tourn.DescParamType.PersonaStyle:
+                    pass  # TODO
         return params
 
     @functools.cached_property

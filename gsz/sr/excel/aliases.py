@@ -4,6 +4,7 @@ import pydantic
 
 # jq -Cc '.[].AISkillSequence[] | keys[]' MonsterTemplateConfig.json | sort -u
 ID = pydantic.AliasChoices(
+    "BNGCFOKMPNE",  # 4.1
     "PMLIMKCDNJP",  # 4.0
     "JAJOONLKLBO",  # 3.8
     "BMEJEMLFEIO",  # 3.1
@@ -27,6 +28,7 @@ ID = pydantic.AliasChoices(
 
 # jq -Cc '.[].CustomValues[] | keys[]' MonsterConfig.json | sort -u
 KEY = pydantic.AliasChoices(
+    "KKIFFICMABP",  # 4.1
     "MHHHCIPKDHL",  # 4.0
     "CHEAIJFINAB",  # 3.8
     "HEIKKHLKMOA",  # 3.1
@@ -50,6 +52,7 @@ KEY = pydantic.AliasChoices(
 
 # jq -Cc '.[].CustomValues[] | keys[]' MonsterConfig.json | sort -u
 VAL = pydantic.AliasChoices(
+    "IIAAJNHINCJ",  # 4.1
     "JOJNNKEPPLI",  # 4.0
     "GAGPCFOFKCN",  # 3.8
     "MBMDOCJIMEJ",  # 3.1
@@ -73,6 +76,7 @@ VAL = pydantic.AliasChoices(
 
 # jq -Cc '.[].DescParams[] | keys[]' RogueTournWeeklyDisplay.json | sort -u
 ROGUE_WEEKLY_TYP = pydantic.AliasChoices(
+    "IAMGILDDGPN",  # 4.1
     "ICMHAGLCJII",  # 4.0
     "EJAEDHBFJGI",  # 3.8
     "PICHIHHCOCB",  # 3.1
@@ -86,6 +90,7 @@ ROGUE_WEEKLY_TYP = pydantic.AliasChoices(
 
 # jq -Cc '.[].DescParams[] | keys[]' RogueTournWeeklyDisplay.json | sort -u
 ROGUE_WEEKLY_VAL = pydantic.AliasChoices(
+    "GGIIAIAGJKP",  # 4.1
     "IFIENLNPIJA",  # 4.0
     "CPALPNDAGBG",  # 3.8
     "HMCDHMFHABF",  # 3.1
@@ -129,6 +134,7 @@ ROGUE_BUFF_DROP = pydantic.AliasChoices(
 
 # jq -Cc '.[].UnlockNPCProgressIDList[] | keys[]' RogueHandBookEvent.json | sort -u
 UNLOCK_NPC_ID = pydantic.AliasChoices(
+    "EFIMGGAHIJJ",  # 4.1
     "PJNADGENKDA",  # 4.0
     "HHGAFBNILGL",  # 3.8
     "MBNKLBEBOHB",  # 3.1
@@ -142,6 +148,7 @@ UNLOCK_NPC_ID = pydantic.AliasChoices(
 
 # jq -Cc '.[].UnlockNPCProgressIDList[] | keys[]' RogueHandBookEvent.json | sort -u
 UNLOCK_PROGRESS = pydantic.AliasChoices(
+    "NEEFFLFPLDD",  # 4.1
     "ELAPDEBKHLC",  # 4.0
     "ANLHDPFLCBM",  # 3.8
     "NNDEOKKKKPE",  # 3.1

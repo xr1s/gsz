@@ -159,18 +159,9 @@ class EmojiConfig(View[excel.EmojiConfig]):
                 # 131000 是第 13 弹，给我整不会了
                 # 114000 是第 14 弹
                 # 115000 是第 15 弹
-                # 116000 是第 16 弹，出现了 id 序和 same_group_order 序不同的贴纸
-                # 117000 是第 17 弹
-                # 118000 是第 18 弹
-                # 119000 是第 19 弹
-                # 120000 是第 20 弹
-                # 121100 是第 21 弹
-                # 122000 是第 22 弹
-                # 123000 是第 23 弹
-                # 124000 是第 24 弹
-                # 125000 是第 25 弹
-                # 126000 是第 26 弹
-                # 125000 是第 25 弹
+                # 116000 是第 16 弹
+                # 13 弹除外，后面都依此类推
+                # 这里的系列中 id 序可能和 same_group_order 序不一致了
                 assert self._excel.emoji_group_id is not None
                 assert self._excel.same_group_order is not None
                 return wiki_id(self._excel.emoji_group_id - 99, self._excel.same_group_order)
@@ -773,7 +764,6 @@ class MessageSectionConfig(View[excel.MessageSectionConfig], _Node):  # pyright:
                     option_message = _Message(self._game, msg._excel, True)
                     msg.neighbour = option_message
                     option_message.message_dict = message_dict
-
         return message_dict
 
     def wiki(self) -> str:
