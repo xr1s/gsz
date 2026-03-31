@@ -127,7 +127,7 @@ class OptionTalkInfo(BaseModel):
     typ: typing.Annotated[typing.Literal["RPG.GameCore.OptionTalkInfo"], pydantic.Field(alias="$type")]
     talk_sentence_id: int | None = None
     option_textmap_id: Text | None = None
-    option_icon_type: OptionIconType | None = None
+    option_icon_type: OptionIconType | EnumIndex | None = None
     trigger_custom_string: str | None = None
     delete_after_selection: bool = False
     finish_key: typing.Literal["0"] | None = None
@@ -136,6 +136,7 @@ class OptionTalkInfo(BaseModel):
     talk_event_id: int | None = None
     """一般是选择某个选项会有道具奖励"""
     visible_filter: predicate.Predicate | None = None
+    is_skip_default: bool = False
 
 
 class OptionTalk(typing.Protocol):
