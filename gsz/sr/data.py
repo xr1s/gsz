@@ -420,36 +420,36 @@ class excel_output_name(typing.Generic[NV]):
 
 
 class Language(enum.Enum):
-    CHS = "CHS"
+    CHS = ("CHS",)
     """简体中文"""
-    CHT = "CHT"
+    CHT = ("CHT",)
     """繁体中文"""
-    DE = "DE"
+    DE = ("DE",)
     """德文"""
-    EN = "EN"
+    EN = ("EN",)
     """英文"""
-    ES = "ES"
+    ES = ("ES",)
     """西班牙文"""
-    FR = "FR"
+    FR = ("FR",)
     """法文"""
-    ID = "ID"
+    ID = ("ID",)
     """印尼文"""
-    JP = "JP"
+    JP = ("JP",)
     """日文"""
-    KR = "KR"
+    KR = ("KR_0", "KR_1")
     """韩文"""
-    PT = "PT"
+    PT = ("PT",)
     """葡萄牙文"""
-    RU = "RU"
+    RU = ("RU_0", "RU_1")
     """俄文"""
-    TH = "TH"
+    TH = ("TH_0", "TH_1")
     """泰文"""
-    VI = "VI"
+    VI = ("VI",)
     """越文"""
 
-    def candidates(self) -> list[str]:
+    def candidates(self) -> list[tuple[str, ...]]:
         if self == self.CHS:
-            return ["CN", "CHS"]
+            return [("CN",), ("CHS",)]
         return [self.value]
 
 
@@ -460,12 +460,16 @@ class GameData:
         self.__text_map: dict[Language, dict[int, str]] = {}
 
     def __load_text_map(self, language: Language) -> dict[int, str]:
-        candidates = iter(language.candidates())
-        text_map_path = self.base / "TextMap" / f"TextMap{next(candidates)}.json"
-        while not text_map_path.exists():
-            text_map_path: pathlib.Path = self.base / "TextMap" / f"TextMap{next(candidates)}.json"
-        text_map = text_map_path.read_bytes()
-        return pydantic.TypeAdapter(dict[int, str]).validate_json(text_map)
+        text_map: dict[int, str] = {}
+        for candidate in language.candidates():
+            if len(candidate) == 0:
+                continue
+            if not all(self.base.joinpath("TextMap", f"TextMap{part}.json").exists() for part in candidate):
+                continue
+            for part in candidate:
+                path = self.base / "TextMap" / f"TextMap{part}.json"
+                text_map.update(pydantic.TypeAdapter(dict[int, str]).validate_json(path.read_bytes()))
+        return text_map
 
     @staticmethod
     def __int32(integer: int) -> int:
