@@ -236,6 +236,8 @@ class AvatarConfig(View[excel.AvatarConfig]):
         110233: "同谐2",  # 天外乐章
         110243: "丰饶2",  # 万相果实
         110253: "记忆1",  # 阿赖耶华
+        110263: "欢愉1",  # 《绒绒号》典藏版合集
+        110273: "巡猎3",  # 天谴血矛
     }
 
     def __path_material_wiki_category_name(self) -> str:
@@ -257,6 +259,7 @@ class AvatarConfig(View[excel.AvatarConfig]):
         114013: "忆域",  # 欲念碎镜
         115003: "眷属",  # 荣耀洗礼身躯
         115013: "黑潮",  # 哀叹漫无止境
+        116003: "幻造",  # 梦现管锥
     }
 
     def __loot_material_wiki_category_name(self) -> str:
@@ -316,6 +319,7 @@ class AvatarConfig(View[excel.AvatarConfig]):
             + (level - max_level - 1) * self.__promotions[index].defence_add
         )
 
+    # TODO: 忆灵技和欢愉技
     def wiki(self) -> str:
         # 改变后的阵营，代表角色阵营随着剧情进展发生了变化，如黄泉从出场的巡海游侠阵营变为自灭者，星期日从出场匹诺康尼变为银河
         change_camp = self.__atlas_change_info.camp() if self.__atlas_change_info is not None else None

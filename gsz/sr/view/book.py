@@ -100,9 +100,9 @@ class BookSeriesConfig(View[excel.BookSeriesConfig]):
             case _:
                 raise ValueError(f"可能是新版本新增不同类型的图书 {self.name!r} {file_stem}")
 
-    def wiki(self) -> str:
+    def wiki(self, *, sort_in_world: int | None = None) -> str:
         return self._game._template_environment.get_template("书籍.jinja2").render(  # pyright: ignore[reportPrivateUsage]
-            series=self, series_type=self.series_type
+            series=self, series_type=self.series_type, sort_in_world=sort_in_world
         )
 
 

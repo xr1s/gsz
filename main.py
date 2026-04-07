@@ -1,3 +1,4 @@
+import collections
 import datetime
 import difflib
 import io
@@ -180,19 +181,23 @@ class Main:
                     print(series.wiki(), end="\n\n")
             return
         assert isinstance(world, int | str | None), "--world [WORLD] need to be world number or name"
+        counter = collections.Counter[int]()
         for series in self.__game.book_series_config():
+            series_world = series.world()
+            sort_in_world = None
+            if series.is_show_in_bookshelf:
+                counter[series_world.id] += 1
+                sort_in_world = series_world.id * 1000 + counter[series_world.id]
             match world:
                 case int():
-                    book_series_world = series.world()
-                    if world != book_series_world.id:
+                    if world != series_world.id:
                         continue
                 case str():
-                    book_series_world = series.world()
-                    if world != book_series_world.name:
+                    if world != series_world.name:
                         continue
                 case None:
                     pass
-            print(series.wiki(), end="\n\n")
+            print(series.wiki(sort_in_world=sort_in_world), end="\n\n")
 
     def text(self, *hashes: int | str):
         match self.__game:

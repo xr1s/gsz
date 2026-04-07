@@ -19,6 +19,10 @@ class ItemConfig(View[excel.ItemConfig]):
 
     ExcelOutput: typing.Final = excel.ItemConfig
 
+    @property
+    def id(self) -> int:
+        return self._excel.id_
+
     @functools.cached_property
     def name(self) -> str:
         if self._excel.item_name is None:

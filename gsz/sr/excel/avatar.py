@@ -10,6 +10,8 @@ from .base import Element, Model, ModelID, ModelMainSubID, Path, Text, Value
 
 CHANGE_INFO_ID = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "OKLMOLJJDAC",  # v4.1
+        "JMABNODNGMN",  # v4.0
         "GMLBHCFGKJM",  # v3.8
         "OELNFIJLCOL",  # v3.1
         "IGHDLNOGKLC",  # v3.0
@@ -24,6 +26,8 @@ CHANGE_INFO_ID = pydantic.Field(
 )
 CHANGE_INFO_UNLOCK = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "LJAPFLGMMIL",  # v4.1
+        "DPFECJAONPK",  # v4.0
         "GACICPLOKNF",  # v3.8
         "CCOFCKBMMMI",  # v3.1
         "LDNIPIFDOPM",  # v3.0
@@ -38,6 +42,8 @@ CHANGE_INFO_UNLOCK = pydantic.Field(
 )
 CHANGE_AVATAR_ID = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "HOOOGEFGBBD",  # v4.1
+        "PHDMDNCJJFB",  # v4.0
         "EKGLJCKKFFP",  # v3.8
         "DJPCAIKIONP",  # v3.1
         "KOBDFDHBFGN",  # v3.0
@@ -52,6 +58,8 @@ CHANGE_AVATAR_ID = pydantic.Field(
 )
 CHANGE_CAMP_ID = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "CLJOEAOOIFL",  # v4.1
+        "BGOICLEIODF",  # v4.0
         "ADLEONICBGO",  # v3.8
         "EBBHGBKEPAA",  # v3.1
         "DLKMBMBEOIA",  # v3.0
@@ -284,6 +292,7 @@ class SkillTriggerKey(enum.Enum):
     Skill01 = "Skill01"
     Skill02 = "Skill02"
     Skill03 = "Skill03"
+    Skill04 = "Skill04"
     Skill11 = "Skill11"
     Skill12 = "Skill12"
     Skill13 = "Skill13"
@@ -304,6 +313,7 @@ class SkillTriggerKey(enum.Enum):
 
 class AttackType(enum.Enum):
     BPSkill = "BPSkill"
+    ElationDamage = "ElationDamage"
     Maze = "Maze"
     MazeNormal = "MazeNormal"
     Normal = "Normal"
@@ -410,6 +420,8 @@ class AnchorType(enum.Enum):
     Point20 = "Point20"
     Point21 = "Point21"
     """记忆主专属技能"""
+    Point22 = "Point22"
+    """欢愉技"""
 
 
 class PointTriggerKey(enum.Enum):
@@ -441,6 +453,7 @@ class PropertyType(enum.Enum):
     CriticalChanceBase = "CriticalChanceBase"
     CriticalDamageBase = "CriticalDamageBase"
     DefenceAddedRatio = "DefenceAddedRatio"
+    ElationDamageAddedRatioBase = "ElationDamageAddedRatioBase"
     FireAddedRatio = "FireAddedRatio"
     HPAddedRatio = "HPAddedRatio"
     IceAddedRatio = "IceAddedRatio"
@@ -466,6 +479,8 @@ class PropertyType(enum.Enum):
                 return "暴击伤害"
             case PropertyType.DefenceAddedRatio:
                 return "防御"
+            case PropertyType.ElationDamageAddedRatioBase:
+                return "欢愉度"
             case PropertyType.FireAddedRatio:
                 return "火"
             case PropertyType.HPAddedRatio:
