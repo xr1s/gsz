@@ -171,6 +171,10 @@ class ManikinCharacterConfig(Model):
     rotations_by_index: dict[int, Axis] | None = None
     eidolon_position: Axis | None = None
     positions_by_name: dict[str, Axis] | None = None
+    character_replace_material_config_path: pathlib.Path | None = None
+    dress_v_camera_path: str | None = None
+    dress_v_camera_blend_id: int | None = None
+    is_hero: bool = False
 
 
 class AvatarConfig(ModelID):
@@ -512,6 +516,7 @@ class PropertyType(enum.Enum):
                 | PropertyType.CriticalChanceBase
                 | PropertyType.CriticalDamageBase
                 | PropertyType.DefenceAddedRatio
+                | PropertyType.ElationDamageAddedRatioBase
                 | PropertyType.FireAddedRatio
                 | PropertyType.HPAddedRatio
                 | PropertyType.IceAddedRatio

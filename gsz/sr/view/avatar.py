@@ -14,6 +14,9 @@ if typing.TYPE_CHECKING:
     from ..excel import Element, Path
     from .item import ItemConfig
 
+_LD_AVATAR_ID: tuple[int, ...] = (1014, 1015)
+"""联动角色 ID"""
+
 
 class AtlasAvatarChangeInfo(View[excel.AtlasAvatarChangeInfo]):
     ExcelOutput: typing.Final = excel.AtlasAvatarChangeInfo
@@ -96,9 +99,9 @@ class AvatarConfig(View[excel.AvatarConfig]):
                 return 5
 
     @functools.cached_property
-    def __manikin(self) -> avatar.ManikinAvatar:
+    def __manikin(self) -> avatar.ManikinCharacterConfig:
         path = self._game.base / self._excel.manikin_json_path
-        return avatar.ManikinAvatar.model_validate_json(path.read_bytes())
+        return avatar.ManikinCharacterConfig.model_validate_json(path.read_bytes())
 
     @property
     def is_male(self) -> bool:
@@ -118,7 +121,10 @@ class AvatarConfig(View[excel.AvatarConfig]):
 
     @functools.cached_property
     def __ranks(self) -> tuple[AvatarRankConfig, ...]:
-        return tuple(self._game.avatar_rank_config(self._excel.rank_id_list))
+        method = self._game.avatar_rank_config
+        if self._excel.avatar_id in _LD_AVATAR_ID:
+            method = self._game.avatar_rank_config_ld
+        return tuple(method(self._excel.rank_id_list))
 
     def ranks(self) -> collections.abc.Iterable[AvatarRankConfig]:
         return (AvatarRankConfig(self._game, rank._excel) for rank in self.__ranks)
@@ -175,18 +181,21 @@ class AvatarConfig(View[excel.AvatarConfig]):
         return tuple(point for point in self.__skill_tree if point._excel.anchor_type is avatar.AnchorType.Point03)
 
     @functools.cached_property
-    def __passive_skill_tree(self) -> list[AvatarSkillTreeConfig]:
+    def __passive_skill_tree(self) -> tuple[AvatarSkillTreeConfig, ...]:
         """被动"""
-        return [point for point in self.__skill_tree if point._excel.anchor_type is avatar.AnchorType.Point04]
+        return tuple(point for point in self.__skill_tree if point._excel.anchor_type is avatar.AnchorType.Point04)
 
     @functools.cached_property
-    def __maze_skill_tree(self) -> list[AvatarSkillTreeConfig]:
+    def __maze_skill_tree(self) -> tuple[AvatarSkillTreeConfig, ...]:
         """秘技"""
-        return [point for point in self.__skill_tree if point._excel.anchor_type is avatar.AnchorType.Point05]
+        return tuple(point for point in self.__skill_tree if point._excel.anchor_type is avatar.AnchorType.Point05)
 
     @functools.cached_property
-    def __promotions(self) -> list[AvatarPromotionConfig]:
-        return list(self._game.avatar_promotion_config(self._excel.avatar_id))
+    def __promotions(self) -> tuple[AvatarPromotionConfig, ...]:
+        method = self._game.avatar_promotion_config
+        if self._excel.avatar_id in _LD_AVATAR_ID:
+            method = self._game.avatar_promotion_config_ld
+        return tuple(method(self._excel.avatar_id))
 
     def promotions(self) -> collections.abc.Iterable[AvatarPromotionConfig]:
         return (AvatarPromotionConfig(self._game, promotion._excel) for promotion in self.__promotions)
@@ -203,8 +212,8 @@ class AvatarConfig(View[excel.AvatarConfig]):
         return ItemConfig(self._game, self.__item._excel)
 
     @functools.cached_property
-    def __stories(self) -> list[StoryAtlas]:
-        return list(self._game.story_atlas(self._excel.avatar_id))
+    def __stories(self) -> tuple[StoryAtlas, ...]:
+        return tuple(self._game.story_atlas(self._excel.avatar_id))
 
     def stories(self) -> collections.abc.Iterable[StoryAtlas]:
         return (StoryAtlas(self._game, story._excel) for story in self.__stories)
@@ -545,9 +554,12 @@ class AvatarSkillConfig(View[excel.AvatarSkillConfig]):
 
     @functools.cached_property
     def __rated_skill_tree(self) -> list[AvatarSkillTreeConfig]:
+        method = self._game.avatar_skill_tree_config
+        if self._excel.skill_id // 100 in _LD_AVATAR_ID:
+            method = self._game.avatar_skill_tree_config_ld
         points: list[AvatarSkillTreeConfig] = []
         for point_id in self._excel.rated_skill_tree_id:
-            point = self._game.avatar_skill_tree_config(point_id, 1)
+            point = method(point_id, 1)
             assert point is not None
             points.append(point)
         return points
@@ -557,9 +569,12 @@ class AvatarSkillConfig(View[excel.AvatarSkillConfig]):
 
     @functools.cached_property
     def __rated_ranks(self) -> list[AvatarRankConfig]:
+        method = self._game.avatar_rank_config
+        if self._excel.skill_id // 100 in _LD_AVATAR_ID:
+            method = self._game.avatar_rank_config_ld
         ranks: list[AvatarRankConfig] = []
         for rank_id in self._excel.rated_rank_id:
-            rank = self._game.avatar_rank_config(rank_id)
+            rank = method(rank_id)
             assert rank is not None
             ranks.append(rank)
         return ranks
@@ -589,12 +604,13 @@ class AvatarSkillTreeConfig(View[excel.AvatarSkillTreeConfig]):
 
     @functools.cached_property
     def __skills(self) -> list[AvatarSkillConfig]:
+        method = self._game.avatar_skill_config
+        if self._excel.avatar_id in _LD_AVATAR_ID:
+            method = self._game.avatar_skill_config_ld
         skills: list[AvatarSkillConfig] = []
         for skill_id in self._excel.level_up_skill_id:
-            skill = self._game.avatar_skill_config(skill_id, self._excel.level)
-            if skill is None:
-                skill = self._game.avatar_servant_skill_config(skill_id, self._excel.level)
-                assert skill is not None
+            skill = method(skill_id, self._excel.level)
+            assert skill is not None
             skills.append(skill)
         return skills
 

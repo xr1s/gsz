@@ -581,8 +581,16 @@ class GameData:
     def avatar_promotion_config(self):
         """角色突破需要素材、提升属性"""
 
+    @excel_output_main_sub(view.AvatarPromotionConfig, "AvatarPromotionConfigLD")
+    def avatar_promotion_config_ld(self):
+        """联动角色突破需要素材、提升属性"""
+
     @excel_output(view.AvatarRankConfig)
     def avatar_rank_config(self):
+        """角色命座"""
+
+    @excel_output(view.AvatarRankConfig, "AvatarRankConfigLD")
+    def avatar_rank_config_ld(self):
         """角色命座"""
 
     @excel_output_main_sub(view.AvatarSkillConfig)
@@ -604,6 +612,10 @@ class GameData:
     def avatar_skill_tree_config(self):
         """角色详情页的技能树状图"""
 
+    @excel_output_main_sub(view.AvatarSkillTreeConfig, "AvatarSkillTreeConfigLD")
+    def avatar_skill_tree_config_ld(self):
+        """联动角色详情页的技能树状图"""
+
     @functools.cached_property
     def _avatar_config_to_player_icon(self) -> dict[int, excel.AvatarPlayerIcon]:
         avatars: dict[int, excel.AvatarPlayerIcon] = {}
@@ -615,7 +627,7 @@ class GameData:
     @functools.cached_property
     def _avatar_config_skill_trees(self) -> dict[int, list[excel.AvatarSkillTreeConfig]]:
         skills: dict[int, list[excel.AvatarSkillTreeConfig]] = {}
-        for skill in self.avatar_skill_tree_config():
+        for skill in itertools.chain(self.avatar_skill_tree_config(), self.avatar_skill_tree_config_ld()):
             model = skill._excel  # pyright: ignore[reportPrivateUsage]
             if model.avatar_id not in skills:
                 skills[model.avatar_id] = [model]
