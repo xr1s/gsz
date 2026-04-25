@@ -5,6 +5,7 @@ import typing
 import pydantic
 import typing_extensions
 
+from . import aliases
 from .base import ModelID, Text, Value
 
 
@@ -166,7 +167,7 @@ class FateTrait(ModelID):
     name: typing.Annotated[Text, pydantic.Field(alias="KBGACNHKLHI")]
     desc: typing.Annotated[Text, pydantic.Field(alias="GAABNPIDEAP")]
     desc_simple: typing.Annotated[Text, pydantic.Field(alias="HBIJEKNACIL")]
-    params: typing.Annotated[tuple[Value[float], ...], pydantic.Field(alias="OIEKCNPMDFC")]
+    params: typing.Annotated[tuple[Value[float], ...], aliases.PARAMS]
     current: typing.Annotated[Text | None, pydantic.Field(alias="IILPOJFMPMD")] = None
     buff: typing.Annotated[tuple[int, ...], pydantic.Field(alias="KGCJIHOHBPN")]
     avatar: typing.Annotated[int | None, pydantic.Field(alias="FJCLHHJBDDM")] = None

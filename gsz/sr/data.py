@@ -1411,6 +1411,10 @@ class GameData:
 
     ######## rogue tourn ########
 
+    @excel_output(view.RoguePersonaStyle)
+    def rogue_persona_style(self):
+        """差分宇宙面具"""
+
     @excel_output_main_sub(view.RogueTournBuff)
     def rogue_tourn_buff(self):
         """差分宇宙祝福"""

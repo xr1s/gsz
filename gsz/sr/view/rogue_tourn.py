@@ -26,6 +26,18 @@ if typing.TYPE_CHECKING:
     )
 
 
+class RoguePersonaStyle(View[excel.RoguePersonaStyle]):
+    ExcelOutput: typing.Final = excel.RoguePersonaStyle
+
+    @functools.cached_property
+    def name(self) -> str:
+        return self._game.text(self._excel.name)
+
+    @property
+    def wiki_name(self) -> str:
+        return self.name
+
+
 class RogueTournBuff(View[excel.RogueTournBuff]):
     ExcelOutput: typing.Final = excel.RogueTournBuff
 
@@ -175,7 +187,7 @@ class RogueTournBuffGroup(View[excel.RogueTournBuffGroup]):
         return self._excel.rogue_buff_group_id
 
     @property
-    def rogue_buff_drop(self) -> list[int]:
+    def rogue_buff_drop(self) -> tuple[int, ...]:
         return self._excel.rogue_buff_drop
 
     @property
@@ -226,7 +238,7 @@ class RogueTournFormula(View[excel.RogueTournFormula]):
     @functools.cached_property
     def wiki_name(self) -> str:
         name = self._game._mw_formatter.format(self.name)  # pyright: ignore[reportPrivateUsage]
-        if self.category is rogue_tourn.FormulaCategory.PathEcho and self.mode is rogue_tourn.Mode.TournMode1:
+        if self.category is rogue_tourn.FormulaCategory.PathEcho and self.mode is rogue_tourn.Mode.Tourn1:
             return name + "（方程）"
         if self.name in {"赏金猎人", "混沌医师", "黑潮朽弓", "天谴哲人"}:
             return name + "（方程）"
@@ -613,30 +625,29 @@ class RogueTournWeeklyChallenge(View[excel.RogueTournWeeklyChallenge]):
     """3.7 版本开始，周期演算变成两周一次，和货币战争轮替更新"""
 
     @functools.cached_property
-    def __begin_time(self) -> datetime.datetime:
+    def begin_time(self) -> datetime.datetime:
         if self.id == 1:
             return self.FIRST_CHALLENGE_MONDAY + datetime.timedelta(days=2, hours=7)
         if self.id < 73:
             return self.FIRST_CHALLENGE_MONDAY + datetime.timedelta(weeks=self.id - 1)
-        return self.V37_CHALLENGE_MONDAY + datetime.timedelta(weeks=2 * self.id - 146)
-
-    def begin_time(self) -> datetime.datetime:
-        return self.__begin_time
+        if self.id < 86:
+            return self.V37_CHALLENGE_MONDAY + datetime.timedelta(weeks=2 * self.id - 146)
+        # 4.2 版本重置双周开始时间
+        return self.V37_CHALLENGE_MONDAY + datetime.timedelta(weeks=2 * self.id - 147)
 
     def begin_date(self) -> datetime.date:
-        return self.__begin_time.date()
+        return self.begin_time.date()
 
     @functools.cached_property
-    def __end_time(self) -> datetime.datetime:
+    def end_time(self) -> datetime.datetime:
         if self.id < 73:
             return self.FIRST_CHALLENGE_MONDAY + datetime.timedelta(weeks=self.id, milliseconds=-1)
-        return self.V37_CHALLENGE_MONDAY + datetime.timedelta(weeks=2 * self.id - 144)
-
-    def end_time(self) -> datetime.datetime:
-        return self.__end_time
+        if self.id < 85:
+            return self.V37_CHALLENGE_MONDAY + datetime.timedelta(weeks=2 * self.id - 144)
+        return self.V37_CHALLENGE_MONDAY + datetime.timedelta(weeks=2 * self.id - 145)
 
     def end_date(self) -> datetime.date:
-        return self.__end_time.date() - datetime.timedelta(days=1)
+        return self.end_time.date() - datetime.timedelta(days=1)
 
     @functools.cached_property
     def __contents(self) -> list[RogueTournWeeklyDisplay]:
@@ -665,6 +676,9 @@ class RogueTournWeeklyChallenge(View[excel.RogueTournWeeklyChallenge]):
     def titan_blesses(self) -> list[RogueTournTitanBless]:
         return list(itertools.chain.from_iterable(content.titan_blesses() for content in self.__contents))
 
+    def persona_style(self) -> list[RoguePersonaStyle]:
+        return list(itertools.chain.from_iterable(content.persona_style() for content in self.__contents))
+
     def __find_bonus(self, bonus_start: int, challenge_start: int) -> RogueBonus:
         bonus = self._game.rogue_bonus(bonus_start)
         assert bonus is not None
@@ -684,8 +698,9 @@ class RogueTournWeeklyChallenge(View[excel.RogueTournWeeklyChallenge]):
             return None
         if self.id <= 37:  # 人间喜剧
             return self.__find_bonus(410, 1)
-        # 千面英雄
-        return self.__find_bonus(504, 38)
+        if self.id <= 85:  # 千面英雄
+            return self.__find_bonus(504, 38)
+        return None  # 乐园漫记
 
     def bonus(self) -> RogueBonus | None:
         from .rogue import RogueBonus
@@ -756,9 +771,10 @@ class RogueTournWeeklyChallenge(View[excel.RogueTournWeeklyChallenge]):
         details = (detail.wiki_content.removeprefix("●") for detail in self.details())
         return self._game._template_environment.get_template("周期演算.jinja2").render(  # pyright: ignore[reportPrivateUsage]
             challenge=self,
-            miracles=list(self.miracles()),
-            formulas=list(self.formulas()),
-            titan_blesses=list(self.titan_blesses()),
+            miracles=tuple(self.miracles()),
+            formulas=tuple(self.formulas()),
+            titan_blesses=tuple(self.titan_blesses()),
+            persona_style=tuple(self.persona_style()),
             bonus=self.bonus(),
             details=details,
         )
@@ -772,15 +788,15 @@ class RogueTournWeeklyDisplay(View[excel.RogueTournWeeklyDisplay]):
         return self._game.text(self._excel.weekly_display_content)
 
     @functools.cached_property
-    def __desc_params(self) -> list[RogueTournFormula | RogueTournMiracle | RogueTournTitanBless]:
-        params: list[RogueTournFormula | RogueTournMiracle | RogueTournTitanBless] = []
+    def __desc_params(self) -> list[RogueTournFormula | RogueTournMiracle | RogueTournTitanBless | RoguePersonaStyle]:
+        params: list[RogueTournFormula | RogueTournMiracle | RogueTournTitanBless | RoguePersonaStyle] = []
         for param in self._excel.desc_params:
             match param.type:
                 case rogue_tourn.DescParamType.Formula:
                     value = self._game.rogue_tourn_formula(param.value)
                     assert value is not None
                     params.append(value)
-                case rogue_tourn.DescParamType.Miracle:
+                case rogue_tourn.DescParamType.Miracle | rogue_tourn.DescParamType.Hex:
                     value = self._game.rogue_tourn_miracle(param.value)
                     assert value is not None
                     params.append(value)
@@ -788,10 +804,10 @@ class RogueTournWeeklyDisplay(View[excel.RogueTournWeeklyDisplay]):
                     value = self._game.rogue_tourn_titan_bless(param.value)
                     assert value is not None
                     params.append(value)
-                case rogue_tourn.DescParamType.Hex:
-                    pass  # TODO
                 case rogue_tourn.DescParamType.PersonaStyle:
-                    pass  # TODO
+                    value = self._game.rogue_persona_style(param.value)
+                    assert value is not None
+                    params.append(value)
         return params
 
     @functools.cached_property
@@ -804,7 +820,7 @@ class RogueTournWeeklyDisplay(View[excel.RogueTournWeeklyDisplay]):
         miracle_ids = [
             param.value
             for param in self._excel.desc_params
-            if param.type == rogue_tourn.DescParamType.Miracle
+            if param.type in (rogue_tourn.DescParamType.Miracle, rogue_tourn.DescParamType.Hex)
             if param.value not in (6907, 6908)  # 3.1 疑似缺数据
         ]
         return list(self._game.rogue_tourn_miracle(miracle_ids))
@@ -815,7 +831,7 @@ class RogueTournWeeklyDisplay(View[excel.RogueTournWeeklyDisplay]):
     @functools.cached_property
     def __formulas(self) -> list[RogueTournFormula]:
         formula_ids = [
-            param.value for param in self._excel.desc_params if param.type == rogue_tourn.DescParamType.Formula
+            param.value for param in self._excel.desc_params if param.type is rogue_tourn.DescParamType.Formula
         ]
         return list(self._game.rogue_tourn_formula(formula_ids))
 
@@ -825,9 +841,19 @@ class RogueTournWeeklyDisplay(View[excel.RogueTournWeeklyDisplay]):
     @functools.cached_property
     def __titan_blesses(self) -> list[RogueTournTitanBless]:
         titan_blessing_ids = [
-            param.value for param in self._excel.desc_params if param.type == rogue_tourn.DescParamType.TitanBless
+            param.value for param in self._excel.desc_params if param.type is rogue_tourn.DescParamType.TitanBless
         ]
         return list(self._game.rogue_tourn_titan_bless(titan_blessing_ids))
 
     def titan_blesses(self) -> collections.abc.Iterable[RogueTournTitanBless]:
         return (RogueTournTitanBless(self._game, titan_bless._excel) for titan_bless in self.__titan_blesses)
+
+    @functools.cached_property
+    def __persona_style(self) -> list[RoguePersonaStyle]:
+        persona_style_ids = [
+            param.value for param in self._excel.desc_params if param.type is rogue_tourn.DescParamType.PersonaStyle
+        ]
+        return list(self._game.rogue_persona_style(persona_style_ids))
+
+    def persona_style(self) -> collections.abc.Iterable[RoguePersonaStyle]:
+        return (RoguePersonaStyle(self._game, persona_style._excel) for persona_style in self.__persona_style)

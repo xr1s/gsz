@@ -6,8 +6,45 @@ import pydantic
 import typing_extensions
 
 from . import aliases
-from .base import Model, ModelID, ModelMainSubID, Text
+from .base import Model, ModelID, ModelMainSubID, Text, Value
 from .rogue import BuffCategory, Path, UnlockNPCProgressID
+
+
+class RoguePersonaStyle(ModelID):
+    id_: typing.Annotated[int, pydantic.Field(validation_alias=pydantic.AliasChoices("GOJHJGEFGGN", "JGGMMHNKCEJ"))]
+    icon_big: typing.Annotated[
+        str, pydantic.Field(validation_alias=pydantic.AliasChoices("JMJKLOFEDOI", "NLAPOPICKMA"))
+    ]
+    icon: typing.Annotated[str, pydantic.Field(validation_alias=pydantic.AliasChoices("ABIAOGCCOCO", "HIBCAPBAGMF"))]
+    name: typing.Annotated[Text, pydantic.Field(validation_alias=pydantic.AliasChoices("PPHCAJEFDJN", "NJAPIHOAHAN"))]
+    bg_desc: typing.Annotated[
+        Text, pydantic.Field(validation_alias=pydantic.AliasChoices("NNGNENPFOIH", "LNENPEJPFJN"))
+    ]
+    desc_simple: typing.Annotated[
+        Text | None, pydantic.Field(validation_alias=pydantic.AliasChoices("KLELLNFDBKM", "INHDIFBOBFD"))
+    ] = None
+    desc_wishpower: typing.Annotated[
+        Text | None, pydantic.Field(validation_alias=pydantic.AliasChoices("HOLOJHGGIOG", "IJNAGNNILJK"))
+    ] = None
+    desc: typing.Annotated[
+        Text | None, pydantic.Field(validation_alias=pydantic.AliasChoices("JMIALJBDFOH", "IDKKBEMKAGP"))
+    ] = None
+    params: typing.Annotated[tuple[Value[float], ...], pydantic.Field(validation_alias=aliases.PARAMS)]
+    unlock: typing.Annotated[
+        int | None, pydantic.Field(validation_alias=pydantic.AliasChoices("HICJIGNCDOL", "LJAPFLGMMIL"))
+    ] = None
+    unk_1: typing.Annotated[
+        tuple[int, ...], pydantic.Field(validation_alias=pydantic.AliasChoices("HCHANMKMJEF", "PIACDCJBEAA"))
+    ]
+    unk_2: typing.Annotated[
+        bool, pydantic.Field(validation_alias=pydantic.AliasChoices("LFCFLNGOFED", "HMDABDFALIN"))
+    ] = False
+    unk_3: typing.Annotated[int, pydantic.Field(validation_alias=pydantic.AliasChoices("LFMHMLPDCJN", "DCIFIGMEJGI"))]
+
+    @property
+    @typing_extensions.override
+    def id(self) -> int:
+        return self.id_
 
 
 class RogueTournBuff(ModelMainSubID):

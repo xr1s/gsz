@@ -118,6 +118,7 @@ from .rogue import (
     RogueTalkNameConfig,
 )
 from .rogue_tourn import (
+    RoguePersonaStyle,
     RogueTournBuff,
     RogueTournBuffGroup,
     RogueTournBuffType,
@@ -275,6 +276,7 @@ __all__ = (
     "RogueNPC",
     "RogueTalkNameConfig",
     # rogue_tourn
+    "RoguePersonaStyle",
     "RogueTournBuff",
     "RogueTournBuffGroup",
     "RogueTournBuffType",

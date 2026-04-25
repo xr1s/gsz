@@ -170,6 +170,8 @@ class SubType(enum.Enum):
     """用户头像框，3.6 新增"""
     HipplenOutfit = "HipplenOutfit"
     """大地兽活动大地兽装扮，3.6 新增"""
+    IdleLiveItem = "IdleLiveItem"
+    """三周年活动道具，4.2 新增"""
     MatchThreeV2 = "MatchThreeV2"
     """
     折纸小鸟对对碰相关道具
@@ -324,6 +326,8 @@ class Rarity(enum.Enum):
 
 
 class UseMethod(enum.Enum):
+    Anniv3rdLiveItem = "Anniv3rdLiveItem"
+    """三周年活动道具，4.2 新增"""
     AutoConversionItem = "AutoConversionItem"
     """自动转换为图鉴等道具. 目前有图书, 聊天框, 黄金与机械骰面, 手机主题四种."""
     BPUnlock128 = "BPUnlock128"

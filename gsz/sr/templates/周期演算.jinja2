@@ -16,6 +16,10 @@
 |起始金血祝颂=${ titan_blesses | map(attribute="name") | join(", ") }
 <%- endif %>
 
+<%- if persona_style | length != 0 %>
+|限定面具=${ persona_style | map(attribute="name") | join(", ") }
+<%- endif %>
+
 <%- if bonus is not none %>
 |开拓祝福=${ bonus.title }
 |开拓祝福内容=${ bonus.desc }

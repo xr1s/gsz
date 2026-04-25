@@ -129,13 +129,13 @@ class AISkillSequence(Model):
 
 
 OVERRIDE_SKILL_PARAM_ID = pydantic.Field(
-    validation_alias=pydantic.AliasChoices("CEANENGNODF", "BGKKGHGEFCE", "HEOJGOIDCCD", "NOCBBALICHO")
+    validation_alias=pydantic.AliasChoices("ODLDGKGONPJ", "CEANENGNODF", "BGKKGHGEFCE", "HEOJGOIDCCD", "NOCBBALICHO")
 )
 OVERRIDE_SKILL_PARAM_UNKNOWN_1 = pydantic.Field(
-    validation_alias=pydantic.AliasChoices("ECEBNPLAEJD", "DOHNADCAOAP", "EADHAKNLILJ", "EADHAKNLILJ")
+    validation_alias=pydantic.AliasChoices("DCOCCCHFOCN", "ECEBNPLAEJD", "DOHNADCAOAP", "EADHAKNLILJ", "EADHAKNLILJ")
 )
 OVERRIDE_SKILL_PARAM_UNKNOWN_2 = pydantic.Field(
-    validation_alias=pydantic.AliasChoices("KGBGCIFKFBJ", "IGEGFLALOLF", "KFFBBHGEEMI", "MLDFNFLLGJB")
+    validation_alias=pydantic.AliasChoices("LFDMGKNPAOD", "KGBGCIFKFBJ", "IGEGFLALOLF", "KFFBBHGEEMI", "MLDFNFLLGJB")
 )
 OVERRIDE_SKILL_PARAM_UNKNOWN_3 = pydantic.Field(validation_alias=pydantic.AliasChoices("MMAGIKIGINE", "LHDMDABFIDN"))
 OVERRIDE_SKILL_PARAM_UNKNOWN_4 = pydantic.Field(validation_alias=pydantic.AliasChoices("PHPJNBBAIGG", "NCLOMNEHPMJ"))
@@ -143,7 +143,6 @@ OVERRIDE_SKILL_PARAM_UNKNOWN_5 = pydantic.Field(validation_alias=pydantic.AliasC
 OVERRIDE_SKILL_PARAM_UNKNOWN_6 = pydantic.Field(validation_alias=pydantic.AliasChoices("PAIMJGMDCJO", "EKCDEGCMDHG"))
 OVERRIDE_SKILL_PARAM_UNKNOWN_7 = pydantic.Field(validation_alias=pydantic.AliasChoices("IDADABMBMMO", "LIKKJIAOACA"))
 OVERRIDE_SKILL_PARAM_UNKNOWN_8 = pydantic.Field(validation_alias=pydantic.AliasChoices("CKGMPABJFGA", "CGHDHAMLJJB"))
-OVERRIDE_SKILL_PARAM_UNKNOWN_9 = pydantic.Field(validation_alias=pydantic.AliasChoices("JNMAMOELCIB", "FDKCKECMFHL"))
 
 
 class OverrideSkillParam(Model):
@@ -156,8 +155,8 @@ class OverrideSkillParam(Model):
     unknown_6: typing.Annotated[Value[float] | None, OVERRIDE_SKILL_PARAM_UNKNOWN_6] = None
     unknown_7: typing.Annotated[Value[float] | None, OVERRIDE_SKILL_PARAM_UNKNOWN_7] = None
     unknown_8: typing.Annotated[Value[float] | None, OVERRIDE_SKILL_PARAM_UNKNOWN_8] = None
-    unknown_9: typing.Annotated[list[Value[float]] | None, OVERRIDE_SKILL_PARAM_UNKNOWN_9] = None
-    """unknown_9 是 4.0 新增替代（聚合）之前 unknown_3 ~ unknown_8 字段的列表"""
+    params: typing.Annotated[list[Value[float]] | None, aliases.PARAMS] = None
+    """params 是 4.0 新增替代（聚合）之前 unknown_3 ~ unknown_8 字段的列表"""
 
 
 class MonsterConfig(ModelID):

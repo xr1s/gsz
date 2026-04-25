@@ -4,6 +4,7 @@ import pydantic
 
 # jq -Cc '.[].AISkillSequence[] | keys[]' MonsterTemplateConfig.json | sort -u
 ID = pydantic.AliasChoices(
+    "NPPOIBONPEL",  # 4.2
     "BNGCFOKMPNE",  # 4.1
     "PMLIMKCDNJP",  # 4.0
     "JAJOONLKLBO",  # 3.8
@@ -28,6 +29,7 @@ ID = pydantic.AliasChoices(
 
 # jq -Cc '.[].CustomValues[] | keys[]' MonsterConfig.json | sort -u
 KEY = pydantic.AliasChoices(
+    "HKALDMMDMHA",  # 4.2
     "KKIFFICMABP",  # 4.1
     "MHHHCIPKDHL",  # 4.0
     "CHEAIJFINAB",  # 3.8
@@ -52,6 +54,7 @@ KEY = pydantic.AliasChoices(
 
 # jq -Cc '.[].CustomValues[] | keys[]' MonsterConfig.json | sort -u
 VAL = pydantic.AliasChoices(
+    "KFACJPFHKFP",  # 4.2
     "IIAAJNHINCJ",  # 4.1
     "JOJNNKEPPLI",  # 4.0
     "GAGPCFOFKCN",  # 3.8
@@ -74,8 +77,19 @@ VAL = pydantic.AliasChoices(
     "LKJLPJMIGNJ",  # 1.0
 )
 
+PARAMS = validation_alias = pydantic.AliasChoices(
+    "EKHPCGCECOH",  # 4.2
+    "JNMAMOELCIB",  # 4.1
+    "FDKCKECMFHL",  # 4.0
+    "LBLPCNCOAGB",  # 3.8
+    "OIEKCNPMDFC",  # 3.1
+    "KBLEOALBBJE",  # 3.0
+    "FIIBEDLEJEJ",  # 2.7
+)
+
 # jq -Cc '.[].DescParams[] | keys[]' RogueTournWeeklyDisplay.json | sort -u
 ROGUE_WEEKLY_TYP = pydantic.AliasChoices(
+    "KBEDCLBFOBI",  # 4.2
     "IAMGILDDGPN",  # 4.1
     "ICMHAGLCJII",  # 4.0
     "EJAEDHBFJGI",  # 3.8
@@ -90,6 +104,7 @@ ROGUE_WEEKLY_TYP = pydantic.AliasChoices(
 
 # jq -Cc '.[].DescParams[] | keys[]' RogueTournWeeklyDisplay.json | sort -u
 ROGUE_WEEKLY_VAL = pydantic.AliasChoices(
+    "GCCFAPFGIAN",  # 4.2
     "GGIIAIAGJKP",  # 4.1
     "IFIENLNPIJA",  # 4.0
     "CPALPNDAGBG",  # 3.8
