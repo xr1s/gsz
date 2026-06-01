@@ -623,6 +623,8 @@ class RogueTournWeeklyChallenge(View[excel.RogueTournWeeklyChallenge]):
     FIRST_CHALLENGE_MONDAY: datetime.datetime = datetime.datetime(2024, 6, 17, 4, tzinfo=ASIA_SHANGHAI)
     V37_CHALLENGE_MONDAY: datetime.datetime = datetime.datetime(2025, 11, 3, 4, tzinfo=ASIA_SHANGHAI)
     """3.7 版本开始，周期演算变成两周一次，和货币战争轮替更新"""
+    V42_CHALLENGE_MONDAY: datetime.datetime = datetime.datetime(2026, 4, 20, 4, tzinfo=ASIA_SHANGHAI)
+    """4.2 版本开始，周期演算变回一周一次，和货币战争共享周期"""
 
     @functools.cached_property
     def begin_time(self) -> datetime.datetime:
@@ -630,10 +632,13 @@ class RogueTournWeeklyChallenge(View[excel.RogueTournWeeklyChallenge]):
             return self.FIRST_CHALLENGE_MONDAY + datetime.timedelta(days=2, hours=7)
         if self.id < 73:
             return self.FIRST_CHALLENGE_MONDAY + datetime.timedelta(weeks=self.id - 1)
-        if self.id < 86:
+        # 3.7 版本，和货币战争双周轮替
+        if self.id < 85:
             return self.V37_CHALLENGE_MONDAY + datetime.timedelta(weeks=2 * self.id - 146)
-        # 4.2 版本重置双周开始时间
-        return self.V37_CHALLENGE_MONDAY + datetime.timedelta(weeks=2 * self.id - 147)
+        # 4.2 版本，和货币战争共享一周
+        if self.id == 86:
+            return self.V42_CHALLENGE_MONDAY + datetime.timedelta(weeks=1, days=2, hours=7)
+        return self.V42_CHALLENGE_MONDAY + datetime.timedelta(weeks=self.id - 85)
 
     def begin_date(self) -> datetime.date:
         return self.begin_time.date()
@@ -644,7 +649,7 @@ class RogueTournWeeklyChallenge(View[excel.RogueTournWeeklyChallenge]):
             return self.FIRST_CHALLENGE_MONDAY + datetime.timedelta(weeks=self.id, milliseconds=-1)
         if self.id < 85:
             return self.V37_CHALLENGE_MONDAY + datetime.timedelta(weeks=2 * self.id - 144)
-        return self.V37_CHALLENGE_MONDAY + datetime.timedelta(weeks=2 * self.id - 145)
+        return self.V42_CHALLENGE_MONDAY + datetime.timedelta(weeks=self.id - 84, milliseconds=-1)
 
     def end_date(self) -> datetime.date:
         return self.end_time.date() - datetime.timedelta(days=1)

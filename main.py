@@ -54,7 +54,7 @@ class Main:
 
     def avatar(self, name: str | None = None):
         assert isinstance(self.__game, gsz.sr.GameData)
-        for avatar in self.__game.avatar_config():
+        for avatar in itertools.chain(self.__game.avatar_config(), self.__game.avatar_config_ld()):
             if name is not None and self.__formatter.format(avatar.name) != name:
                 continue
             print(avatar.wiki(), end="\n\n")
