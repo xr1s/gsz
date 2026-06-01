@@ -232,6 +232,8 @@ class SubType(enum.Enum):
     对应 ItemMainType 为 Usable
     对应 UseMethod 为 AutoConversionItem 自动转换
     """
+    PixAirMaterial = "PixAirMaterial"
+    """「像素飞机大乱斗」活动奖励道具，4.3 新增"""
     PlanetFesItem = "PlanetFesItem"
     """
     二周年庆活动相关道具

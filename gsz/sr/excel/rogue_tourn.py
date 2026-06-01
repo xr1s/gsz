@@ -11,35 +11,44 @@ from .rogue import BuffCategory, Path, UnlockNPCProgressID
 
 
 class RoguePersonaStyle(ModelID):
-    id_: typing.Annotated[int, pydantic.Field(validation_alias=pydantic.AliasChoices("GOJHJGEFGGN", "JGGMMHNKCEJ"))]
-    icon_big: typing.Annotated[
-        str, pydantic.Field(validation_alias=pydantic.AliasChoices("JMJKLOFEDOI", "NLAPOPICKMA"))
+    id_: typing.Annotated[
+        int, pydantic.Field(validation_alias=pydantic.AliasChoices("KLOEJIMMPJM", "GOJHJGEFGGN", "JGGMMHNKCEJ"))
     ]
-    icon: typing.Annotated[str, pydantic.Field(validation_alias=pydantic.AliasChoices("ABIAOGCCOCO", "HIBCAPBAGMF"))]
-    name: typing.Annotated[Text, pydantic.Field(validation_alias=pydantic.AliasChoices("PPHCAJEFDJN", "NJAPIHOAHAN"))]
+    icon_big: typing.Annotated[
+        str, pydantic.Field(validation_alias=pydantic.AliasChoices("BCGJNNDCIFH", "JMJKLOFEDOI", "NLAPOPICKMA"))
+    ]
+    icon: typing.Annotated[
+        str, pydantic.Field(validation_alias=pydantic.AliasChoices("DOKOMKFGOOC", "ABIAOGCCOCO", "HIBCAPBAGMF"))
+    ]
+    name: typing.Annotated[
+        Text, pydantic.Field(validation_alias=pydantic.AliasChoices("MJOOFPBABEA", "PPHCAJEFDJN", "NJAPIHOAHAN"))
+    ]
     bg_desc: typing.Annotated[
-        Text, pydantic.Field(validation_alias=pydantic.AliasChoices("NNGNENPFOIH", "LNENPEJPFJN"))
+        Text, pydantic.Field(validation_alias=pydantic.AliasChoices("DDGDJCKKHPH", "NNGNENPFOIH", "LNENPEJPFJN"))
     ]
     desc_simple: typing.Annotated[
-        Text | None, pydantic.Field(validation_alias=pydantic.AliasChoices("KLELLNFDBKM", "INHDIFBOBFD"))
+        Text | None, pydantic.Field(validation_alias=pydantic.AliasChoices("NMAHGFAPENI", "KLELLNFDBKM", "INHDIFBOBFD"))
     ] = None
     desc_wishpower: typing.Annotated[
-        Text | None, pydantic.Field(validation_alias=pydantic.AliasChoices("HOLOJHGGIOG", "IJNAGNNILJK"))
+        Text | None, pydantic.Field(validation_alias=pydantic.AliasChoices("PJNNPOKJEFD", "HOLOJHGGIOG", "IJNAGNNILJK"))
     ] = None
     desc: typing.Annotated[
-        Text | None, pydantic.Field(validation_alias=pydantic.AliasChoices("JMIALJBDFOH", "IDKKBEMKAGP"))
+        Text | None, pydantic.Field(validation_alias=pydantic.AliasChoices("FBOICELIKNJ", "JMIALJBDFOH", "IDKKBEMKAGP"))
     ] = None
     params: typing.Annotated[tuple[Value[float], ...], pydantic.Field(validation_alias=aliases.PARAMS)]
     unlock: typing.Annotated[
-        int | None, pydantic.Field(validation_alias=pydantic.AliasChoices("HICJIGNCDOL", "LJAPFLGMMIL"))
+        int | None, pydantic.Field(validation_alias=pydantic.AliasChoices("JJKLIJNFIBB", "HICJIGNCDOL", "LJAPFLGMMIL"))
     ] = None
     unk_1: typing.Annotated[
-        tuple[int, ...], pydantic.Field(validation_alias=pydantic.AliasChoices("HCHANMKMJEF", "PIACDCJBEAA"))
+        tuple[int, ...],
+        pydantic.Field(validation_alias=pydantic.AliasChoices("JEHDKAKMCGC", "HCHANMKMJEF", "PIACDCJBEAA")),
     ]
     unk_2: typing.Annotated[
-        bool, pydantic.Field(validation_alias=pydantic.AliasChoices("LFCFLNGOFED", "HMDABDFALIN"))
+        bool, pydantic.Field(validation_alias=pydantic.AliasChoices("GIFCDPFAKKP", "LFCFLNGOFED", "HMDABDFALIN"))
     ] = False
-    unk_3: typing.Annotated[int, pydantic.Field(validation_alias=pydantic.AliasChoices("LFMHMLPDCJN", "DCIFIGMEJGI"))]
+    unk_3: typing.Annotated[
+        int, pydantic.Field(validation_alias=pydantic.AliasChoices("PILOLAAEAHB", "LFMHMLPDCJN", "DCIFIGMEJGI"))
+    ]
 
     @property
     @typing_extensions.override

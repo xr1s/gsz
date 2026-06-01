@@ -667,7 +667,10 @@ class MessageSectionConfig(View[excel.MessageSectionConfig], _Node):  # pyright:
 
         参数 item 是分支开始的选项消息，confluence 是若本选项外面还套着一层选项，则传入外层选项的聚合节点
         """
-        if len(node._successors) == 1 and node._successors[0]._excel.option_text is None:
+        if len(node._successors) == 1 and (
+            node._successors[0]._excel.option_text is None
+            or self._game.text(node._successors[0]._excel.option_text) == ""
+        ):
             return  # 应该只有 MessageSectionConfig 进来的时候会直接从这里返回
         _ = wiki.write(indent)
         _ = wiki.write("{{短信选项")
