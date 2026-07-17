@@ -247,6 +247,8 @@ class AvatarConfig(View[excel.AvatarConfig]):
         110253: "记忆1",  # 阿赖耶华
         110263: "欢愉1",  # 《绒绒号》典藏版合集
         110273: "巡猎3",  # 天谴血矛
+        110313: "虚无3",  # 法吉娜之心
+        110293: "智识3",  # 银河沙盘
     }
 
     def __path_material_wiki_category_name(self) -> str:

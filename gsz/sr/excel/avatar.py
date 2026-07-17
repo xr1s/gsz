@@ -10,6 +10,8 @@ from .base import Element, Model, ModelID, ModelMainSubID, Path, Text, Value
 
 CHANGE_INFO_ID = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "ELDCAFJBIPN",  # v4.3
+        "DKCFHBJOECB",  # v4.2
         "OKLMOLJJDAC",  # v4.1
         "JMABNODNGMN",  # v4.0
         "GMLBHCFGKJM",  # v3.8
@@ -26,6 +28,8 @@ CHANGE_INFO_ID = pydantic.Field(
 )
 CHANGE_INFO_UNLOCK = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "JJKLIJNFIBB",  # v4.3
+        "HICJIGNCDOL",  # v4.2
         "LJAPFLGMMIL",  # v4.1
         "DPFECJAONPK",  # v4.0
         "GACICPLOKNF",  # v3.8
@@ -42,6 +46,8 @@ CHANGE_INFO_UNLOCK = pydantic.Field(
 )
 CHANGE_AVATAR_ID = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "ACCJKGEKHKP",  # v4.3
+        "OJFCIGNLGDA",  # v4.2
         "HOOOGEFGBBD",  # v4.1
         "PHDMDNCJJFB",  # v4.0
         "EKGLJCKKFFP",  # v3.8
@@ -58,6 +64,8 @@ CHANGE_AVATAR_ID = pydantic.Field(
 )
 CHANGE_CAMP_ID = pydantic.Field(
     validation_alias=pydantic.AliasChoices(
+        "ADGKGGIBBEC",  # v4.3
+        "LHNECLPNPCD",  # v4.2
         "CLJOEAOOIFL",  # v4.1
         "BGOICLEIODF",  # v4.0
         "ADLEONICBGO",  # v3.8
@@ -308,6 +316,14 @@ class SkillTriggerKey(enum.Enum):
     Skill32 = "Skill32"
     Skill33 = "Skill33"
     Skill34 = "Skill34"
+    Skill41 = "Skill41"
+    """仅「崩坏级伤害演示」"""
+    Skill51 = "Skill51"
+    """特殊技能效果「开拓，与你同行」"""
+    Skill52 = "Skill52"
+    """姬器人「同行协议：裁决」"""
+    Skill53 = "Skill53"
+    """姬器人「同行协议：歼破」"""
     SkillMaze = "SkillMaze"
     SkillP01 = "SkillP01"
     SkillP02 = "SkillP02"
@@ -316,6 +332,8 @@ class SkillTriggerKey(enum.Enum):
 
 
 class AttackType(enum.Enum):
+    Assist = "Assist"
+    """姬器人"""
     BPSkill = "BPSkill"
     ElationDamage = "ElationDamage"
     Maze = "Maze"

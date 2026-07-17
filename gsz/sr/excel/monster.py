@@ -211,6 +211,7 @@ class MonsterSkillConfig(ModelID):
     skill_desc: Text
     skill_type_desc: Text
     skill_tag: Text | None = None  # 仅出现于 1.1 版本及之后
+    sort_order: int | None = None
     phase_list: tuple[int, ...]
     is_threat: bool = False
     """是否大招（游戏中详情页展示为渐变红底）"""
@@ -225,7 +226,7 @@ class MonsterSkillConfig(ModelID):
     attack_type: typing.Literal["Normal"]
     ai_cd: typing.Annotated[typing.Literal[1], pydantic.Field(alias="AI_CD")] = 1  # 仅出现于 3.2 版本及之前
     ai_icd: typing.Annotated[typing.Literal[1], pydantic.Field(alias="AI_ICD")] = 1  # 仅出现于 3.2 版本及之前
-    modifier_list: tuple[str, ...] = []  # 2.0 无此字段
+    modifier_list: tuple[str, ...] = ()  # 2.0 无此字段
 
     @property
     @typing_extensions.override
